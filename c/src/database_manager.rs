@@ -68,5 +68,5 @@ pub extern "C" fn databases_contains(driver: *mut TypeDBDriver, name: *const c_c
 /// Retrieve the database with the given name.
 #[no_mangle]
 pub extern "C" fn databases_get(driver: *mut TypeDBDriver, name: *const c_char) -> *const Database {
-    borrow_mut(driver).databases().get(string_view(name)).map(|db| arc_into_raw(db)).unwrap_or_else(null())
+    borrow_mut(driver).databases().get(string_view(name)).map(|db| arc_into_raw(db)).unwrap_or_else(|_| null())
 }

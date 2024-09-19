@@ -236,7 +236,6 @@
 %nojavaexception StringPair::_1;
 
 /* director constructors do not throw */
-%nojavaexception SessionCallbackDirector;
 %nojavaexception TransactionCallbackDirector;
 
 /* destructors do not throw */
@@ -258,6 +257,7 @@
 %nojavaexception ~Transaction;
 %nojavaexception ~TransactionCallbackDirector;
 %nojavaexception ~TypeDBDriver;
+%nojavaexception ~QueryAnswer;
 //%nojavaexception ~User;
 //%nojavaexception ~UserIterator;
 //%nojavaexception ~UserManager;
@@ -363,7 +363,7 @@
 }%}
 %enddef
 
-%promise(QueryAnswer, concept)
+%promise(QueryAnswer, query_answer)
 %promise(Concept, concept)
 %promise(Rule, rule)
 %promise(String, string)
@@ -489,8 +489,8 @@
 }
 %enddef
 
-%array(Annotation)
 %array(Concept)
+%array(ConceptRow)
 
 /* char** needs special handling */
 %typemap(in) char ** (jint size) {

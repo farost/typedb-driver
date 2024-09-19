@@ -49,7 +49,7 @@ struct Type {};
 
 %dropproxy(Error, error)
 
-%dropproxy(Credential, credential)
+//%dropproxy(Credential, credential)
 //%dropproxy(Options, options)
 
 #define connection_drop connection_close
@@ -57,7 +57,7 @@ struct Type {};
 #define transaction_drop transaction_close
 #define database_drop database_close
 
-%dropproxy(Connection, connection)
+%dropproxy(TypeDBDriver, typedb_driver)
 %dropproxy(Transaction, transaction)
 
 %dropproxy(DatabaseManager, database_manager);
@@ -80,6 +80,8 @@ struct Type {};
 %dropproxy(StringIterator, string_iterator)
 %dropproxy(StringPairIterator, string_pair_iterator)
 
+%dropproxy(QueryAnswer, query_answer)
+
 %dropproxy(ValueGroup, value_group)
 %dropproxy(ValueGroupIterator, value_group_iterator)
 
@@ -95,47 +97,6 @@ struct Type {};
 %promiseproxy(StringPromise, string_promise)
 %promiseproxy(QueryAnswerPromise, query_answer_promise)
 %promiseproxy(VoidPromise, void_promise)
-
-%feature("director") SessionCallbackDirector;
-%inline %{
-struct SessionCallbackDirector {
-    SessionCallbackDirector() {}
-    virtual ~SessionCallbackDirector() {}
-    virtual void callback() = 0;
-};
-%}
-
-%inline %{
-#include <atomic>
-#include <memory>
-#include <iostream>
-#include <unordered_map>
-
-static std::unordered_map<std::uintptr_t, SessionCallbackDirector*> sessionCallbacks {};
-
-std::uintptr_t session_callback_register(SessionCallbackDirector* handler) {
-    static std::atomic_uintptr_t nextID;
-    std::uintptr_t ID = nextID.fetch_add(1);
-    sessionCallbacks.insert({ID, handler});
-    return ID;
-}
-
-static void session_callback_execute(void* ID) {
-    try {
-        sessionCallbacks.at(reinterpret_cast<std::uintptr_t>(ID))->callback();
-    } catch (std::exception const& e) {
-        std::cerr << "[ERROR] " << e.what() << std::endl;
-    }
-}
-
-static void session_callback_erase(void* ID) {
-    try {
-        sessionCallbacks.erase(reinterpret_cast<std::uintptr_t>(ID));
-    } catch (std::exception const& e) {
-        std::cerr << "[ERROR] " << e.what() << std::endl;
-    }
-}
-%}
 
 %feature("director") TransactionCallbackDirector;
 %inline %{

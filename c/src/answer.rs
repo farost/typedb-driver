@@ -19,11 +19,11 @@
 
 use std::ffi::c_char;
 
-use typedb_driver::{answer::{ConceptRow, ValueGroup}, box_stream, BoxPromise, concept::Concept};
+use typedb_driver::{answer::{ConceptRow, ValueGroup}, box_stream, BoxPromise, concept::Concept, Promise, Result};
 use typedb_driver::answer::QueryAnswer;
 
 use crate::concept::{ConceptPromise, ConceptRowIterator};
-use crate::error::try_release_optional;
+use crate::error::{try_release, try_release_optional};
 use crate::memory::take_ownership;
 
 use super::{
@@ -34,10 +34,10 @@ use super::{
 
 /// Promise object representing the result of an asynchronous operation.
 /// Use \ref query_answer_promise_resolve(QueryAnswerPromise*) to wait for and retrieve the resulting boolean value.
-pub struct QueryAnswerPromise(BoxPromise<'static, typedb_driver::Result<QueryAnswer>>);
+pub struct QueryAnswerPromise(BoxPromise<'static, Result<QueryAnswer>>);
 
 impl QueryAnswerPromise {
-    pub fn new(promise: BoxPromise<'static, typedb_driver::Result<QueryAnswer>>) -> Self {
+    pub fn new(promise: impl Promise<'static, Result<QueryAnswer>>) -> Self {
         Self(Box::new(|| Ok(promise.resolve()?)))
     }
 }
@@ -47,7 +47,7 @@ impl QueryAnswerPromise {
 /// The native promise object is freed when it is resolved.
 #[no_mangle]
 pub extern "C" fn query_answer_promise_resolve(promise: *mut QueryAnswerPromise) -> *mut QueryAnswer {
-    try_release_optional(take_ownership(promise).0.resolve().transpose())
+    try_release(take_ownership(promise).0.resolve())
 }
 
 /// Checks if the query answer is an <code>Ok</code>.

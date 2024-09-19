@@ -38,5 +38,5 @@ pub(super) fn iterator_try_next<T: 'static>(it: *mut CIterator<Result<T>>) -> *m
 }
 
 pub(super) fn iterator_arc_next<T: 'static>(it: *mut CIterator<Arc<T>>) -> *const T {
-    borrow_mut(it).0.next().map(|db| arc_into_raw(db)).unwrap_or_else(null())
+    borrow_mut(it).0.next().map(|db| arc_into_raw(db)).unwrap_or_else(null)
 }
