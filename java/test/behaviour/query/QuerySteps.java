@@ -19,8 +19,8 @@
 
 package com.vaticle.typedb.driver.test.behaviour.query;
 
-import com.vaticle.typedb.driver.api.answer.ConceptMap;
-import com.vaticle.typedb.driver.api.answer.ConceptMapGroup;
+import com.vaticle.typedb.driver.api.answer.ConceptRow;
+import com.vaticle.typedb.driver.api.answer.ConceptTree;
 import com.vaticle.typedb.driver.api.answer.JSON;
 import com.vaticle.typedb.driver.api.answer.ValueGroup;
 import com.vaticle.typedb.driver.api.concept.Concept;
@@ -54,7 +54,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.vaticle.typedb.driver.api.concept.type.ThingType.Annotation.key;
 import static com.vaticle.typedb.driver.common.exception.ErrorMessage.Query.VARIABLE_DOES_NOT_EXIST;
@@ -69,14 +68,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class QuerySteps {
-    private static List<ConceptMap> answers;
+    private static List<ConceptRow> answers;
     private static List<JSON> fetchAnswers;
     private static Optional<Value> valueAnswer;
-    private static List<ConceptMapGroup> answerGroups;
+    private static List<ConceptTree> answerGroups;
     private static List<ValueGroup> valueAnswerGroups;
     private Map<String, Map<String, String>> rules;
     
-    public static List<ConceptMap> answers() {
+    public static List<ConceptRow> answers() {
         return answers;
     }
 
@@ -117,7 +116,7 @@ public class QuerySteps {
     }
 
     @Given("typeql insert")
-    public List<ConceptMap> typeql_insert(String insertQueryStatements) {
+    public List<ConceptRow> typeql_insert(String insertQueryStatements) {
         TypeQLInsert typeQLQuery = TypeQL.parseQuery(String.join("\n", insertQueryStatements));
         return tx().query().insert(String.join("\n", insertQueryStatements)).collect(Collectors.toList());
     }
@@ -153,7 +152,7 @@ public class QuerySteps {
     }
 
     @Given("typeql update")
-    public List<ConceptMap> typeql_update(String updateQueryStatements) {
+    public List<ConceptRow> typeql_update(String updateQueryStatements) {
         TypeQLUpdate typeQLQuery = TypeQL.parseQuery(String.join("\n", updateQueryStatements));
         return tx().query().update(String.join("\n", updateQueryStatements)).collect(Collectors.toList());
     }
@@ -251,7 +250,7 @@ public class QuerySteps {
                 answerConcepts.size(), answers.size()
         );
 
-        for (ConceptMap answer : answers) {
+        for (ConceptRow answer : answers) {
             List<Map<String, String>> matchingIdentifiers = new ArrayList<>();
 
             for (Map<String, String> answerIdentifier : answerConcepts) {
@@ -272,7 +271,7 @@ public class QuerySteps {
                 answersIdentifiers.size(), answers.size()
         );
         for (int i = 0; i < answers.size(); i++) {
-            ConceptMap answer = answers.get(i);
+            ConceptRow answer = answers.get(i);
             Map<String, String> answerIdentifiers = answersIdentifiers.get(i);
             assertTrue(
                     String.format("The answer at index %d does not match the identifier entry (row) at index %d.", i, i),
@@ -329,7 +328,7 @@ public class QuerySteps {
                 default:
                     throw new IllegalStateException("Unexpected value: " + identifier[0]);
             }
-            ConceptMapGroup answerGroup = answerGroups.stream()
+            ConceptTree answerGroup = answerGroups.stream()
                     .filter(ag -> checker.check(ag.owner()))
                     .findAny()
                     .orElse(null);
@@ -428,7 +427,7 @@ public class QuerySteps {
         assertTrue(valueAnswerGroups.get(0).value().isEmpty());
     }
 
-    private boolean matchAnswerConcept(Map<String, String> answerIdentifiers, ConceptMap answer) {
+    private boolean matchAnswerConcept(Map<String, String> answerIdentifiers, ConceptRow answer) {
         for (Map.Entry<String, String> entry : answerIdentifiers.entrySet()) {
             String var = entry.getKey();
             String[] identifier = entry.getValue().split(":", 2);
@@ -507,7 +506,7 @@ public class QuerySteps {
 
     @Then("each answer satisfies")
     public void each_answer_satisfies(String templatedQuery) {
-        for (ConceptMap answer : answers) {
+        for (ConceptRow answer : answers) {
             String query = applyQueryTemplate(templatedQuery, answer);
             TypeQLGet typeQLQuery = TypeQL.parseQuery(query).asGet();
             long answerSize = tx().query().get(query).count();
@@ -522,7 +521,7 @@ public class QuerySteps {
         }
         String templatedQuery = String.join("\n", templatedTypeQLQuery);
 
-        ConceptMap answer = answers.get(0);
+        ConceptRow answer = answers.get(0);
         String queryString = applyQueryTemplate(templatedQuery, answer);
         clearAnswers();
         answers = tx().query().get(String.join("\n", queryString)).collect(Collectors.toList());
@@ -531,7 +530,7 @@ public class QuerySteps {
     @Then("templated typeql get; throws exception")
     public void templated_typeql_get_throws_exception(String templatedTypeQLQuery) {
         String templatedQuery = String.join("\n", templatedTypeQLQuery);
-        for (ConceptMap answer : answers) {
+        for (ConceptRow answer : answers) {
             String queryString = applyQueryTemplate(templatedQuery, answer);
             assertThrows(() -> {
                 TypeQLGet query = TypeQL.parseQuery(queryString).asGet();
@@ -540,7 +539,7 @@ public class QuerySteps {
         }
     }
 
-    private String applyQueryTemplate(String template, ConceptMap templateFiller) {
+    private String applyQueryTemplate(String template, ConceptRow templateFiller) {
         // find shortest matching strings between <>
         Pattern pattern = Pattern.compile("<.+?>");
         Matcher matcher = pattern.matcher(template);

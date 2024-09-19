@@ -22,6 +22,8 @@ use std::{
     ffi::{c_char, CStr, CString},
     ptr::null_mut,
 };
+use std::ptr::null;
+use std::sync::Arc;
 
 use log::trace;
 use typedb_driver::Error;
@@ -44,6 +46,23 @@ pub(super) fn release_string(str: String) -> *mut c_char {
     let raw = CString::new(str).unwrap().into_raw();
     trace!("Releasing ownership of <CString> @ {:?}", raw);
     raw
+}
+
+pub(super) fn arc_into_raw<T>(t: Arc<T>) -> *const T {
+    let raw = Arc::into_raw(t);
+    trace!("Arc into raw of <{}> @ {:?}", std::any::type_name::<T>(), raw);
+    raw
+}
+
+pub(super) fn arc_from_raw<T>(raw: *const T) -> Arc<T> {
+    trace!("Arc from raw of <{}> @ {:?}", std::any::type_name::<T>(), raw);
+    unsafe { Arc::from_raw(raw) }
+}
+
+pub(super) fn release_arc<T>(raw: *const T) {
+    trace!("Releasing ownership of arced <{}> @ {:?}", std::any::type_name::<T>(), raw);
+    assert!(!raw.is_null());
+    drop(arc_from_raw(raw))
 }
 
 pub(super) fn borrow<T>(raw: *const T) -> &'static T {
@@ -91,7 +110,7 @@ pub extern "C" fn string_free(str: *mut c_char) {
     }
 }
 
-pub(super) fn array_view<T>(ts: *const *const T) -> impl Iterator<Item = &'static T> {
+pub(super) fn array_view<T: 'static>(ts: *const *const T) -> impl Iterator<Item = &'static T> {
     assert!(!ts.is_null());
     unsafe { (0..).map_while(move |i| (*ts.add(i)).as_ref()) }
 }

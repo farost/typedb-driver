@@ -49,22 +49,4 @@ public class AttributeImpl extends ThingImpl implements Attribute {
     public Value getValue() {
         return new ValueImpl(attribute_get_value(nativeObject));
     }
-
-    @Override
-    public final Stream<ThingImpl> getOwners(TypeDBTransaction transaction) {
-        try {
-            return new NativeIterator<>(attribute_get_owners(nativeTransaction(transaction), nativeObject, null)).stream().map(ThingImpl::of);
-        } catch (com.vaticle.typedb.driver.jni.Error e) {
-            throw new TypeDBDriverException(e);
-        }
-    }
-
-    @Override
-    public Stream<ThingImpl> getOwners(TypeDBTransaction transaction, ThingType ownerType) {
-        try {
-            return new NativeIterator<>(attribute_get_owners(nativeTransaction(transaction), nativeObject, ((ThingTypeImpl) ownerType).nativeObject)).stream().map(ThingImpl::of);
-        } catch (com.vaticle.typedb.driver.jni.Error e) {
-            throw new TypeDBDriverException(e);
-        }
-    }
 }

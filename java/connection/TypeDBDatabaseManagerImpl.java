@@ -35,24 +35,18 @@ import static com.vaticle.typedb.driver.jni.typedb_driver.databases_create;
 import static com.vaticle.typedb.driver.jni.typedb_driver.databases_get;
 import static java.util.stream.Collectors.toList;
 
-public class TypeDBDatabaseManagerImpl extends NativeObject<com.vaticle.typedb.driver.jni.DatabaseManager> implements DatabaseManager {
-    public TypeDBDatabaseManagerImpl(com.vaticle.typedb.driver.jni.Connection nativeConnection) {
-        super(newNative(nativeConnection));
-    }
+public class TypeDBDatabaseManagerImpl implements DatabaseManager {
+    com.vaticle.typedb.driver.jni.TypeDBDriver nativeDriver;
 
-    private static com.vaticle.typedb.driver.jni.DatabaseManager newNative(com.vaticle.typedb.driver.jni.Connection nativeConnection) {
-        try {
-            return database_manager_new(nativeConnection);
-        } catch (com.vaticle.typedb.driver.jni.Error e) {
-            throw new TypeDBDriverException(e);
-        }
+    public TypeDBDatabaseManagerImpl(com.vaticle.typedb.driver.jni.TypeDBDriver driver) {
+        nativeDriver = driver;
     }
 
     @Override
     public Database get(String name) throws Error {
         if (name == null || name.isEmpty()) throw new TypeDBDriverException(MISSING_DB_NAME);
         try {
-            return new TypeDBDatabaseImpl(databases_get(nativeObject, name));
+            return new TypeDBDatabaseImpl(databases_get(nativeDriver, name));
         } catch (com.vaticle.typedb.driver.jni.Error e) {
             throw new TypeDBDriverException(e);
         }
@@ -62,7 +56,7 @@ public class TypeDBDatabaseManagerImpl extends NativeObject<com.vaticle.typedb.d
     public boolean contains(String name) throws Error {
         if (name == null || name.isEmpty()) throw new TypeDBDriverException(MISSING_DB_NAME);
         try {
-            return databases_contains(nativeObject, name);
+            return databases_contains(nativeDriver, name);
         } catch (com.vaticle.typedb.driver.jni.Error e) {
             throw new TypeDBDriverException(e);
         }
@@ -72,7 +66,7 @@ public class TypeDBDatabaseManagerImpl extends NativeObject<com.vaticle.typedb.d
     public void create(String name) throws Error {
         if (name == null || name.isEmpty()) throw new TypeDBDriverException(MISSING_DB_NAME);
         try {
-            databases_create(nativeObject, name);
+            databases_create(nativeDriver, name);
         } catch (com.vaticle.typedb.driver.jni.Error e) {
             throw new TypeDBDriverException(e);
         }
@@ -81,7 +75,7 @@ public class TypeDBDatabaseManagerImpl extends NativeObject<com.vaticle.typedb.d
     @Override
     public List<Database> all() {
         try {
-            return new NativeIterator<>(databases_all(nativeObject)).stream().map(TypeDBDatabaseImpl::new).collect(toList());
+            return new NativeIterator<>(databases_all(nativeDriver)).stream().map(TypeDBDatabaseImpl::new).collect(toList());
         } catch (com.vaticle.typedb.driver.jni.Error e) {
             throw new TypeDBDriverException(e);
         }

@@ -48,11 +48,9 @@ struct Type {};
 %enddef
 
 %dropproxy(Error, error)
-%dropproxy(SchemaException, schema_exception)
-%dropproxy(SchemaExceptionIterator, schema_exception_iterator)
 
 %dropproxy(Credential, credential)
-%dropproxy(Options, options)
+//%dropproxy(Options, options)
 
 #define connection_drop connection_close
 #define session_drop session_close
@@ -60,46 +58,30 @@ struct Type {};
 #define database_drop database_close
 
 %dropproxy(Connection, connection)
-%dropproxy(Session, session)
 %dropproxy(Transaction, transaction)
 
 %dropproxy(DatabaseManager, database_manager);
 %dropproxy(Database, database)
 %dropproxy(DatabaseIterator, database_iterator)
-%dropproxy(ReplicaInfo, replica_info)
-%dropproxy(ReplicaInfoIterator, replica_info_iterator)
+//%dropproxy(ReplicaInfo, replica_info)
+//%dropproxy(ReplicaInfoIterator, replica_info_iterator)
 
-%dropproxy(UserManager, user_manager);
-%dropproxy(User, user)
-%dropproxy(UserIterator, user_iterator)
+//%dropproxy(UserManager, user_manager);
+//%dropproxy(User, user)
+//%dropproxy(UserIterator, user_iterator)
 
 %dropproxy(Concept, concept)
 %dropproxy(ConceptIterator, concept_iterator)
 
-%dropproxy(Annotation, annotation)
-
-%dropproxy(RolePlayer, role_player)
-%dropproxy(RolePlayerIterator, role_player_iterator)
-
-%dropproxy(ConceptMap, concept_map)
-%dropproxy(ConceptMapIterator, concept_map_iterator)
-%dropproxy(Explainables, explainables)
-%dropproxy(Explainable, explainable)
-
-%dropproxy(ConceptMapGroup, concept_map_group)
-%dropproxy(ConceptMapGroupIterator, concept_map_group_iterator)
+%dropproxy(ConceptRow, concept_row)
+%dropproxy(ConceptRowIterator, concept_row_iterator)
+//%dropproxy(ConceptTree, concept_tree)
 
 %dropproxy(StringIterator, string_iterator)
 %dropproxy(StringPairIterator, string_pair_iterator)
 
 %dropproxy(ValueGroup, value_group)
 %dropproxy(ValueGroupIterator, value_group_iterator)
-
-%dropproxy(Explanation, explanation)
-%dropproxy(ExplanationIterator, explanation_iterator)
-
-%dropproxy(Rule, rule)
-%dropproxy(RuleIterator, rule_iterator)
 
 %define %promiseproxy(Type, function_prefix)
 struct Type {};
@@ -110,8 +92,8 @@ struct Type {};
 
 %promiseproxy(BoolPromise, bool_promise)
 %promiseproxy(ConceptPromise, concept_promise)
-%promiseproxy(RulePromise, rule_promise)
 %promiseproxy(StringPromise, string_promise)
+%promiseproxy(QueryAnswerPromise, query_answer_promise)
 %promiseproxy(VoidPromise, void_promise)
 
 %feature("director") SessionCallbackDirector;
@@ -152,22 +134,6 @@ static void session_callback_erase(void* ID) {
     } catch (std::exception const& e) {
         std::cerr << "[ERROR] " << e.what() << std::endl;
     }
-}
-%}
-
-%rename(session_on_close) session_on_close_register;
-%ignore session_on_close;
-%rename(session_on_reopen) session_on_reopen_register;
-%ignore session_on_reopen;
-%inline %{
-void session_on_close_register(const Session* session, SessionCallbackDirector* handler) {
-    std::uintptr_t ID = session_callback_register(handler);
-    session_on_close(session, reinterpret_cast<void*>(ID), &session_callback_execute, &session_callback_erase);
-}
-
-void session_on_reopen_register(const Session* session, SessionCallbackDirector* handler) {
-    std::uintptr_t ID = session_callback_register(handler);
-    session_on_reopen(session, reinterpret_cast<void*>(ID), &session_callback_execute, &session_callback_erase);
 }
 %}
 

@@ -17,26 +17,22 @@
  * under the License.
  */
 
-use std::ptr::null;
-use std::sync::Arc;
-use typedb_driver::{BoxStream, Result};
-use crate::memory::arc_into_raw;
+package com.vaticle.typedb.driver.api.answer;
 
-use super::{
-    error::try_release_optional,
-    memory::{borrow_mut, release_optional},
-};
+import javax.annotation.CheckReturnValue;
+import java.util.stream.Stream;
 
-pub struct CIterator<T: 'static>(pub(super) BoxStream<'static, T>);
+public interface ConceptRowsStreamQueryAnswer extends QueryAnswer {
+    @Override
+    default boolean isConceptRowsStream() {
+        return true;
+    }
 
-pub(super) fn iterator_next<T: 'static>(it: *mut CIterator<T>) -> *mut T {
-    release_optional(borrow_mut(it).0.next())
-}
+    @Override
+    @CheckReturnValue
+    default ConceptRowsStreamQueryAnswer asConceptRowsStream() {
+        return this;
+    }
 
-pub(super) fn iterator_try_next<T: 'static>(it: *mut CIterator<Result<T>>) -> *mut T {
-    try_release_optional(borrow_mut(it).0.next())
-}
-
-pub(super) fn iterator_arc_next<T: 'static>(it: *mut CIterator<Arc<T>>) -> *const T {
-    borrow_mut(it).0.next().map(|db| arc_into_raw(db)).unwrap_or_else(null())
+    Stream<ConceptRow> rows();
 }

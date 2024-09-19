@@ -17,31 +17,27 @@
  * under the License.
  */
 
-package com.vaticle.typedb.driver.api.concept.type;
+package com.vaticle.typedb.driver.concept.answer;
+
+import com.vaticle.typedb.driver.api.answer.ConceptRow;
+import com.vaticle.typedb.driver.api.answer.ConceptRowsStreamQueryAnswer;
+import com.vaticle.typedb.driver.common.NativeIterator;
 
 import javax.annotation.CheckReturnValue;
+import java.util.stream.Stream;
 
-/**
- * Relation types (or subtypes of the relation root type) represent relationships between types. Relation types have roles.
- * Other types can play roles in relations if it’s mentioned in their definition.
- * A relation type must specify at least one role.
- */
-public interface RelationType extends ThingType {
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @CheckReturnValue
-    default boolean isRelationType() {
-        return true;
+public class ConceptRowsStreamQueryAnswerImpl extends QueryAnswerImpl implements ConceptRowsStreamQueryAnswer {
+    protected ConceptRowsStreamQueryAnswerImpl(com.vaticle.typedb.driver.jni.QueryAnswer answer) {
+        super(answer);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @CheckReturnValue
-    default RelationType asRelationType() {
+    public ConceptRowsStreamQueryAnswer asConceptRowsStream() {
         return this;
+    }
+
+    public Stream<ConceptRow> rows() {
+        return new NativeIterator<>(query_answer_get_rows(nativeObject)).stream().map(ConceptRowImpl::new);
     }
 }

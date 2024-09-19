@@ -82,69 +82,57 @@
 %nojavaexception init_logging;
 
 /* simple getters do not throw */
-%nojavaexception options_new;
-%nojavaexception options_get_infer;
-%nojavaexception options_get_trace_inference;
-%nojavaexception options_get_explain;
-%nojavaexception options_get_parallel;
-%nojavaexception options_get_prefetch;
-%nojavaexception options_get_prefetch_size;
-%nojavaexception options_get_session_idle_timeout_millis;
-%nojavaexception options_get_transaction_timeout_millis;
-%nojavaexception options_get_schema_lock_acquire_timeout_millis;
-%nojavaexception options_get_read_any_replica;
-%nojavaexception options_set_infer;
-%nojavaexception options_set_trace_inference;
-%nojavaexception options_set_explain;
-%nojavaexception options_set_parallel;
-%nojavaexception options_set_prefetch;
-%nojavaexception options_set_prefetch_size;
-%nojavaexception options_set_session_idle_timeout_millis;
-%nojavaexception options_set_transaction_timeout_millis;
-%nojavaexception options_set_schema_lock_acquire_timeout_millis;
-%nojavaexception options_set_read_any_replica;
-%nojavaexception options_has_infer;
-%nojavaexception options_has_trace_inference;
-%nojavaexception options_has_explain;
-%nojavaexception options_has_parallel;
-%nojavaexception options_has_prefetch;
-%nojavaexception options_has_prefetch_size;
-%nojavaexception options_has_session_idle_timeout_millis;
-%nojavaexception options_has_transaction_timeout_millis;
-%nojavaexception options_has_schema_lock_acquire_timeout_millis;
-%nojavaexception options_has_read_any_replica;
-
-%nojavaexception annotation_new_key;
-%nojavaexception annotation_new_unique;
-%nojavaexception annotation_is_key;
-%nojavaexception annotation_is_unique;
-%nojavaexception annotation_to_string;
-%nojavaexception annotation_equals;
+// %nojavaexception options_new;
+// %nojavaexception options_get_infer;
+// %nojavaexception options_get_trace_inference;
+// %nojavaexception options_get_explain;
+// %nojavaexception options_get_parallel;
+// %nojavaexception options_get_prefetch;
+// %nojavaexception options_get_prefetch_size;
+// %nojavaexception options_get_session_idle_timeout_millis;
+// %nojavaexception options_get_transaction_timeout_millis;
+// %nojavaexception options_get_schema_lock_acquire_timeout_millis;
+// %nojavaexception options_get_read_any_replica;
+// %nojavaexception options_set_infer;
+// %nojavaexception options_set_trace_inference;
+// %nojavaexception options_set_explain;
+// %nojavaexception options_set_parallel;
+// %nojavaexception options_set_prefetch;
+// %nojavaexception options_set_prefetch_size;
+// %nojavaexception options_set_session_idle_timeout_millis;
+// %nojavaexception options_set_transaction_timeout_millis;
+// %nojavaexception options_set_schema_lock_acquire_timeout_millis;
+// %nojavaexception options_set_read_any_replica;
+// %nojavaexception options_has_infer;
+// %nojavaexception options_has_trace_inference;
+// %nojavaexception options_has_explain;
+// %nojavaexception options_has_parallel;
+// %nojavaexception options_has_prefetch;
+// %nojavaexception options_has_prefetch_size;
+// %nojavaexception options_has_session_idle_timeout_millis;
+// %nojavaexception options_has_transaction_timeout_millis;
+// %nojavaexception options_has_schema_lock_acquire_timeout_millis;
+// %nojavaexception options_has_read_any_replica;
 
 %nojavaexception error_code;
 %nojavaexception error_message;
-%nojavaexception schema_exception_code;
-%nojavaexception schema_exception_message;
 
 %nojavaexception connection_is_open;
 
-%nojavaexception session_is_open;
-%nojavaexception session_get_database_name;
-
 %nojavaexception transaction_is_open;
 
-%nojavaexception user_get_username;
-%nojavaexception user_get_password_expiry_seconds;
+//%nojavaexception user_get_username;
+//%nojavaexception user_get_password_expiry_seconds;
 
-%nojavaexception replica_info_get_server;
-%nojavaexception replica_info_is_primary;
-%nojavaexception replica_info_is_preferred;
-%nojavaexception replica_info_get_term;
+//%nojavaexception replica_info_get_server;
+//%nojavaexception replica_info_is_primary;
+//%nojavaexception replica_info_is_preferred;
+//%nojavaexception replica_info_get_term;
 
 %nojavaexception database_get_name;
-%nojavaexception database_get_replicas_info;
-%nojavaexception database_get_primary_replica_info;
-%nojavaexception database_get_preferred_replica_info;
+//%nojavaexception database_get_replicas_info;
+//%nojavaexception database_get_primary_replica_info;
+//%nojavaexception database_get_preferred_replica_info;
 
 %nojavaexception concept_is_entity;
 %nojavaexception concept_is_relation;
@@ -252,44 +240,27 @@
 %nojavaexception TransactionCallbackDirector;
 
 /* destructors do not throw */
-%nojavaexception ~Annotation;
 %nojavaexception ~Concept;
 %nojavaexception ~ConceptIterator;
-%nojavaexception ~ConceptMap;
-%nojavaexception ~ConceptMapGroup;
-%nojavaexception ~ConceptMapGroupIterator;
-%nojavaexception ~ConceptMapIterator;
-%nojavaexception ~Connection;
-%nojavaexception ~Credential;
+%nojavaexception ~ConceptRow;
+%nojavaexception ~ConceptRowIterator;
+//%nojavaexception ~Credential;
 %nojavaexception ~Database;
 %nojavaexception ~DatabaseIterator;
 %nojavaexception ~DatabaseManager;
 %nojavaexception ~DatabaseManager;
 %nojavaexception ~Error;
-%nojavaexception ~Error;
-%nojavaexception ~Explainable;
-%nojavaexception ~Explainables;
-%nojavaexception ~Explanation;
-%nojavaexception ~ExplanationIterator;
 %nojavaexception ~Options;
-%nojavaexception ~ReplicaInfo;
-%nojavaexception ~ReplicaInfoIterator;
-%nojavaexception ~RolePlayer;
-%nojavaexception ~RolePlayerIterator;
-%nojavaexception ~Rule;
-%nojavaexception ~RuleIterator;
-%nojavaexception ~SchemaException;
-%nojavaexception ~SchemaExceptionIterator;
-%nojavaexception ~Session;
-%nojavaexception ~SessionCallbackDirector;
+//%nojavaexception ~ReplicaInfo;
 %nojavaexception ~StringIterator;
 %nojavaexception ~StringPair;
 %nojavaexception ~StringPairIterator;
 %nojavaexception ~Transaction;
 %nojavaexception ~TransactionCallbackDirector;
-%nojavaexception ~User;
-%nojavaexception ~UserIterator;
-%nojavaexception ~UserManager;
+%nojavaexception ~TypeDBDriver;
+//%nojavaexception ~User;
+//%nojavaexception ~UserIterator;
+//%nojavaexception ~UserManager;
 %nojavaexception ~Value;
 %nojavaexception ~ValueGroup;
 %nojavaexception ~ValueGroupIterator;
@@ -345,15 +316,6 @@
 %nojavaexception role_type_delete;
 %nojavaexception role_type_set_label;
 %nojavaexception role_type_get_supertype;
-%nojavaexception rule_set_label;
-%nojavaexception rule_delete;
-%nojavaexception rule_is_deleted;
-%nojavaexception logic_manager_put_rule;
-%nojavaexception logic_manager_get_rule;
-%nojavaexception query_define;
-%nojavaexception query_undefine;
-%nojavaexception query_delete;
-%nojavaexception query_get_aggregate;
 %nojavaexception transaction_commit;
 %nojavaexception transaction_rollback;
 
@@ -401,6 +363,7 @@
 }%}
 %enddef
 
+%promise(QueryAnswer, concept)
 %promise(Concept, concept)
 %promise(Rule, rule)
 %promise(String, string)
@@ -493,18 +456,13 @@
 %enddef
 
 %iterator(Concept, concept)
-%iterator(RolePlayer, role_player) 
-%iterator(ConceptMap, concept_map)
-%iterator(ConceptMapGroup, concept_map_group)
+%iterator(ConceptRow, concept_row)
 %iterator(ValueGroup, value_group)
-%iterator(Explanation, explanation)
 %iterator(String, string)
 %iterator(StringPair, string_pair)
-%iterator(Rule, rule)
-%iterator(User, user)
+//%iterator(User, user)
 %iterator(Database, database)
-%iterator(ReplicaInfo, replica_info)
-%iterator(SchemaException, schema_exception)
+//%iterator(ReplicaInfo, replica_info)
 
 %define %array(Type)
 %typemap(in) Type ** (jint size) {

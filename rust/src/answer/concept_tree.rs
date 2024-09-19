@@ -30,7 +30,7 @@ pub struct ConceptTreesHeader {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub(crate) struct Tree {
+pub struct Tree {
     pub(crate) root: HashMap<String, Node>,
 }
 

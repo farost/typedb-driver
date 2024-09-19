@@ -17,26 +17,12 @@
  * under the License.
  */
 
-use std::ptr::null;
-use std::sync::Arc;
-use typedb_driver::{BoxStream, Result};
-use crate::memory::arc_into_raw;
+package com.vaticle.typedb.driver.concept.answer;
 
-use super::{
-    error::try_release_optional,
-    memory::{borrow_mut, release_optional},
-};
+import com.vaticle.typedb.driver.api.answer.OkQueryAnswer;
 
-pub struct CIterator<T: 'static>(pub(super) BoxStream<'static, T>);
-
-pub(super) fn iterator_next<T: 'static>(it: *mut CIterator<T>) -> *mut T {
-    release_optional(borrow_mut(it).0.next())
-}
-
-pub(super) fn iterator_try_next<T: 'static>(it: *mut CIterator<Result<T>>) -> *mut T {
-    try_release_optional(borrow_mut(it).0.next())
-}
-
-pub(super) fn iterator_arc_next<T: 'static>(it: *mut CIterator<Arc<T>>) -> *const T {
-    borrow_mut(it).0.next().map(|db| arc_into_raw(db)).unwrap_or_else(null())
+public class OkQueryAnswerImpl extends QueryAnswerImpl implements OkQueryAnswer {
+    protected OkQueryAnswerImpl(com.vaticle.typedb.driver.jni.QueryAnswer answer) {
+        super(answer);
+    }
 }

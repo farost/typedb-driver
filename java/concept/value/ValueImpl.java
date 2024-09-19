@@ -42,7 +42,7 @@ import static com.vaticle.typedb.driver.jni.typedb_driver.value_is_double;
 import static com.vaticle.typedb.driver.jni.typedb_driver.value_is_long;
 import static com.vaticle.typedb.driver.jni.typedb_driver.value_is_string;
 import static com.vaticle.typedb.driver.jni.typedb_driver.value_new_boolean;
-import static com.vaticle.typedb.driver.jni.typedb_driver.value_new_date_time_from_millis;
+import static com.vaticle.typedb.driver.jni.typedb_driver.value_new_datetime_from_millis;
 import static com.vaticle.typedb.driver.jni.typedb_driver.value_new_double;
 import static com.vaticle.typedb.driver.jni.typedb_driver.value_new_long;
 import static com.vaticle.typedb.driver.jni.typedb_driver.value_new_string;
@@ -73,7 +73,7 @@ public class ValueImpl extends ConceptImpl implements Value {
 
     public static Value of(LocalDateTime value) {
         if (value == null) throw new TypeDBDriverException(MISSING_VALUE);
-        return new ValueImpl(value_new_date_time_from_millis(value.atZone(ZoneOffset.UTC).toInstant().toEpochMilli()));
+        return new ValueImpl(value_new_datetime_from_millis(value.atZone(ZoneOffset.UTC).toInstant().toEpochMilli()));
     }
 
     @Override

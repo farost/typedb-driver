@@ -17,7 +17,10 @@
  * under the License.
  */
 
-package com.vaticle.typedb.driver.test.behaviour.concept.type.entitytype;
+package com.vaticle.typedb.driver.concept.answer;
 
-public class EntityTypeSteps {
+import com.vaticle.typedb.driver.api.answer.ConceptTree;
+import com.vaticle.typedb.driver.common.NativeObject;
+
+public class ConceptTreeImpl extends NativeObject<com.vaticle.typedb.driver.jni.ConceptTree> implements ConceptTree {
 }
