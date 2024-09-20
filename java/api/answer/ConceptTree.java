@@ -20,7 +20,7 @@
 package com.vaticle.typedb.driver.api.answer;
 
 /**
- * Contains a mapping of variables to concepts.
+ * Contains a tree of concepts.
  */
 public interface ConceptTree {
 }

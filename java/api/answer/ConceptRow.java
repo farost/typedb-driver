@@ -25,7 +25,7 @@ import javax.annotation.CheckReturnValue;
 import java.util.stream.Stream;
 
 /**
- * Contains a mapping of variables to concepts.
+ * Contains a row of concepts with a header.
  */
 public interface ConceptRow {
     /**

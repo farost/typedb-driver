@@ -25,6 +25,7 @@ import com.vaticle.typedb.driver.api.answer.QueryAnswer;
 import com.vaticle.typedb.driver.common.NativeObject;
 import com.vaticle.typedb.driver.common.Promise;
 import com.vaticle.typedb.driver.common.exception.TypeDBDriverException;
+import com.vaticle.typedb.driver.concept.answer.QueryAnswerImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,7 +83,7 @@ public class TypeDBTransactionImpl extends NativeObject<com.vaticle.typedb.drive
     public Promise<? extends QueryAnswer> query(String query) {
         if (query == null || query.isBlank()) throw new TypeDBDriverException(MISSING_QUERY);
         try {
-            return new Promise<>(transaction_query(nativeObject, query/*, options.nativeObject*/));
+            return Promise.map(transaction_query(nativeObject, query/*, options.nativeObject*/), QueryAnswerImpl::of);
         } catch (com.vaticle.typedb.driver.jni.Error e) {
             throw new TypeDBDriverException(e);
         }

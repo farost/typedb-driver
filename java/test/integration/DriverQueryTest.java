@@ -47,7 +47,7 @@ public class DriverQueryTest {
 
     @BeforeClass
     public static void setUpClass() {
-        typedbDriver = TypeDB.coreDriver("0.0.0.0:1729");
+        typedbDriver = TypeDB.coreDriver("127.0.0.1:1729");
         if (typedbDriver.databases().contains("typedb")) typedbDriver.databases().get("typedb").delete();
         typedbDriver.databases().create("typedb");
     }
@@ -327,13 +327,13 @@ public class DriverQueryTest {
     public void testStreaming() {
         localhostTypeDBTX(tx -> {
             for (int i = 0; i < 51; i++) {
-                tx.query(String.format("define person sub entity, owns name%d; name%d sub attribute, value string;", i, i)).resolve();
+                tx.query(String.format("define entity person, owns name%d; attribute name%d, value string;", i, i)).resolve();
             }
             tx.commit();
         }, TypeDBTransaction.Type.SCHEMA);
         localhostTypeDBTX(tx -> {
             for (int i = 0; i < 50; i++) {
-                Optional<ConceptRow> conceptRows = tx.query("match $x sub thing; get; limit 1;").resolve().asConceptRowsStream().rows().findFirst();
+                Optional<ConceptRow> conceptRows = tx.query("match entity $et; $e isa $et; limit 1;").resolve().asConceptRowsStream().rows().findFirst();
             }
         }, TypeDBTransaction.Type.READ/*, new TypeDBOptions().prefetch(true).prefetchSize(50)*/);
     }
@@ -341,7 +341,7 @@ public class DriverQueryTest {
     @Test
     public void testMissingPortInURL() {
         try {
-            String address = "0.0.0.0:1729";
+            String address = "127.0.0.1:1729";
             String addressWithoutPort = address.substring(0, address.lastIndexOf(':'));
             TypeDB.coreDriver(addressWithoutPort);
             fail();
