@@ -17,7 +17,10 @@
  * under the License.
  */
 
-package com.vaticle.typedb.driver.test.behaviour.concept.type.entitytype;
+package com.vaticle.typedb.driver.api.answer;
 
-public class EntityTypeSteps {
+/**
+ * Contains a tree of concepts.
+ */
+public interface ConceptTree {
 }

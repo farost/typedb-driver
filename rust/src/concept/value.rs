@@ -17,9 +17,11 @@
  * under the License.
  */
 
-use std::collections::HashMap;
-use std::fmt;
-use std::fmt::{Debug, Display, Formatter};
+use std::{
+    collections::HashMap,
+    fmt,
+    fmt::{Debug, Display, Formatter},
+};
 
 use chrono::{DateTime, NaiveDate, NaiveDateTime};
 use chrono_tz::Tz;
@@ -27,7 +29,6 @@ use chrono_tz::Tz;
 use crate::Error;
 
 /// Represents the type of primitive value is held by a Value or Attribute.
-#[repr(C)]
 #[derive(Clone, PartialEq, Eq)]
 pub enum ValueType {
     Boolean,
@@ -45,14 +46,14 @@ pub enum ValueType {
 impl ValueType {
     pub fn name(&self) -> &str {
         match self {
-            Self::Boolean => "bool",
+            Self::Boolean => "boolean",
             Self::Long => "long",
             Self::Double => "double",
             Self::Decimal => "decimal",
             Self::String => "string",
             Self::Date => "date",
             Self::Datetime => "datetime",
-            Self::DatetimeTZ => "datetime_tz",
+            Self::DatetimeTZ => "datetime-tz",
             Self::Duration => "duration",
             Self::Struct(name) => &name,
         }
@@ -230,7 +231,7 @@ impl Debug for Value {
             Value::Datetime(datetime) => write!(f, "{}", datetime),
             Value::DatetimeTZ(datetime_tz) => write!(f, "{}", datetime_tz),
             Value::Duration(duration) => write!(f, "{}", duration),
-            Value::Struct(value, name) => write!(f, "{} {}", name, value)
+            Value::Struct(value, name) => write!(f, "{} {}", name, value),
         }
     }
 }
@@ -322,11 +323,15 @@ impl TryFrom<Duration> for chrono::Duration {
 
     fn try_from(duration: Duration) -> Result<Self, Self::Error> {
         if duration.months != 0 || duration.days != 0 {
-            Err(Error::Other(String::from("Converting TypeDB duration to chrono::Duration is only possible when months and days are not set.")))
+            Err(Error::Other(String::from(
+                "Converting TypeDB duration to chrono::Duration is only possible when months and days are not set.",
+            )))
         } else {
             match i64::try_from(duration.nanos) {
                 Ok(nanos) => Ok(chrono::Duration::nanoseconds(nanos)),
-                Err(err) => Err(Error::Other(String::from("Duration u64 nanos exceeded i64 required for chrono::Duration")))
+                Err(err) => {
+                    Err(Error::Other(String::from("Duration u64 nanos exceeded i64 required for chrono::Duration")))
+                }
             }
         }
     }

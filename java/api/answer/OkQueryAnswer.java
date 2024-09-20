@@ -17,20 +17,19 @@
  * under the License.
  */
 
-package com.vaticle.typedb.driver.concept.type;
+package com.vaticle.typedb.driver.api.answer;
 
-import com.vaticle.typedb.driver.api.concept.type.RelationType;
-import com.vaticle.typedb.driver.common.Label;
+import javax.annotation.CheckReturnValue;
 
-import static com.vaticle.typedb.driver.jni.typedb_driver.relation_type_get_label;
-
-public class RelationTypeImpl extends ThingTypeImpl implements RelationType {
-    public RelationTypeImpl(com.vaticle.typedb.driver.jni.Concept concept) {
-        super(concept);
+public interface OkQueryAnswer extends QueryAnswer {
+    @Override
+    default boolean isOk() {
+        return true;
     }
 
     @Override
-    public Label getLabel() {
-        return Label.of(relation_type_get_label(nativeObject));
+    @CheckReturnValue
+    default OkQueryAnswer asOk() {
+        return this;
     }
 }

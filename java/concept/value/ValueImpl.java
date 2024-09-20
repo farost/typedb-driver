@@ -27,25 +27,29 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-import static com.vaticle.typedb.driver.common.exception.ErrorMessage.Concept.MISSING_VALUE;
 import static com.vaticle.typedb.driver.common.exception.ErrorMessage.Internal.ILLEGAL_CAST;
-import static com.vaticle.typedb.driver.common.exception.ErrorMessage.Internal.ILLEGAL_STATE;
 import static com.vaticle.typedb.driver.common.exception.ErrorMessage.Internal.UNEXPECTED_NATIVE_VALUE;
 import static com.vaticle.typedb.driver.jni.typedb_driver.value_get_boolean;
-import static com.vaticle.typedb.driver.jni.typedb_driver.value_get_date_time_as_millis;
+import static com.vaticle.typedb.driver.jni.typedb_driver.value_get_date_as_millis;
+import static com.vaticle.typedb.driver.jni.typedb_driver.value_get_datetime_as_millis;
+import static com.vaticle.typedb.driver.jni.typedb_driver.value_get_datetime_tz_as_millis;
+import static com.vaticle.typedb.driver.jni.typedb_driver.value_get_decimal;
 import static com.vaticle.typedb.driver.jni.typedb_driver.value_get_double;
+import static com.vaticle.typedb.driver.jni.typedb_driver.value_get_duration_as_millis;
 import static com.vaticle.typedb.driver.jni.typedb_driver.value_get_long;
 import static com.vaticle.typedb.driver.jni.typedb_driver.value_get_string;
+import static com.vaticle.typedb.driver.jni.typedb_driver.value_get_struct;
 import static com.vaticle.typedb.driver.jni.typedb_driver.value_is_boolean;
-import static com.vaticle.typedb.driver.jni.typedb_driver.value_is_date_time;
+import static com.vaticle.typedb.driver.jni.typedb_driver.value_is_date;
+import static com.vaticle.typedb.driver.jni.typedb_driver.value_is_datetime;
+import static com.vaticle.typedb.driver.jni.typedb_driver.value_is_datetime_tz;
+import static com.vaticle.typedb.driver.jni.typedb_driver.value_is_decimal;
 import static com.vaticle.typedb.driver.jni.typedb_driver.value_is_double;
+import static com.vaticle.typedb.driver.jni.typedb_driver.value_is_duration;
 import static com.vaticle.typedb.driver.jni.typedb_driver.value_is_long;
 import static com.vaticle.typedb.driver.jni.typedb_driver.value_is_string;
-import static com.vaticle.typedb.driver.jni.typedb_driver.value_new_boolean;
-import static com.vaticle.typedb.driver.jni.typedb_driver.value_new_date_time_from_millis;
-import static com.vaticle.typedb.driver.jni.typedb_driver.value_new_double;
-import static com.vaticle.typedb.driver.jni.typedb_driver.value_new_long;
-import static com.vaticle.typedb.driver.jni.typedb_driver.value_new_string;
+import static com.vaticle.typedb.driver.jni.typedb_driver.value_is_struct;
+import static com.vaticle.typedb.driver.jni.typedb_driver.value_get_value_type;
 
 public class ValueImpl extends ConceptImpl implements Value {
     private int hash = 0;
@@ -54,36 +58,9 @@ public class ValueImpl extends ConceptImpl implements Value {
         super(concept);
     }
 
-    public static Value of(boolean value) {
-        return new ValueImpl(value_new_boolean(value));
-    }
-
-    public static Value of(long value) {
-        return new ValueImpl(value_new_long(value));
-    }
-
-    public static Value of(double value) {
-        return new ValueImpl(value_new_double(value));
-    }
-
-    public static Value of(String value) {
-        if (value == null) throw new TypeDBDriverException(MISSING_VALUE);
-        return new ValueImpl(value_new_string(value));
-    }
-
-    public static Value of(LocalDateTime value) {
-        if (value == null) throw new TypeDBDriverException(MISSING_VALUE);
-        return new ValueImpl(value_new_date_time_from_millis(value.atZone(ZoneOffset.UTC).toInstant().toEpochMilli()));
-    }
-
     @Override
-    public Type getType() {
-        if (isBoolean()) return Type.BOOLEAN;
-        else if (isLong()) return Type.LONG;
-        else if (isDouble()) return Type.DOUBLE;
-        else if (isString()) return Type.STRING;
-        else if (isDateTime()) return Type.DATETIME;
-        else throw new TypeDBDriverException(ILLEGAL_STATE);
+    public String getType() {
+        return value_get_value_type(nativeObject);
     }
 
     @Override
@@ -102,13 +79,38 @@ public class ValueImpl extends ConceptImpl implements Value {
     }
 
     @Override
+    public boolean isDecimal() {
+        return value_is_decimal(nativeObject);
+    }
+
+    @Override
     public boolean isString() {
         return value_is_string(nativeObject);
     }
 
     @Override
-    public boolean isDateTime() {
-        return value_is_date_time(nativeObject);
+    public boolean isDate() {
+        return value_is_date(nativeObject);
+    }
+
+    @Override
+    public boolean isDatetime() {
+        return value_is_datetime(nativeObject);
+    }
+
+    @Override
+    public boolean isDatetimeTZ() {
+        return value_is_datetime_tz(nativeObject);
+    }
+
+    @Override
+    public boolean isDuration() {
+        return value_is_duration(nativeObject);
+    }
+
+    @Override
+    public boolean isStruct() {
+        return value_is_struct(nativeObject);
     }
 
     @Override
@@ -116,8 +118,13 @@ public class ValueImpl extends ConceptImpl implements Value {
         if (isBoolean()) return asBoolean();
         else if (isLong()) return asLong();
         else if (isDouble()) return asDouble();
+        else if (isDecimal()) asDecimal();
         else if (isString()) return asString();
-        else if (isDateTime()) return asDateTime();
+        else if (isDate()) return asDate();
+        else if (isDatetime()) return asDatetime();
+        else if (isDatetimeTZ()) return asDatetimeTZ();
+        else if (isDuration()) return asDuration();
+        else if (isStruct()) return asStruct();
         throw new TypeDBDriverException(UNEXPECTED_NATIVE_VALUE);
     }
 
@@ -140,15 +147,45 @@ public class ValueImpl extends ConceptImpl implements Value {
     }
 
     @Override
+    public double asDecimal() {
+        if (!isDecimal()) throw new TypeDBDriverException(ILLEGAL_CAST, "decimal");
+        return value_get_decimal(nativeObject);
+    }
+
+    @Override
     public String asString() {
         if (!isString()) throw new TypeDBDriverException(ILLEGAL_CAST, "String");
         return value_get_string(nativeObject);
     }
 
     @Override
-    public LocalDateTime asDateTime() {
-        if (!isDateTime()) throw new TypeDBDriverException(ILLEGAL_CAST, "LocalDateTime");
-        return LocalDateTime.ofInstant(Instant.ofEpochMilli(value_get_date_time_as_millis(nativeObject)), ZoneOffset.UTC);
+    public LocalDateTime asDate() {
+        if (!isDate()) throw new TypeDBDriverException(ILLEGAL_CAST, "LocalDateTime");
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(value_get_date_as_millis(nativeObject)), ZoneOffset.UTC);
+    }
+
+    @Override
+    public LocalDateTime asDatetime() {
+        if (!isDatetime()) throw new TypeDBDriverException(ILLEGAL_CAST, "LocalDateTime");
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(value_get_datetime_as_millis(nativeObject)), ZoneOffset.UTC);
+    }
+
+    @Override
+    public LocalDateTime asDatetimeTZ() {
+        if (!isDatetimeTZ()) throw new TypeDBDriverException(ILLEGAL_CAST, "LocalDateTime");
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(value_get_datetime_tz_as_millis(nativeObject)), ZoneOffset.UTC);
+    }
+
+    @Override
+    public LocalDateTime asDuration() {
+        if (!isDuration()) throw new TypeDBDriverException(ILLEGAL_CAST, "LocalDateTime");
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(value_get_duration_as_millis(nativeObject)), ZoneOffset.UTC);
+    }
+
+    @Override
+    public LocalDateTime asStruct() {
+        if (!isStruct()) throw new TypeDBDriverException(ILLEGAL_CAST, "Struct");
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(value_get_struct(nativeObject)), ZoneOffset.UTC);
     }
 
     @Override
@@ -156,8 +193,13 @@ public class ValueImpl extends ConceptImpl implements Value {
         if (isBoolean()) return Boolean.toString(asBoolean());
         else if (isLong()) return Long.toString(asLong());
         else if (isDouble()) return Double.toString(asDouble());
+        else if (isDecimal()) return Double.toString(asDecimal());
         else if (isString()) return asString();
-        else if (isDateTime()) return asDateTime().toString();
+        else if (isDate()) return asDate().toString();
+        else if (isDatetime()) return asDatetime().toString();
+        else if (isDatetimeTZ()) return asDatetimeTZ().toString();
+        else if (isDuration()) return asDuration().toString();
+        else if (isStruct()) return asStruct().toString();
         throw new TypeDBDriverException(UNEXPECTED_NATIVE_VALUE);
     }
 

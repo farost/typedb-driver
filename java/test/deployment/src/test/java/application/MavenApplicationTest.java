@@ -38,7 +38,7 @@ public class MavenApplicationTest {
     public void test() {
         TypeDBDriver driver = TypeDB.coreDriver(TypeDB.DEFAULT_ADDRESS);
         driver.databases().create("typedb");
-        TypeDBSession session = driver.session("typedb", TypeDBSession.Type.DATA);
+        TypeDBSession session = driver.transaction("typedb", TypeDBSession.Type.DATA);
         TypeDBTransaction tx = session.transaction(TypeDBTransaction.Type.WRITE);
         EntityType root = tx.concepts().getRootEntityType();
         assertNotNull(root);

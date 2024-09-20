@@ -90,23 +90,24 @@ public class Parameters {
         return scopedLabels;
     }
 
-    @ParameterType("long|double|string|boolean|datetime")
-    public Value.Type value_type(String type) {
-        switch (type) {
-            case "long":
-                return Value.Type.LONG;
-            case "double":
-                return Value.Type.DOUBLE;
-            case "string":
-                return Value.Type.STRING;
-            case "boolean":
-                return Value.Type.BOOLEAN;
-            case "datetime":
-                return Value.Type.DATETIME;
-            default:
-                return null;
-        }
-    }
+    // TODO: implement
+//    @ParameterType("long|double|string|boolean|datetime")
+//    public Value.Type value_type(String type) {
+//        switch (type) {
+//            case "long":
+//                return Value.Type.LONG;
+//            case "double":
+//                return Value.Type.DOUBLE;
+//            case "string":
+//                return Value.Type.STRING;
+//            case "boolean":
+//                return Value.Type.BOOLEAN;
+//            case "datetime":
+//                return Value.Type.DATETIME;
+//            default:
+//                return null;
+//        }
+//    }
 
     @ParameterType("\\$([a-zA-Z0-9]+)")
     public String var(String variable) {

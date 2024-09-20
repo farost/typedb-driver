@@ -17,20 +17,8 @@
  * under the License.
  */
 
-package com.vaticle.typedb.driver.concept.type;
+package com.vaticle.typedb.driver.concept.answer;
 
-import com.vaticle.typedb.driver.api.concept.type.RelationType;
-import com.vaticle.typedb.driver.common.Label;
-
-import static com.vaticle.typedb.driver.jni.typedb_driver.relation_type_get_label;
-
-public class RelationTypeImpl extends ThingTypeImpl implements RelationType {
-    public RelationTypeImpl(com.vaticle.typedb.driver.jni.Concept concept) {
-        super(concept);
-    }
-
-    @Override
-    public Label getLabel() {
-        return Label.of(relation_type_get_label(nativeObject));
-    }
-}
+// TODO: Implement
+//public class ConceptTreeImpl extends NativeObject<com.vaticle.typedb.driver.jni.ConceptTree> implements ConceptTree {
+//}

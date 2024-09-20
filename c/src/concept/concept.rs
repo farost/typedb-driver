@@ -19,44 +19,88 @@
 
 use std::ffi::c_char;
 
-use chrono::DateTime;
-use typedb_driver::{
-    concept::{
-        Annotation, Attribute, AttributeType, Concept, Entity, EntityType, Relation, RelationType, RoleType, Value,
-    },
-    transaction::concept::api::{ThingAPI, ThingTypeAPI},
+use chrono::{DateTime, NaiveTime};
+use typedb_driver::concept::{
+    Attribute, AttributeType, Concept, Entity, EntityType, Relation, RelationType, RoleType, Value, ValueType,
 };
 
 use crate::memory::{borrow, borrow_mut, free, release, release_string, string_view};
 
-/// Creates a new ``Value`` object of the specified boolean value.
+/// Returns <code>true</code> if the attribute type does not have a value type.
+/// Otherwise, returns <code>false</code>.
 #[no_mangle]
-pub extern "C" fn value_new_boolean(bool: bool) -> *mut Concept {
-    release(Concept::Value(Value::Boolean(bool)))
+pub extern "C" fn attribute_type_is_untyped(attribute_type: *const Concept) -> bool {
+    matches!(borrow_as_attribute_type(attribute_type).value_type, None)
 }
 
-/// Creates a new ``Value`` object of the specified long value.
+/// Returns <code>true</code> if the attribute type is of type <code>boolean</code>.
+/// Otherwise, returns <code>false</code>.
 #[no_mangle]
-pub extern "C" fn value_new_long(long: i64) -> *mut Concept {
-    release(Concept::Value(Value::Long(long)))
+pub extern "C" fn attribute_type_is_boolean(attribute_type: *const Concept) -> bool {
+    matches!(borrow_as_attribute_type(attribute_type).value_type, Some(ValueType::Boolean))
 }
 
-/// Creates a new ``Value`` object of the specified double value.
+/// Returns <code>true</code> if the attribute type is of type <code>long</code>.
+/// Otherwise, returns <code>false</code>.
 #[no_mangle]
-pub extern "C" fn value_new_double(double: f64) -> *mut Concept {
-    release(Concept::Value(Value::Double(double)))
+pub extern "C" fn attribute_type_is_long(attribute_type: *const Concept) -> bool {
+    matches!(borrow_as_attribute_type(attribute_type).value_type, Some(ValueType::Long))
 }
 
-/// Creates a new ``Value`` object of the specified string value.
+/// Returns <code>true</code> if the attribute type is of type <code>double</code>.
+/// Otherwise, returns <code>false</code>.
 #[no_mangle]
-pub extern "C" fn value_new_string(string: *const c_char) -> *mut Concept {
-    release(Concept::Value(Value::String(string_view(string).to_owned())))
+pub extern "C" fn attribute_type_is_double(attribute_type: *const Concept) -> bool {
+    matches!(borrow_as_attribute_type(attribute_type).value_type, Some(ValueType::Double))
 }
 
-/// Creates a new ``Value`` object of the specified datetime value.
+/// Returns <code>true</code> if the attribute type is of type <code>decimal</code>.
+/// Otherwise, returns <code>false</code>.
 #[no_mangle]
-pub extern "C" fn value_new_date_time_from_millis(millis: i64) -> *mut Concept {
-    release(Concept::Value(Value::Datetime(DateTime::from_timestamp_millis(millis).unwrap().naive_utc())))
+pub extern "C" fn attribute_type_is_decimal(attribute_type: *const Concept) -> bool {
+    matches!(borrow_as_attribute_type(attribute_type).value_type, Some(ValueType::Decimal))
+}
+
+/// Returns <code>true</code> if the attribute type is of type <code>string</code>.
+/// Otherwise, returns <code>false</code>.
+#[no_mangle]
+pub extern "C" fn attribute_type_is_string(attribute_type: *const Concept) -> bool {
+    matches!(borrow_as_attribute_type(attribute_type).value_type, Some(ValueType::String))
+}
+
+/// Returns <code>true</code> if the attribute type is of type <code>date</code>.
+/// Otherwise, returns <code>false</code>.
+#[no_mangle]
+pub extern "C" fn attribute_type_is_date(attribute_type: *const Concept) -> bool {
+    matches!(borrow_as_attribute_type(attribute_type).value_type, Some(ValueType::Date))
+}
+
+/// Returns <code>true</code> if the attribute type is of type <code>datetime</code>.
+/// Otherwise, returns <code>false</code>.
+#[no_mangle]
+pub extern "C" fn attribute_type_is_datetime(attribute_type: *const Concept) -> bool {
+    matches!(borrow_as_attribute_type(attribute_type).value_type, Some(ValueType::Datetime))
+}
+
+/// Returns <code>true</code> if the attribute type is of type <code>datetime-tz</code>.
+/// Otherwise, returns <code>false</code>.
+#[no_mangle]
+pub extern "C" fn attribute_type_is_datetime_tz(attribute_type: *const Concept) -> bool {
+    matches!(borrow_as_attribute_type(attribute_type).value_type, Some(ValueType::DatetimeTZ))
+}
+
+/// Returns <code>true</code> if the attribute type is of type <code>duration</code>.
+/// Otherwise, returns <code>false</code>.
+#[no_mangle]
+pub extern "C" fn attribute_type_is_duration(attribute_type: *const Concept) -> bool {
+    matches!(borrow_as_attribute_type(attribute_type).value_type, Some(ValueType::Duration))
+}
+
+/// Returns <code>true</code> if the attribute type is of type <code>struct</code>.
+/// Otherwise, returns <code>false</code>.
+#[no_mangle]
+pub extern "C" fn attribute_type_is_struct(attribute_type: *const Concept) -> bool {
+    matches!(borrow_as_attribute_type(attribute_type).value_type, Some(ValueType::Struct(_)))
 }
 
 /// Returns <code>true</code> if the value which this ``Value`` concept holds is of type <code>boolean</code>.
@@ -80,6 +124,13 @@ pub extern "C" fn value_is_double(value: *const Concept) -> bool {
     matches!(borrow_as_value(value), Value::Double(_))
 }
 
+/// Returns <code>true</code> if the value which this ``Value`` concept holds is of type <code>decimal</code>.
+/// Otherwise, returns <code>false</code>.
+#[no_mangle]
+pub extern "C" fn value_is_decimal(value: *const Concept) -> bool {
+    matches!(borrow_as_value(value), Value::Decimal(_))
+}
+
 /// Returns <code>true</code> if the value which this ``Value`` concept holds is of type <code>string</code>.
 /// Otherwise, returns <code>false</code>.
 #[no_mangle]
@@ -87,11 +138,39 @@ pub extern "C" fn value_is_string(value: *const Concept) -> bool {
     matches!(borrow_as_value(value), Value::String(_))
 }
 
+/// Returns <code>true</code> if the value which this ``Value`` concept holds is of type <code>date</code>.
+/// Otherwise, returns <code>false</code>.
+#[no_mangle]
+pub extern "C" fn value_is_date(value: *const Concept) -> bool {
+    matches!(borrow_as_value(value), Value::Date(_))
+}
+
 /// Returns <code>true</code> if the value which this ``Value`` concept holds is of type <code>datetime</code>.
 /// Otherwise, returns <code>false</code>.
 #[no_mangle]
-pub extern "C" fn value_is_date_time(value: *const Concept) -> bool {
+pub extern "C" fn value_is_datetime(value: *const Concept) -> bool {
     matches!(borrow_as_value(value), Value::Datetime(_))
+}
+
+/// Returns <code>true</code> if the value which this ``Value`` concept holds is of type <code>datetime-tz</code>.
+/// Otherwise, returns <code>false</code>.
+#[no_mangle]
+pub extern "C" fn value_is_datetime_tz(value: *const Concept) -> bool {
+    matches!(borrow_as_value(value), Value::DatetimeTZ(_))
+}
+
+/// Returns <code>true</code> if the value which this ``Value`` concept holds is of type <code>duration</code>.
+/// Otherwise, returns <code>false</code>.
+#[no_mangle]
+pub extern "C" fn value_is_duration(value: *const Concept) -> bool {
+    matches!(borrow_as_value(value), Value::Duration(_))
+}
+
+/// Returns <code>true</code> if the value which this ``Value`` concept holds is of type <code>struct</code>.
+/// Otherwise, returns <code>false</code>.
+#[no_mangle]
+pub extern "C" fn value_is_struct(value: *const Concept) -> bool {
+    matches!(borrow_as_value(value), Value::Struct(_, _))
 }
 
 /// Returns a <code>boolean</code> value of this value concept.
@@ -127,6 +206,17 @@ pub extern "C" fn value_get_double(value: *const Concept) -> f64 {
     }
 }
 
+/// Returns the <code>decimal</code> value of this value concept.
+/// If the value has another type, the error is set.
+#[no_mangle]
+pub extern "C" fn value_get_decimal(value: *const Concept) -> f64 {
+    if let Value::Decimal(decimal) = borrow_as_value(value) {
+        todo!()
+    } else {
+        unreachable!("Attempting to unwrap a non-decimal {:?} as decimal", borrow_as_value(value))
+    }
+}
+
 /// Returns the <code>string</code> value of this value concept.
 /// If the value has another type, the error is set.
 #[no_mangle]
@@ -138,10 +228,22 @@ pub extern "C" fn value_get_string(value: *const Concept) -> *mut c_char {
     }
 }
 
+/// Returns the value of this date value concept as milliseconds since the start of the UNIX epoch.
+/// If the value has another type, the error is set.
+#[no_mangle]
+pub extern "C" fn value_get_date_as_millis(value: *const Concept) -> i64 {
+    // TODO: is it correct?
+    if let Value::Date(date) = borrow_as_value(value) {
+        date.and_time(NaiveTime::MIN).and_utc().timestamp_millis()
+    } else {
+        unreachable!("Attempting to unwrap a non-date {:?} as date", borrow_as_value(value))
+    }
+}
+
 /// Returns the value of this datetime value concept as milliseconds since the start of the UNIX epoch.
 /// If the value has another type, the error is set.
 #[no_mangle]
-pub extern "C" fn value_get_date_time_as_millis(value: *const Concept) -> i64 {
+pub extern "C" fn value_get_datetime_as_millis(value: *const Concept) -> i64 {
     if let Value::Datetime(date_time) = borrow_as_value(value) {
         date_time.and_utc().timestamp_millis()
     } else {
@@ -149,46 +251,46 @@ pub extern "C" fn value_get_date_time_as_millis(value: *const Concept) -> i64 {
     }
 }
 
-/// Produces a ``@key`` annotation.
+/// Returns the value of this datetime-tz value concept as milliseconds since the start of the UNIX epoch.
+/// If the value has another type, the error is set.
 #[no_mangle]
-pub extern "C" fn annotation_new_key() -> *mut Annotation {
-    release(Annotation::Key)
+pub extern "C" fn value_get_datetime_tz_as_millis(value: *const Concept) -> i64 {
+    // TODO: add timezone...
+    if let Value::DatetimeTZ(datetime_tz) = borrow_as_value(value) {
+        datetime_tz.timestamp_millis()
+    } else {
+        unreachable!("Attempting to unwrap a non-datetime-tz {:?} as datetime-tz", borrow_as_value(value))
+    }
 }
 
-/// Produces a ``@unique`` annotation.
+/// Returns the value of this duration value concept as milliseconds since the start of the UNIX epoch.
+/// If the value has another type, the error is set.
 #[no_mangle]
-pub extern "C" fn annotation_new_unique() -> *mut Annotation {
-    release(Annotation::Unique)
+pub extern "C" fn value_get_duration_as_millis(value: *const Concept) -> i64 {
+    // TODO: fix
+    if let Value::Duration(duration) = borrow_as_value(value) {
+        todo!()
+    } else {
+        unreachable!("Attempting to unwrap a non-duration {:?} as duration", borrow_as_value(value))
+    }
 }
 
-/// Frees the native rust <code>Annotation</code> object
+/// Returns the value of this struct value concept.
+/// If the value has another type, the error is set.
 #[no_mangle]
-pub extern "C" fn annotation_drop(annotation: *mut Annotation) {
-    free(annotation);
+pub extern "C" fn value_get_struct(value: *const Concept) -> i64 {
+    // TODO: fix
+    if let Value::Struct(struct_val, struct_name) = borrow_as_value(value) {
+        todo!()
+    } else {
+        unreachable!("Attempting to unwrap a non-duration {:?} as duration", borrow_as_value(value))
+    }
 }
 
-/// A string representation of this <code>Annotation</code> object
+/// Gets the string representation of the value type of this attribute type.
 #[no_mangle]
-pub extern "C" fn annotation_to_string(annotation: *const Annotation) -> *mut c_char {
-    release_string(format!("{:?}", borrow(annotation)))
-}
-
-/// Checks whether the provided <code>Annotation</code> objects are equal
-#[no_mangle]
-pub extern "C" fn annotation_equals(lhs: *const Annotation, rhs: *const Annotation) -> bool {
-    borrow(lhs) == borrow(rhs)
-}
-
-/// Checks whether the provided <code>Annotation</code> is ``@key``
-#[no_mangle]
-pub extern "C" fn annotation_is_key(annotation: *const Annotation) -> bool {
-    *borrow(annotation) == Annotation::Key
-}
-
-/// Checks whether the provided <code>Annotation</code> is ``@unique``
-#[no_mangle]
-pub extern "C" fn annotation_is_unique(annotation: *const Annotation) -> bool {
-    *borrow(annotation) == Annotation::Unique
+pub extern "C" fn value_get_value_type(value: *const Concept) -> *mut c_char {
+    release_string(borrow_as_value(value).get_type().name().to_owned())
 }
 
 /// Checks whether the provided <code>Concept</code> objects are equal
@@ -227,12 +329,6 @@ pub extern "C" fn concept_is_value(concept: *const Concept) -> bool {
     matches!(borrow(concept), Concept::Value(_))
 }
 
-/// Checks if the concept is the root ``thing`` type.
-#[no_mangle]
-pub extern "C" fn concept_is_root_thing_type(concept: *const Concept) -> bool {
-    matches!(borrow(concept), Concept::RootThingType(_))
-}
-
 /// Checks if the concept is an ``EntityType``.
 #[no_mangle]
 pub extern "C" fn concept_is_entity_type(concept: *const Concept) -> bool {
@@ -263,15 +359,6 @@ pub extern "C" fn concept_to_string(concept: *const Concept) -> *mut c_char {
     release_string(format!("{:?}", borrow(concept)))
 }
 
-pub(super) fn borrow_as_thing(concept: *const Concept) -> &'static dyn ThingAPI {
-    match borrow(concept) {
-        Concept::Entity(entity) => entity,
-        Concept::Relation(relation) => relation,
-        Concept::Attribute(attribute) => attribute,
-        _ => unreachable!(),
-    }
-}
-
 pub(super) fn borrow_as_entity(concept: *const Concept) -> &'static Entity {
     match borrow(concept) {
         Concept::Entity(entity) => entity,
@@ -296,26 +383,6 @@ pub(super) fn borrow_as_attribute(concept: *const Concept) -> &'static Attribute
 pub(super) fn borrow_as_value(concept: *const Concept) -> &'static Value {
     match borrow(concept) {
         Concept::Value(value) => value,
-        _ => unreachable!(),
-    }
-}
-
-pub(super) fn borrow_as_thing_type(concept: *const Concept) -> &'static dyn ThingTypeAPI {
-    match borrow(concept) {
-        Concept::EntityType(entity_type) => entity_type,
-        Concept::RelationType(relation_type) => relation_type,
-        Concept::AttributeType(attribute_type) => attribute_type,
-        Concept::RootThingType(root_thing_type) => root_thing_type,
-        _ => unreachable!(),
-    }
-}
-
-pub(super) fn borrow_as_thing_type_mut(concept: *mut Concept) -> &'static mut dyn ThingTypeAPI {
-    match borrow_mut(concept) {
-        Concept::EntityType(entity_type) => entity_type,
-        Concept::RelationType(relation_type) => relation_type,
-        Concept::AttributeType(attribute_type) => attribute_type,
-        Concept::RootThingType(root_thing_type) => root_thing_type,
         _ => unreachable!(),
     }
 }

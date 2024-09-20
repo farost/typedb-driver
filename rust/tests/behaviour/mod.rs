@@ -25,13 +25,16 @@ use std::{
 
 use cucumber::{gherkin::Feature, StatsWriter, World};
 use futures::{
-    future::{Either, try_join_all},
+    future::{try_join_all, Either},
     stream::{self, StreamExt},
 };
 use itertools::Itertools;
-use tokio::time::{Duration, sleep};
-
-use typedb_driver::{answer::{ConceptRow, JSON}, concept::{Value}, Credential, Database, DatabaseManager, Options, Result as TypeDBResult, Transaction, TypeDBDriver, UserManager};
+use tokio::time::{sleep, Duration};
+use typedb_driver::{
+    answer::{ConceptRow, JSON},
+    concept::Value,
+    Credential, Database, DatabaseManager, Options, Result as TypeDBResult, Transaction, TypeDBDriver, UserManager,
+};
 
 use self::transaction_tracker::TransactionTracker;
 
