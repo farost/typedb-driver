@@ -24,7 +24,7 @@ use typedb_driver::answer::QueryAnswer;
 
 use crate::concept::{ConceptPromise, ConceptRowIterator};
 use crate::error::{try_release, try_release_optional};
-use crate::memory::take_ownership;
+use crate::memory::{borrow_mut, take_ownership};
 
 use super::{
     concept::ConceptIterator,
@@ -70,8 +70,14 @@ pub extern "C" fn query_answer_is_concept_trees_stream(query_answer: *const Quer
 
 /// Produces an <code>Iterator</code> over all <code>ConceptRow</code> in this <code>QueryAnswer</code>.
 #[no_mangle]
-pub extern "C" fn query_answer_get_rows(query_answer: QueryAnswer) -> *mut ConceptRowIterator {
-    release(ConceptRowIterator(CIterator(query_answer.into_rows())))
+pub extern "C" fn query_answer_get_rows(query_answer: *mut QueryAnswer) -> *mut ConceptRowIterator {
+    release(ConceptRowIterator(CIterator(take_ownership(query_answer).into_rows())))
+}
+
+/// Frees the native rust <code>QueryAnswer</code> object.
+#[no_mangle]
+pub extern "C" fn query_answer_drop(query_answer: *mut QueryAnswer) {
+    free(query_answer);
 }
 
 /// Frees the native rust <code>ConceptRow</code> object.

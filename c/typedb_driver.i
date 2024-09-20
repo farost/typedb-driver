@@ -52,15 +52,14 @@ struct Type {};
 //%dropproxy(Credential, credential)
 //%dropproxy(Options, options)
 
-#define connection_drop connection_close
-#define session_drop session_close
+#define typedb_driver_drop connection_close
 #define transaction_drop transaction_close
 #define database_drop database_close
 
 %dropproxy(TypeDBDriver, typedb_driver)
 %dropproxy(Transaction, transaction)
 
-%dropproxy(DatabaseManager, database_manager);
+// %dropproxy(DatabaseManager, database_manager);
 %dropproxy(Database, database)
 %dropproxy(DatabaseIterator, database_iterator)
 //%dropproxy(ReplicaInfo, replica_info)
@@ -181,9 +180,7 @@ void transaction_on_close_register(const Transaction* transaction, TransactionCa
 %newobject value_new_date_time_from_millis;
 %newobject value_get_string;
 
-%newobject annotation_new_key;
-%newobject annotation_new_unique;
-%newobject annotation_to_string;
+%newobject query_answer_get_rows;
 
 %newobject concept_to_string;
 

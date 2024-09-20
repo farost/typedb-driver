@@ -547,3 +547,27 @@
 %typemap(javaout) enum ValueType * {
     return $jnicall;
 }
+
+
+/* QueryAnswer* needs special handling */
+%typemap(in) enum QueryAnswer * {
+    if ($input >= 0) {
+        $1 = (enum QueryAnswer *) malloc(sizeof(enum QueryAnswer));
+        *$1 = (enum QueryAnswer)$input;
+    }
+}
+
+/* This cleans up the memory we malloc'd before the function call */
+%typemap(freearg) enum QueryAnswer * { free($1); }
+
+/* These 3 typemaps tell SWIG what JNI and Java types to use */
+%typemap(jni) enum QueryAnswer * "jlong"
+%typemap(jtype) enum QueryAnswer * "long"
+%typemap(jstype) enum QueryAnswer * "QueryAnswer"
+
+/* These 2 typemaps handle the conversion of the jtype to jstype typemap type
+      and vice versa */
+%typemap(javain) enum QueryAnswer * "$javainput == null ? -1 : $javainput.swigValue()"
+%typemap(javaout) enum QueryAnswer * {
+    return $jnicall;
+}
