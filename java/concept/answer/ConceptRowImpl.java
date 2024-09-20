@@ -26,11 +26,16 @@ import com.vaticle.typedb.driver.common.NativeObject;
 import com.vaticle.typedb.driver.common.exception.TypeDBDriverException;
 import com.vaticle.typedb.driver.concept.ConceptImpl;
 
-import java.util.Map;
 import java.util.stream.Stream;
 
 import static com.vaticle.typedb.driver.common.exception.ErrorMessage.Concept.MISSING_VARIABLE;
 import static com.vaticle.typedb.driver.common.exception.ErrorMessage.Query.VARIABLE_DOES_NOT_EXIST;
+import static com.vaticle.typedb.driver.jni.typedb_driver.concept_row_equals;
+import static com.vaticle.typedb.driver.jni.typedb_driver.concept_row_get;
+import static com.vaticle.typedb.driver.jni.typedb_driver.concept_row_get_concepts;
+import static com.vaticle.typedb.driver.jni.typedb_driver.concept_row_get_header;
+import static com.vaticle.typedb.driver.jni.typedb_driver.concept_row_get_index;
+import static com.vaticle.typedb.driver.jni.typedb_driver.concept_row_to_string;
 
 public class ConceptRowImpl extends NativeObject<com.vaticle.typedb.driver.jni.ConceptRow> implements ConceptRow {
     private int hash = 0;
@@ -63,7 +68,7 @@ public class ConceptRowImpl extends NativeObject<com.vaticle.typedb.driver.jni.C
 
     @Override
     public Stream<Concept> concepts() {
-        return new NativeIterator<>(concept_row_get_concepts(nativeObject)).stream();
+        return new NativeIterator<>(concept_row_get_concepts(nativeObject)).stream().map(ConceptImpl::of);
     }
 
     @Override

@@ -631,14 +631,14 @@ public class QuerySteps {
             }
             Attribute attribute = concept.asAttribute();
             AttributeType attributeType = attribute.getType();
-            if (attribute.getValue().isDateTime()) {
+            if (attribute.getValue().isDatetime()) {
                 LocalDateTime dateTime;
                 try {
                     dateTime = LocalDateTime.parse(value);
                 } catch (DateTimeParseException e) {
                     dateTime = LocalDate.parse(value).atStartOfDay();
                 }
-                return type.equals(attributeType.getLabel()) && dateTime.equals(attribute.getValue().asDateTime());
+                return type.equals(attributeType.getLabel()) && dateTime.equals(attribute.getValue().asDatetime());
             } else return type.equals(attributeType.getLabel()) && value.equals(attribute.getValue().toString());
         }
     }
@@ -680,22 +680,23 @@ public class QuerySteps {
             }
 
             switch (concept.asValue().getType()) {
-                case BOOLEAN:
-                    return Boolean.valueOf(value).equals(concept.asValue().asBoolean());
-                case LONG:
-                    return Long.valueOf(value).equals(concept.asValue().asLong());
-                case DOUBLE:
-                    return equalsApproximate(Double.parseDouble(value), concept.asValue().asDouble());
-                case STRING:
-                    return value.equals(concept.asValue().asString());
-                case DATETIME:
-                    LocalDateTime dateTime;
-                    try {
-                        dateTime = LocalDateTime.parse(value);
-                    } catch (DateTimeParseException e) {
-                        dateTime = LocalDate.parse(value).atStartOfDay();
-                    }
-                    return dateTime.equals(concept.asValue().asDateTime());
+                // TODO: Unemplemented
+//                case BOOLEAN:
+//                    return Boolean.valueOf(value).equals(concept.asValue().asBoolean());
+//                case LONG:
+//                    return Long.valueOf(value).equals(concept.asValue().asLong());
+//                case DOUBLE:
+//                    return equalsApproximate(Double.parseDouble(value), concept.asValue().asDouble());
+//                case STRING:
+//                    return value.equals(concept.asValue().asString());
+//                case DATETIME:
+//                    LocalDateTime dateTime;
+//                    try {
+//                        dateTime = LocalDateTime.parse(value);
+//                    } catch (DateTimeParseException e) {
+//                        dateTime = LocalDate.parse(value).atStartOfDay();
+//                    }
+//                    return dateTime.equals(concept.asValue().asDatetime());
                 default:
                     throw new ScenarioDefinitionException("Unrecognised value type specified in test " + this.valueType);
             }

@@ -26,17 +26,6 @@ import javax.annotation.CheckReturnValue;
 
 public interface Thing extends Concept {
     /**
-     * Retrieves the unique id of the <code>Thing</code>.
-     *
-     * <h3>Examples</h3>
-     * <pre>
-     * thing.getIID();
-     * </pre>
-     */
-    @CheckReturnValue
-    String getIID();
-
-    /**
      * Retrieves the type which this <code>Thing</code> belongs to.
      *
      * <h3>Examples</h3>

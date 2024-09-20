@@ -19,9 +19,6 @@
 
 package com.vaticle.typedb.driver.api.answer;
 
-import com.vaticle.typedb.driver.common.NativeIterator;
-import com.vaticle.typedb.driver.concept.answer.QueryAnswerImpl;
-
 import javax.annotation.CheckReturnValue;
 import java.util.stream.Stream;
 

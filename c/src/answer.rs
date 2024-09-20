@@ -21,6 +21,7 @@ use std::ffi::c_char;
 
 use typedb_driver::{answer::{ConceptRow, ValueGroup}, box_stream, BoxPromise, concept::Concept, Promise, Result};
 use typedb_driver::answer::QueryAnswer;
+use crate::common::StringIterator;
 
 use crate::concept::{ConceptPromise, ConceptRowIterator};
 use crate::error::{try_release, try_release_optional};
@@ -53,19 +54,19 @@ pub extern "C" fn query_answer_promise_resolve(promise: *mut QueryAnswerPromise)
 /// Checks if the query answer is an <code>Ok</code>.
 #[no_mangle]
 pub extern "C" fn query_answer_is_ok(query_answer: *const QueryAnswer) -> bool {
-    matches!(borrow(query_answer), QueryAnswer::Ok())
+    borrow(query_answer).is_ok()
 }
 
 /// Checks if the query answer is a <code>ConceptRowsStream</code>.
 #[no_mangle]
-pub extern "C" fn query_answer_is_concept_rows_stream(query_answer: *const QueryAnswer) -> bool {
-    matches!(borrow(query_answer), QueryAnswer::ConceptRowsStream(_))
+pub extern "C" fn query_answer_is_concept_rows_stream(query_answer: *const QueryAnswer) -> bool { // TODO: Rename?
+    borrow(query_answer).is_rows_stream()
 }
 
 /// Checks if the query answer is a <code>ConceptTreesStream</code>.
 #[no_mangle]
-pub extern "C" fn query_answer_is_concept_trees_stream(query_answer: *const QueryAnswer) -> bool {
-    matches!(borrow(query_answer), QueryAnswer::ConceptTreesStream(_, _))
+pub extern "C" fn query_answer_is_concept_trees_stream(query_answer: *const QueryAnswer) -> bool { // TODO: Rename?
+    borrow(query_answer).is_json_stream()
 }
 
 /// Produces an <code>Iterator</code> over all <code>ConceptRow</code> in this <code>QueryAnswer</code>.
@@ -84,6 +85,12 @@ pub extern "C" fn query_answer_drop(query_answer: *mut QueryAnswer) {
 #[no_mangle]
 pub extern "C" fn concept_row_drop(concept_row: *mut ConceptRow) {
     free(concept_row);
+}
+
+/// Produces an <code>Iterator</code> over all <code>String</code> column names of the <code>ConceptRow</code>'s header.
+#[no_mangle]
+pub extern "C" fn concept_row_get_header(concept_row: *const ConceptRow) -> *mut StringIterator {
+    release(StringIterator(CIterator(box_stream(borrow(concept_row).get_header().into_iter().cloned().map(Ok)))))
 }
 
 /// Produces an <code>Iterator</code> over all <code>Concepts</code> in this <code>ConceptRow</code>.

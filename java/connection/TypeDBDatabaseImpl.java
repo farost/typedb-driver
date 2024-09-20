@@ -21,26 +21,13 @@ package com.vaticle.typedb.driver.connection;
 
 import com.vaticle.typedb.driver.api.database.Database;
 import com.vaticle.typedb.driver.common.NativeObject;
-import com.vaticle.typedb.driver.common.NativeIterator;
 import com.vaticle.typedb.driver.common.exception.TypeDBDriverException;
-
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.vaticle.typedb.driver.common.exception.ErrorMessage.Driver.DATABASE_DELETED;
 import static com.vaticle.typedb.driver.jni.typedb_driver.database_delete;
 import static com.vaticle.typedb.driver.jni.typedb_driver.database_get_name;
-import static com.vaticle.typedb.driver.jni.typedb_driver.database_get_preferred_replica_info;
-import static com.vaticle.typedb.driver.jni.typedb_driver.database_get_primary_replica_info;
-import static com.vaticle.typedb.driver.jni.typedb_driver.database_get_replicas_info;
-import static com.vaticle.typedb.driver.jni.typedb_driver.database_rule_schema;
 import static com.vaticle.typedb.driver.jni.typedb_driver.database_schema;
 import static com.vaticle.typedb.driver.jni.typedb_driver.database_type_schema;
-import static com.vaticle.typedb.driver.jni.typedb_driver.replica_info_get_server;
-import static com.vaticle.typedb.driver.jni.typedb_driver.replica_info_get_term;
-import static com.vaticle.typedb.driver.jni.typedb_driver.replica_info_is_preferred;
-import static com.vaticle.typedb.driver.jni.typedb_driver.replica_info_is_primary;
 
 public class TypeDBDatabaseImpl extends NativeObject<com.vaticle.typedb.driver.jni.Database> implements Database {
     public TypeDBDatabaseImpl(com.vaticle.typedb.driver.jni.Database database) {

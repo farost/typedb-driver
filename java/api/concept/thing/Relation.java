@@ -67,4 +67,15 @@ public interface Relation extends Thing {
     @Override
     @CheckReturnValue
     RelationType getType();
+
+    /**
+     * Retrieves the unique id of the <code>Relation</code>.
+     *
+     * <h3>Examples</h3>
+     * <pre>
+     * relation.getIID();
+     * </pre>
+     */
+    @CheckReturnValue
+    String getIID();
 }

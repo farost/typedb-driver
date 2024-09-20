@@ -28,10 +28,9 @@ import static com.vaticle.typedb.driver.common.exception.ErrorMessage.Internal.U
 import static com.vaticle.typedb.driver.jni.typedb_driver.concept_is_attribute;
 import static com.vaticle.typedb.driver.jni.typedb_driver.concept_is_entity;
 import static com.vaticle.typedb.driver.jni.typedb_driver.concept_is_relation;
-import static com.vaticle.typedb.driver.jni.typedb_driver.thing_get_iid;
 
 public abstract class ThingImpl extends ConceptImpl implements Thing {
-    private int hash = 0;
+    protected int hash = 0;
 
     ThingImpl(com.vaticle.typedb.driver.jni.Concept concept) {
         super(concept);
@@ -45,21 +44,10 @@ public abstract class ThingImpl extends ConceptImpl implements Thing {
     }
 
     @Override
-    public final String getIID() {
-        return thing_get_iid(nativeObject);
-    }
-
-    @Override
     public abstract ThingTypeImpl getType();
 
     @Override
     public ThingImpl asThing() {
         return this;
-    }
-
-    @Override
-    public int hashCode() {
-        if (hash == 0) hash = getIID().hashCode();
-        return hash;
     }
 }

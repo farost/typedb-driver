@@ -32,7 +32,7 @@ use crate::{
     user::User,
 };
 use crate::answer::concept_row::ConceptRowHeader;
-use crate::answer::concept_tree::{ConceptTreesHeader, Tree};
+use crate::answer::concept_tree::{ConceptTreesHeader, ConceptTree};
 use crate::error::ServerError;
 
 use super::{FromProto, IntoProto, TryFromProto, TryIntoProto};
@@ -347,7 +347,7 @@ impl TryFromProto<typedb_protocol::query::res_part::Res> for QueryResponse {
             typedb_protocol::query::res_part::Res::TreesRes(trees) => {
                 let mut converted = Vec::with_capacity(trees.trees.len());
                 for tree_proto in trees.trees.into_iter() {
-                    converted.push(Tree::try_from_proto(tree_proto)?);
+                    converted.push(ConceptTree::try_from_proto(tree_proto)?);
                 }
                 Ok(QueryResponse::StreamConceptTrees(converted))
             }

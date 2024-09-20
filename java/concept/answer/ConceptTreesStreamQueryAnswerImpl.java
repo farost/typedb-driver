@@ -21,10 +21,11 @@ package com.vaticle.typedb.driver.concept.answer;
 
 import com.vaticle.typedb.driver.api.answer.ConceptTree;
 import com.vaticle.typedb.driver.api.answer.ConceptTreesStreamQueryAnswer;
-import com.vaticle.typedb.driver.common.NativeIterator;
+import com.vaticle.typedb.driver.common.exception.TypeDBDriverException;
 
-import javax.annotation.CheckReturnValue;
 import java.util.stream.Stream;
+
+import static com.vaticle.typedb.driver.common.exception.ErrorMessage.Driver.UNIMPLEMENTED;
 
 public class ConceptTreesStreamQueryAnswerImpl extends QueryAnswerImpl implements ConceptTreesStreamQueryAnswer {
     public ConceptTreesStreamQueryAnswerImpl(com.vaticle.typedb.driver.jni.QueryAnswer answer) {
@@ -32,6 +33,7 @@ public class ConceptTreesStreamQueryAnswerImpl extends QueryAnswerImpl implement
     }
 
     public Stream<?extends ConceptTree> trees() {
-        return new NativeIterator<>(query_answer_get_trees(nativeObject)).stream();
+        throw new TypeDBDriverException(UNIMPLEMENTED);
+//        return new NativeIterator<>(query_answer_get_trees(nativeObject)).stream();
     }
 }

@@ -19,25 +19,18 @@
 
 package com.vaticle.typedb.driver.concept.type;
 
-import com.vaticle.typedb.driver.api.TypeDBTransaction;
 import com.vaticle.typedb.driver.api.concept.type.EntityType;
-import com.vaticle.typedb.driver.common.NativeIterator;
-import com.vaticle.typedb.driver.common.Promise;
-import com.vaticle.typedb.driver.common.exception.TypeDBDriverException;
-import com.vaticle.typedb.driver.concept.thing.EntityImpl;
+import com.vaticle.typedb.driver.common.Label;
 
-import javax.annotation.Nullable;
-import java.util.stream.Stream;
-
-import static com.vaticle.typedb.driver.jni.typedb_driver.entity_type_create;
-import static com.vaticle.typedb.driver.jni.typedb_driver.entity_type_get_instances;
-import static com.vaticle.typedb.driver.jni.typedb_driver.entity_type_get_subtypes;
-import static com.vaticle.typedb.driver.jni.typedb_driver.entity_type_get_supertype;
-import static com.vaticle.typedb.driver.jni.typedb_driver.entity_type_get_supertypes;
-import static com.vaticle.typedb.driver.jni.typedb_driver.entity_type_set_supertype;
+import static com.vaticle.typedb.driver.jni.typedb_driver.entity_type_get_label;
 
 public class EntityTypeImpl extends ThingTypeImpl implements EntityType {
     public EntityTypeImpl(com.vaticle.typedb.driver.jni.Concept concept) {
         super(concept);
+    }
+
+    @Override
+    public Label getLabel() {
+        return Label.of(entity_type_get_label(nativeObject));
     }
 }

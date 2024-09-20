@@ -87,7 +87,7 @@ impl TryFromProto<ConceptProto> for Concept {
     }
 }
 
-impl TryFromProto<ReadableConceptTreeProto> for concept_tree::Tree {
+impl TryFromProto<ReadableConceptTreeProto> for concept_tree::ConceptTree {
     fn try_from_proto(proto: ReadableConceptTreeProto) -> Result<Self> {
         let ReadableConceptTreeProto { root: root_proto } = proto;
         Ok(Self {

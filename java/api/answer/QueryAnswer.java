@@ -20,8 +20,6 @@
 package com.vaticle.typedb.driver.api.answer;
 
 import com.vaticle.typedb.driver.common.exception.TypeDBDriverException;
-import com.vaticle.typedb.driver.concept.answer.ConceptTreesStreamQueryAnswerImpl;
-import com.vaticle.typedb.driver.concept.answer.OkQueryAnswerImpl;
 
 import javax.annotation.CheckReturnValue;
 
@@ -80,7 +78,7 @@ public interface QueryAnswer {
      * </pre>
      */
     default OkQueryAnswer asOk() {
-        throw new TypeDBDriverException(INVALID_QUERY_ANSWER_CASTING, className(this.getClass()), className(OkQueryAnswerImpl.class));
+        throw new TypeDBDriverException(INVALID_QUERY_ANSWER_CASTING, className(this.getClass()), className(OkQueryAnswer.class));
     }
 
     /**
@@ -104,6 +102,6 @@ public interface QueryAnswer {
      * </pre>
      */
     default ConceptTreesStreamQueryAnswer asConceptTreesStream() {
-        throw new TypeDBDriverException(INVALID_QUERY_ANSWER_CASTING, className(this.getClass()), className(ConceptTreesStreamQueryAnswerImpl.class));
+        throw new TypeDBDriverException(INVALID_QUERY_ANSWER_CASTING, className(this.getClass()), className(ConceptTreesStreamQueryAnswer.class));
     }
 }

@@ -149,7 +149,7 @@ pub(super) enum QueryResponse {
     ConceptRowsHeader(ConceptRowHeader),
     ConceptTreesHeader(ConceptTreesHeader),
     StreamConceptRows(Vec<Vec<Option<Concept>>>),
-    StreamConceptTrees(Vec<concept_tree::Tree>),
+    StreamConceptTrees(Vec<concept_tree::ConceptTree>),
     Error(ServerError),
 
     // Define,

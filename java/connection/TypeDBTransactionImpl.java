@@ -22,7 +22,6 @@ package com.vaticle.typedb.driver.connection;
 import com.vaticle.typedb.driver.api.TypeDBDriver;
 import com.vaticle.typedb.driver.api.TypeDBTransaction;
 import com.vaticle.typedb.driver.api.answer.QueryAnswer;
-import com.vaticle.typedb.driver.api.database.DatabaseManager;
 import com.vaticle.typedb.driver.common.NativeObject;
 import com.vaticle.typedb.driver.common.Promise;
 import com.vaticle.typedb.driver.common.exception.TypeDBDriverException;
@@ -38,6 +37,7 @@ import static com.vaticle.typedb.driver.jni.typedb_driver.transaction_force_clos
 import static com.vaticle.typedb.driver.jni.typedb_driver.transaction_is_open;
 import static com.vaticle.typedb.driver.jni.typedb_driver.transaction_new;
 import static com.vaticle.typedb.driver.jni.typedb_driver.transaction_on_close;
+import static com.vaticle.typedb.driver.jni.typedb_driver.transaction_query;
 import static com.vaticle.typedb.driver.jni.typedb_driver.transaction_rollback;
 
 public class TypeDBTransactionImpl extends NativeObject<com.vaticle.typedb.driver.jni.Transaction> implements TypeDBTransaction {

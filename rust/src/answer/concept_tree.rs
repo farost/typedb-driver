@@ -30,11 +30,11 @@ pub struct ConceptTreesHeader {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Tree {
+pub struct ConceptTree {
     pub(crate) root: HashMap<String, Node>,
 }
 
-impl Tree {
+impl ConceptTree {
     pub(crate) fn into_json(self) -> JSON {
         JSON::Object(self.root.into_iter().map(|(var, node)| (Cow::Owned(var), node.into_json())).collect())
     }

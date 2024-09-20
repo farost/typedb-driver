@@ -19,8 +19,6 @@
 
 package com.vaticle.typedb.driver.api.concept.type;
 
-import com.vaticle.typedb.driver.api.concept.value.Value;
-
 import javax.annotation.CheckReturnValue;
 
 /**
@@ -33,16 +31,137 @@ import javax.annotation.CheckReturnValue;
  * can share ownership of the same attribute instance.
  */
 public interface AttributeType extends ThingType {
+//    /**
+//     * Retrieves the <code>Value.Type</code> of this <code>AttributeType</code>.
+//     *
+//     * <h3>Examples</h3>
+//     * <pre>
+//     * attributeType.getValueType();
+//     * </pre>
+//     */
+//    @CheckReturnValue
+//    Value.Type getValueType();
+
     /**
-     * Retrieves the <code>Value.Type</code> of this <code>AttributeType</code>.
+     * Returns <code>True</code> if this attribute type does not have a value type.
+     * Otherwise, returns <code>false</code>.
      *
      * <h3>Examples</h3>
      * <pre>
-     * attributeType.getValueType();
+     * attributeType.isUntyped()
      * </pre>
      */
-    @CheckReturnValue
-    Value.Type getValueType();
+    boolean isUntyped();
+
+    /**
+     * Returns <code>True</code> if this attribute type is of type <code>boolean</code>.
+     * Otherwise, returns <code>false</code>.
+     *
+     * <h3>Examples</h3>
+     * <pre>
+     * attributeType.isBoolean()
+     * </pre>
+     */
+    boolean isBoolean();
+
+    /**
+     * Returns <code>True</code> if this attribute type is of type <code>long</code>.
+     * Otherwise, returns <code>false</code>.
+     *
+     * <h3>Examples</h3>
+     * <pre>
+     * attributeType.isLong();
+     * </pre>
+     */
+    boolean isLong();
+
+    /**
+     * Returns <code>True</code> if this attribute type is of type <code>double</code>.
+     * Otherwise, returns <code>false</code>.
+     *
+     * <h3>Examples</h3>
+     * <pre>
+     * attributeType.isDouble();
+     * </pre>
+     */
+    boolean isDouble();
+
+    /**
+     * Returns <code>True</code> if this attribute type is of type <code>decimal</code>.
+     * Otherwise, returns <code>false</code>.
+     *
+     * <h3>Examples</h3>
+     * <pre>
+     * attributeType.isDecimal();
+     * </pre>
+     */
+    boolean isDecimal();
+
+    /**
+     * Returns <code>True</code> if this attribute type is of type <code>string</code>.
+     * Otherwise, returns <code>false</code>.
+     *
+     * <h3>Examples</h3>
+     * <pre>
+     * attributeType.isString();
+     * </pre>
+     */
+    boolean isString();
+
+    /**
+     * Returns <code>True</code> if this attribute type is of type <code>date</code>.
+     * Otherwise, returns <code>false</code>.
+     *
+     * <h3>Examples</h3>
+     * <pre>
+     * attributeType.isDate();
+     * </pre>
+     */
+    boolean isDate();
+
+    /**
+     * Returns <code>True</code> if this attribute type is of type <code>datetime</code>.
+     * Otherwise, returns <code>false</code>.
+     *
+     * <h3>Examples</h3>
+     * <pre>
+     * attributeType.isDatetime();
+     * </pre>
+     */
+    boolean isDatetime();
+
+    /**
+     * Returns <code>True</code> if this attribute type is of type <code>datetime-tz</code>.
+     * Otherwise, returns <code>false</code>.
+     *
+     * <h3>Examples</h3>
+     * <pre>
+     * attributeType.isDatetimeTZ();
+     * </pre>
+     */
+    boolean isDatetimeTZ();
+
+    /**
+     * Returns <code>True</code> if this attribute type is of type <code>duration</code>.
+     * Otherwise, returns <code>false</code>.
+     *
+     * <h3>Examples</h3>
+     * <pre>
+     * attributeType.isDuration();
+     * </pre>
+     */
+    boolean isDuration();
+
+    /**
+     * Returns <code>True</code> if this attribute type is of type <code>struct</code>.
+     * Otherwise, returns <code>false</code>.
+     *
+     * <h3>Examples</h3>
+     * <pre>
+     * attributeType.isStruct();
+     * </pre>
+     */
+    boolean isStruct();
 
     /**
      * {@inheritDoc}

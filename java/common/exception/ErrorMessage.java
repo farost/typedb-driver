@@ -50,6 +50,8 @@ public abstract class ErrorMessage extends com.vaticle.typedb.common.exception.E
                 new Driver(11, "Value cannot be less than 1, was: '%d'.");
         public static final Driver MISSING_DB_NAME =
                 new Driver(12, "Database name cannot be null.");
+        public static final Driver UNIMPLEMENTED =
+                new Driver(13, "This operation is not implemented yet.");
 
         private static final String codePrefix = "JDR";
         private static final String messagePrefix = "Driver Error";

@@ -18,12 +18,15 @@
  */
 
 use std::ffi::c_char;
+use std::ptr::null_mut;
 
 use typedb_driver::{
     concept::Concept,
 };
+use typedb_driver::answer::QueryAnswer;
+use typedb_driver::concept::ValueType;
 
-use crate::memory::release_string;
+use crate::memory::{free, release, release_string};
 
 use super::concept::{
     borrow_as_attribute_type, borrow_as_entity_type,
@@ -32,20 +35,20 @@ use super::concept::{
 
 /// Gets the 'label' of this entity type.
 #[no_mangle]
-pub extern "C" fn entity_type_get_label(role_type: *const Concept) -> *mut c_char {
-    release_string(borrow_as_entity_type(role_type).label.clone())
+pub extern "C" fn entity_type_get_label(entity_type: *const Concept) -> *mut c_char {
+    release_string(borrow_as_entity_type(entity_type).label.clone())
 }
 
 /// Gets the 'label' of this relation type.
 #[no_mangle]
-pub extern "C" fn relation_type_get_label(role_type: *const Concept) -> *mut c_char {
-    release_string(borrow_as_relation_type(role_type).label.clone())
+pub extern "C" fn relation_type_get_label(relation_type: *const Concept) -> *mut c_char {
+    release_string(borrow_as_relation_type(relation_type).label.clone())
 }
 
 /// Gets the 'label' of this attribute type.
 #[no_mangle]
-pub extern "C" fn attribute_type_get_label(role_type: *const Concept) -> *mut c_char {
-    release_string(borrow_as_attribute_type(role_type).label.clone())
+pub extern "C" fn attribute_type_get_label(attribute_type: *const Concept) -> *mut c_char {
+    release_string(borrow_as_attribute_type(attribute_type).label.clone())
 }
 
 /// Gets the 'label' of this role type.
@@ -54,3 +57,14 @@ pub extern "C" fn role_type_get_label(role_type: *const Concept) -> *mut c_char 
     release_string(borrow_as_role_type(role_type).label.clone())
 }
 
+/// Gets the 'value_type' of this attribute type.
+#[no_mangle]
+pub extern "C" fn attribute_type_get_value_type(attribute_type: *const Concept) -> *mut ValueType {
+    borrow_as_attribute_type(attribute_type).value_type.clone().map(|value_type| release(value_type)).unwrap_or(null_mut())
+}
+
+/// Frees the native rust <code>ValueTYpe</code> object.
+#[no_mangle]
+pub extern "C" fn value_type_drop(value_type: *mut ValueType) {
+    free(value_type);
+}

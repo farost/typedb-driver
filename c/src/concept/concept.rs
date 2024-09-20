@@ -21,68 +21,86 @@ use std::ffi::c_char;
 
 use chrono::{DateTime, NaiveTime};
 
-use typedb_driver::concept::{
-    Attribute, AttributeType, Concept, Entity, EntityType, Relation, RelationType, RoleType, Value,
-};
+use typedb_driver::concept::{Attribute, AttributeType, Concept, Entity, EntityType, Relation, RelationType, RoleType, Value, ValueType};
 
 use crate::memory::{borrow, borrow_mut, free, release, release_string, string_view};
 
-/// Creates a new ``Value`` object of the specified boolean value.
+
+/// Returns <code>true</code> if the attribute type does not have a value type.
+/// Otherwise, returns <code>false</code>.
 #[no_mangle]
-pub extern "C" fn value_new_boolean(bool: bool) -> *mut Concept {
-    release(Concept::Value(Value::Boolean(bool)))
+pub extern "C" fn attribute_type_is_untyped(attribute_type: *const Concept) -> bool {
+    matches!(borrow_as_attribute_type(attribute_type).value_type, None)
 }
 
-/// Creates a new ``Value`` object of the specified long value.
+/// Returns <code>true</code> if the attribute type is of type <code>boolean</code>.
+/// Otherwise, returns <code>false</code>.
 #[no_mangle]
-pub extern "C" fn value_new_long(long: i64) -> *mut Concept {
-    release(Concept::Value(Value::Long(long)))
+pub extern "C" fn attribute_type_is_boolean(attribute_type: *const Concept) -> bool {
+    matches!(borrow_as_attribute_type(attribute_type).value_type, Some(ValueType::Boolean))
 }
 
-/// Creates a new ``Value`` object of the specified double value.
+/// Returns <code>true</code> if the attribute type is of type <code>long</code>.
+/// Otherwise, returns <code>false</code>.
 #[no_mangle]
-pub extern "C" fn value_new_double(double: f64) -> *mut Concept {
-    release(Concept::Value(Value::Double(double)))
+pub extern "C" fn attribute_type_is_long(attribute_type: *const Concept) -> bool {
+    matches!(borrow_as_attribute_type(attribute_type).value_type, Some(ValueType::Long))
 }
 
-/// Creates a new ``Value`` object of the specified decimal value.
+/// Returns <code>true</code> if the attribute type is of type <code>double</code>.
+/// Otherwise, returns <code>false</code>.
 #[no_mangle]
-pub extern "C" fn value_new_decimal(decimal: f64) -> *mut Concept { // TODO: Put correctly
-    todo!()
-    // release(Concept::Value(Value::Decimal(...)))
+pub extern "C" fn attribute_type_is_double(attribute_type: *const Concept) -> bool {
+    matches!(borrow_as_attribute_type(attribute_type).value_type, Some(ValueType::Double))
 }
 
-/// Creates a new ``Value`` object of the specified string value.
+/// Returns <code>true</code> if the attribute type is of type <code>decimal</code>.
+/// Otherwise, returns <code>false</code>.
 #[no_mangle]
-pub extern "C" fn value_new_string(string: *const c_char) -> *mut Concept {
-    release(Concept::Value(Value::String(string_view(string).to_owned())))
+pub extern "C" fn attribute_type_is_decimal(attribute_type: *const Concept) -> bool {
+    matches!(borrow_as_attribute_type(attribute_type).value_type, Some(ValueType::Decimal))
 }
 
-/// Creates a new ``Value`` object of the specified date value.
+/// Returns <code>true</code> if the attribute type is of type <code>string</code>.
+/// Otherwise, returns <code>false</code>.
 #[no_mangle]
-pub extern "C" fn value_new_date_from_millis(millis: i64) -> *mut Concept {
-    todo!()
-    // release(Concept::Value(Value::Date(...)))
+pub extern "C" fn attribute_type_is_string(attribute_type: *const Concept) -> bool {
+    matches!(borrow_as_attribute_type(attribute_type).value_type, Some(ValueType::String))
 }
 
-/// Creates a new ``Value`` object of the specified datetime value.
+/// Returns <code>true</code> if the attribute type is of type <code>date</code>.
+/// Otherwise, returns <code>false</code>.
 #[no_mangle]
-pub extern "C" fn value_new_datetime_from_millis(millis: i64) -> *mut Concept {
-    release(Concept::Value(Value::Datetime(DateTime::from_timestamp_millis(millis).unwrap().naive_utc())))
+pub extern "C" fn attribute_type_is_date(attribute_type: *const Concept) -> bool {
+    matches!(borrow_as_attribute_type(attribute_type).value_type, Some(ValueType::Date))
 }
 
-/// Creates a new ``Value`` object of the specified datetime-tz value.
+/// Returns <code>true</code> if the attribute type is of type <code>datetime</code>.
+/// Otherwise, returns <code>false</code>.
 #[no_mangle]
-pub extern "C" fn value_new_datetime_tz_from_millis(millis: i64) -> *mut Concept {
-    todo!()
-    // release(Concept::Value(Value::Datetime(DateTime::from_timestamp_millis(millis).unwrap().naive_utc())))
+pub extern "C" fn attribute_type_is_datetime(attribute_type: *const Concept) -> bool {
+    matches!(borrow_as_attribute_type(attribute_type).value_type, Some(ValueType::Datetime))
 }
 
-/// Creates a new ``Value`` object of the specified duration value.
+/// Returns <code>true</code> if the attribute type is of type <code>datetime-tz</code>.
+/// Otherwise, returns <code>false</code>.
 #[no_mangle]
-pub extern "C" fn value_new_duration_from_millis(millis: i64) -> *mut Concept {
-    todo!()
-    // release(Concept::Value(Value::Duration(DateTime::from_timestamp_millis(millis).unwrap().naive_utc())))
+pub extern "C" fn attribute_type_is_datetime_tz(attribute_type: *const Concept) -> bool {
+    matches!(borrow_as_attribute_type(attribute_type).value_type, Some(ValueType::DatetimeTZ))
+}
+
+/// Returns <code>true</code> if the attribute type is of type <code>duration</code>.
+/// Otherwise, returns <code>false</code>.
+#[no_mangle]
+pub extern "C" fn attribute_type_is_duration(attribute_type: *const Concept) -> bool {
+    matches!(borrow_as_attribute_type(attribute_type).value_type, Some(ValueType::Duration))
+}
+
+/// Returns <code>true</code> if the attribute type is of type <code>struct</code>.
+/// Otherwise, returns <code>false</code>.
+#[no_mangle]
+pub extern "C" fn attribute_type_is_struct(attribute_type: *const Concept) -> bool {
+    matches!(borrow_as_attribute_type(attribute_type).value_type, Some(ValueType::Struct(_)))
 }
 
 /// Returns <code>true</code> if the value which this ``Value`` concept holds is of type <code>boolean</code>.
@@ -192,12 +210,11 @@ pub extern "C" fn value_get_double(value: *const Concept) -> f64 {
 /// If the value has another type, the error is set.
 #[no_mangle]
 pub extern "C" fn value_get_decimal(value: *const Concept) -> f64 {
-    todo!()
-    // if let Value::Decimal(decimal) = borrow_as_value(value) {
-    //     *decimal
-    // } else {
-    //     unreachable!("Attempting to unwrap a non-double {:?} as double", borrow_as_value(value))
-    // }
+    if let Value::Decimal(decimal) = borrow_as_value(value) {
+        todo!()
+    } else {
+        unreachable!("Attempting to unwrap a non-decimal {:?} as decimal", borrow_as_value(value))
+    }
 }
 
 /// Returns the <code>string</code> value of this value concept.
@@ -211,17 +228,6 @@ pub extern "C" fn value_get_string(value: *const Concept) -> *mut c_char {
     }
 }
 
-/// Returns the value of this datetime value concept as milliseconds since the start of the UNIX epoch.
-/// If the value has another type, the error is set.
-#[no_mangle]
-pub extern "C" fn value_get_date_time_as_millis(value: *const Concept) -> i64 {
-    if let Value::Datetime(date_time) = borrow_as_value(value) {
-        date_time.and_utc().timestamp_millis()
-    } else {
-        unreachable!("Attempting to unwrap a non-datetime {:?} as datetime", borrow_as_value(value))
-    }
-}
-
 /// Returns the value of this date value concept as milliseconds since the start of the UNIX epoch.
 /// If the value has another type, the error is set.
 #[no_mangle]
@@ -229,18 +235,51 @@ pub extern "C" fn value_get_date_as_millis(value: *const Concept) -> i64 { // TO
     if let Value::Date(date) = borrow_as_value(value) {
         date.and_time(NaiveTime::MIN).and_utc().timestamp_millis()
     } else {
+        unreachable!("Attempting to unwrap a non-date {:?} as date", borrow_as_value(value))
+    }
+}
+
+/// Returns the value of this datetime value concept as milliseconds since the start of the UNIX epoch.
+/// If the value has another type, the error is set.
+#[no_mangle]
+pub extern "C" fn value_get_datetime_as_millis(value: *const Concept) -> i64 {
+    if let Value::Datetime(date_time) = borrow_as_value(value) {
+        date_time.and_utc().timestamp_millis()
+    } else {
         unreachable!("Attempting to unwrap a non-datetime {:?} as datetime", borrow_as_value(value))
     }
 }
 
-/// Returns the value of this date value concept as milliseconds since the start of the UNIX epoch.
+/// Returns the value of this datetime-tz value concept as milliseconds since the start of the UNIX epoch.
 /// If the value has another type, the error is set.
 #[no_mangle]
 pub extern "C" fn value_get_datetime_tz_as_millis(value: *const Concept) -> i64 { // TODO: add timezone...
     if let Value::DatetimeTZ(datetime_tz) = borrow_as_value(value) {
         datetime_tz.timestamp_millis()
     } else {
-        unreachable!("Attempting to unwrap a non-datetime {:?} as datetime", borrow_as_value(value))
+        unreachable!("Attempting to unwrap a non-datetime-tz {:?} as datetime-tz", borrow_as_value(value))
+    }
+}
+
+/// Returns the value of this duration value concept as milliseconds since the start of the UNIX epoch.
+/// If the value has another type, the error is set.
+#[no_mangle]
+pub extern "C" fn value_get_duration_as_millis(value: *const Concept) -> i64 { // TODO: fix
+    if let Value::Duration(duration) = borrow_as_value(value) {
+        todo!()
+    } else {
+        unreachable!("Attempting to unwrap a non-duration {:?} as duration", borrow_as_value(value))
+    }
+}
+
+/// Returns the value of this struct value concept.
+/// If the value has another type, the error is set.
+#[no_mangle]
+pub extern "C" fn value_get_struct(value: *const Concept) -> i64 { // TODO: fix
+    if let Value::Struct(struct_val, struct_name) = borrow_as_value(value) {
+        todo!()
+    } else {
+        unreachable!("Attempting to unwrap a non-duration {:?} as duration", borrow_as_value(value))
     }
 }
 

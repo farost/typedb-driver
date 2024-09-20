@@ -19,19 +19,11 @@
 
 package com.vaticle.typedb.driver.concept.thing;
 
-import com.vaticle.typedb.driver.api.TypeDBTransaction;
-import com.vaticle.typedb.driver.api.concept.value.Value;
 import com.vaticle.typedb.driver.api.concept.thing.Attribute;
-import com.vaticle.typedb.driver.api.concept.type.ThingType;
-import com.vaticle.typedb.driver.common.NativeIterator;
-import com.vaticle.typedb.driver.common.exception.TypeDBDriverException;
-import com.vaticle.typedb.driver.concept.value.ValueImpl;
+import com.vaticle.typedb.driver.api.concept.value.Value;
 import com.vaticle.typedb.driver.concept.type.AttributeTypeImpl;
-import com.vaticle.typedb.driver.concept.type.ThingTypeImpl;
+import com.vaticle.typedb.driver.concept.value.ValueImpl;
 
-import java.util.stream.Stream;
-
-import static com.vaticle.typedb.driver.jni.typedb_driver.attribute_get_owners;
 import static com.vaticle.typedb.driver.jni.typedb_driver.attribute_get_type;
 import static com.vaticle.typedb.driver.jni.typedb_driver.attribute_get_value;
 
@@ -48,5 +40,11 @@ public class AttributeImpl extends ThingImpl implements Attribute {
     @Override
     public Value getValue() {
         return new ValueImpl(attribute_get_value(nativeObject));
+    }
+
+    @Override
+    public int hashCode() {
+        if (hash == 0) hash = getValue().hashCode();
+        return hash;
     }
 }

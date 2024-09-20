@@ -17,7 +17,7 @@
  * under the License.
  */
 
-use crate::answer::concept_tree::{ConceptTreesHeader, Tree};
+use crate::answer::concept_tree::{ConceptTreesHeader, ConceptTree};
 use crate::BoxStream;
 use crate::Result;
 
@@ -36,7 +36,7 @@ mod value_group;
 pub enum QueryAnswer {
     Ok(),
     ConceptRowsStream(BoxStream<'static, Result<ConceptRow>>),
-    ConceptTreesStream(ConceptTreesHeader, BoxStream<'static, crate::Result<Tree>>),
+    ConceptTreesStream(ConceptTreesHeader, BoxStream<'static, crate::Result<ConceptTree>>),
 }
 
 impl QueryAnswer {

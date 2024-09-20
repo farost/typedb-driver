@@ -26,6 +26,8 @@ import com.vaticle.typedb.driver.common.NativeIterator;
 import javax.annotation.CheckReturnValue;
 import java.util.stream.Stream;
 
+import static com.vaticle.typedb.driver.jni.typedb_driver.query_answer_get_rows;
+
 public class ConceptRowsStreamQueryAnswerImpl extends QueryAnswerImpl implements ConceptRowsStreamQueryAnswer {
     protected ConceptRowsStreamQueryAnswerImpl(com.vaticle.typedb.driver.jni.QueryAnswer answer) {
         super(answer);

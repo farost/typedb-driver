@@ -19,32 +19,11 @@
 
 package com.vaticle.typedb.driver.concept.thing;
 
-import com.vaticle.typedb.driver.api.TypeDBTransaction;
 import com.vaticle.typedb.driver.api.concept.thing.Relation;
-import com.vaticle.typedb.driver.api.concept.thing.Thing;
-import com.vaticle.typedb.driver.api.concept.type.RoleType;
-import com.vaticle.typedb.driver.common.NativeIterator;
-import com.vaticle.typedb.driver.common.Promise;
-import com.vaticle.typedb.driver.common.exception.TypeDBDriverException;
 import com.vaticle.typedb.driver.concept.type.RelationTypeImpl;
-import com.vaticle.typedb.driver.concept.type.RoleTypeImpl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
-
-import static com.vaticle.typedb.driver.jni.typedb_driver.relation_add_role_player;
-import static com.vaticle.typedb.driver.jni.typedb_driver.relation_get_players_by_role_type;
-import static com.vaticle.typedb.driver.jni.typedb_driver.relation_get_relating;
-import static com.vaticle.typedb.driver.jni.typedb_driver.relation_get_role_players;
+import static com.vaticle.typedb.driver.jni.typedb_driver.relation_get_iid;
 import static com.vaticle.typedb.driver.jni.typedb_driver.relation_get_type;
-import static com.vaticle.typedb.driver.jni.typedb_driver.relation_remove_role_player;
-import static com.vaticle.typedb.driver.jni.typedb_driver.role_player_get_player;
-import static com.vaticle.typedb.driver.jni.typedb_driver.role_player_get_role_type;
 
 public class RelationImpl extends ThingImpl implements Relation {
 
@@ -55,5 +34,16 @@ public class RelationImpl extends ThingImpl implements Relation {
     @Override
     public RelationTypeImpl getType() {
         return new RelationTypeImpl(relation_get_type(nativeObject));
+    }
+
+    @Override
+    public final String getIID() {
+        return relation_get_iid(nativeObject);
+    }
+
+    @Override
+    public int hashCode() {
+        if (hash == 0) hash = getIID().hashCode();
+        return hash;
     }
 }

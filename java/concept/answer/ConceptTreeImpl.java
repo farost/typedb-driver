@@ -19,8 +19,6 @@
 
 package com.vaticle.typedb.driver.concept.answer;
 
-import com.vaticle.typedb.driver.api.answer.ConceptTree;
-import com.vaticle.typedb.driver.common.NativeObject;
-
-public class ConceptTreeImpl extends NativeObject<com.vaticle.typedb.driver.jni.ConceptTree> implements ConceptTree {
-}
+// TODO: Implement
+//public class ConceptTreeImpl extends NativeObject<com.vaticle.typedb.driver.jni.ConceptTree> implements ConceptTree {
+//}

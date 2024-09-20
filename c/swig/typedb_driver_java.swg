@@ -138,7 +138,6 @@
 %nojavaexception concept_is_relation;
 %nojavaexception concept_is_attribute;
 %nojavaexception concept_is_value;
-%nojavaexception concept_is_root_thing_type;
 %nojavaexception concept_is_entity_type;
 %nojavaexception concept_is_relation_type;
 %nojavaexception concept_is_attribute_type;
@@ -147,85 +146,66 @@
 %nojavaexception concept_as_relation;
 %nojavaexception concept_as_attribute;
 %nojavaexception concept_as_value;
-%nojavaexception concept_as_root_thing_type;
 %nojavaexception concept_as_entity_type;
 %nojavaexception concept_as_relation_type;
 %nojavaexception concept_as_attribute_type;
 %nojavaexception concept_to_string;
 %nojavaexception concept_equals;
 
-%nojavaexception concepts_get_root_entity_type;
-%nojavaexception concepts_get_root_relation_type;
-%nojavaexception concepts_get_root_attribute_type;
-
 %nojavaexception attribute_type_get_value_type;
 
-%nojavaexception role_type_is_root;
-%nojavaexception role_type_is_abstract;
-%nojavaexception role_type_get_scope;
-%nojavaexception role_type_get_name;
-
-%nojavaexception thing_get_iid;
-%nojavaexception thing_get_is_inferred;
+%nojavaexception entity_get_iid;
+%nojavaexception relation_get_iid;
 %nojavaexception entity_get_type;
 %nojavaexception relation_get_type;
 %nojavaexception attribute_get_type;
 %nojavaexception attribute_get_value;
 
 %nojavaexception value_get_boolean;
-%nojavaexception value_get_date_time_as_millis;
+%nojavaexception value_get_date_as_millis;
+%nojavaexception value_get_datetime_as_millis;
+%nojavaexception value_get_datetime_tz_as_millis;
+%nojavaexception value_get_decimal;
 %nojavaexception value_get_double;
+%nojavaexception value_get_duration_as_millis;
 %nojavaexception value_get_long;
 %nojavaexception value_get_string;
+%nojavaexception value_get_struct;
 %nojavaexception value_is_boolean;
-%nojavaexception value_is_date_time;
+%nojavaexception value_is_date;
+%nojavaexception value_is_datetime;
+%nojavaexception value_is_datetime_tz;
+%nojavaexception value_is_decimal;
 %nojavaexception value_is_double;
+%nojavaexception value_is_duration;
 %nojavaexception value_is_long;
 %nojavaexception value_is_string;
-%nojavaexception value_new_boolean;
-%nojavaexception value_new_date_time_from_millis;
-%nojavaexception value_new_double;
-%nojavaexception value_new_long;
-%nojavaexception value_new_string;
+%nojavaexception value_is_struct;
 
-%nojavaexception role_player_get_role_type;
-%nojavaexception role_player_get_player;
 
-%nojavaexception rule_get_label;
-%nojavaexception rule_get_when;
-%nojavaexception rule_get_then;
-%nojavaexception rule_to_string;
+%nojavaexception attribute_type_is_boolean;
+%nojavaexception attribute_type_is_date;
+%nojavaexception attribute_type_is_datetime;
+%nojavaexception attribute_type_is_datetime_tz;
+%nojavaexception attribute_type_is_decimal;
+%nojavaexception attribute_type_is_double;
+%nojavaexception attribute_type_is_duration;
+%nojavaexception attribute_type_is_long;
+%nojavaexception attribute_type_is_string;
+%nojavaexception attribute_type_is_struct;
+%nojavaexception attribute_type_is_untyped;
 
-%nojavaexception concept_map_equals;
-%nojavaexception concept_map_get;
-%nojavaexception concept_map_get_explainables;
-%nojavaexception concept_map_get_values;
-%nojavaexception concept_map_get_variables;
-%nojavaexception concept_map_to_string;
+%nojavaexception concept_row_equals;
+%nojavaexception concept_row_get;
+%nojavaexception concept_row_get_header;
+%nojavaexception concept_row_get_concepts;
+%nojavaexception concept_row_get_index;
+%nojavaexception concept_row_to_string;
 
-%nojavaexception explainable_get_conjunction;
-%nojavaexception explainable_get_id;
-%nojavaexception explainables_equals;
-%nojavaexception explainables_get_attribute;
-%nojavaexception explainables_get_attributes_keys;
-%nojavaexception explainables_get_ownership;
-%nojavaexception explainables_get_ownerships_keys;
-%nojavaexception explainables_get_relation;
-%nojavaexception explainables_get_relations_keys;
-%nojavaexception explainables_to_string;
-
-%nojavaexception explanation_equals;
-%nojavaexception explanation_to_string;
-%nojavaexception explanation_get_rule;
-%nojavaexception explanation_get_conclusion;
-%nojavaexception explanation_get_condition;
-%nojavaexception explanation_get_mapped_variables;
-%nojavaexception explanation_get_mapping;
-
-%nojavaexception concept_map_group_get_owner;
-%nojavaexception concept_map_group_get_concept_maps;
-%nojavaexception concept_map_group_to_string;
-%nojavaexception concept_map_group_equals;
+%nojavaexception query_answer_get_rows;
+%nojavaexception query_answer_is_ok;
+%nojavaexception query_answer_is_concept_rows_stream;
+%nojavaexception query_answer_is_concept_trees_stream;
 
 %nojavaexception value_group_to_string;
 %nojavaexception value_group_equals;
@@ -247,9 +227,8 @@
 %nojavaexception ~Database;
 %nojavaexception ~DatabaseIterator;
 %nojavaexception ~DatabaseManager;
-%nojavaexception ~DatabaseManager;
 %nojavaexception ~Error;
-%nojavaexception ~Options;
+//%nojavaexception ~Options;
 //%nojavaexception ~ReplicaInfo;
 %nojavaexception ~StringIterator;
 %nojavaexception ~StringPair;
@@ -258,6 +237,7 @@
 %nojavaexception ~TransactionCallbackDirector;
 %nojavaexception ~TypeDBDriver;
 %nojavaexception ~QueryAnswer;
+%nojavaexception ~ValueType;
 //%nojavaexception ~User;
 //%nojavaexception ~UserIterator;
 //%nojavaexception ~UserManager;
@@ -266,56 +246,10 @@
 %nojavaexception ~ValueGroupIterator;
 
 /* one-shot network requests do not throw when first constructed, only when resolved */
-%nojavaexception concepts_get_entity_type;
-%nojavaexception concepts_get_relation_type;
-%nojavaexception concepts_get_attribute_type;
-%nojavaexception concepts_put_entity_type;
-%nojavaexception concepts_put_relation_type;
-%nojavaexception concepts_put_attribute_type;
-%nojavaexception concepts_get_entity;
-%nojavaexception concepts_get_relation;
-%nojavaexception concepts_get_attribute;
-%nojavaexception thing_delete;
-%nojavaexception thing_is_deleted;
-%nojavaexception thing_set_has;
-%nojavaexception thing_unset_has;
-%nojavaexception relation_add_role_player;
-%nojavaexception relation_remove_role_player;
-%nojavaexception thing_type_is_deleted;
-%nojavaexception thing_type_delete;
-%nojavaexception thing_type_get_label;
-%nojavaexception thing_type_set_label;
-%nojavaexception thing_type_set_abstract;
-%nojavaexception thing_type_unset_abstract;
-%nojavaexception thing_type_get_owns_overridden;
-%nojavaexception thing_type_set_owns;
-%nojavaexception thing_type_unset_owns;
-%nojavaexception thing_type_get_plays_overridden;
-%nojavaexception thing_type_set_plays;
-%nojavaexception thing_type_unset_plays;
-%nojavaexception thing_type_get_syntax;
-%nojavaexception entity_type_create;
-%nojavaexception entity_type_get_supertype;
-%nojavaexception entity_type_set_supertype;
-%nojavaexception relation_type_create;
-%nojavaexception relation_type_get_supertype;
-%nojavaexception relation_type_set_supertype;
-%nojavaexception relation_type_get_relates_for_role_label;
-%nojavaexception relation_type_get_relates_overridden;
-%nojavaexception relation_type_set_relates;
-%nojavaexception relation_type_unset_relates;
-%nojavaexception attribute_type_put;
-%nojavaexception attribute_type_get;
-%nojavaexception attribute_type_get_supertype;
-%nojavaexception attribute_type_set_supertype;
-%nojavaexception attribute_type_get_regex;
-%nojavaexception attribute_type_set_regex;
-%nojavaexception attribute_type_unset_regex;
-%nojavaexception role_type_is_deleted;
-%nojavaexception role_type_get_relation_type;
-%nojavaexception role_type_delete;
-%nojavaexception role_type_set_label;
-%nojavaexception role_type_get_supertype;
+%nojavaexception entity_type_get_label;
+%nojavaexception relation_type_get_label;
+%nojavaexception attribute_type_get_label;
+%nojavaexception role_type_get_label;
 %nojavaexception transaction_commit;
 %nojavaexception transaction_rollback;
 
@@ -490,7 +424,6 @@
 %enddef
 
 %array(Concept)
-%array(ConceptRow)
 
 /* char** needs special handling */
 %typemap(in) char ** (jint size) {
