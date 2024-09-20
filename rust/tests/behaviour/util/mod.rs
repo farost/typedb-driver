@@ -24,21 +24,14 @@ use std::{
 
 use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 use cucumber::gherkin::Step;
-use futures::{
-    stream::StreamExt,
-    TryFutureExt, TryStreamExt,
-};
+use futures::{stream::StreamExt, TryFutureExt, TryStreamExt};
 use tokio::time::sleep;
-use typeql::parse_query;
-
 use typedb_driver::{
     answer::{ConceptRow, JSON},
-    concept::{
-        Attribute, AttributeType, Concept, Entity, EntityType, Relation, RelationType, RoleType, Value,
-    },
-    DatabaseManager,
-    Result as TypeDBResult,
+    concept::{Attribute, AttributeType, Concept, Entity, EntityType, Relation, RelationType, RoleType, Value},
+    DatabaseManager, Result as TypeDBResult,
 };
+use typeql::parse_query;
 
 use crate::{assert_with_timeout, behaviour::Context};
 

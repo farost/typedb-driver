@@ -130,9 +130,9 @@ impl ServerError {
 impl fmt::Display for ServerError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.stack_trace.is_empty() {
-            write!( f, "[{}] {}. {}", self.error_code, self.error_domain, self.message)
+            write!(f, "[{}] {}. {}", self.error_code, self.error_domain, self.message)
         } else {
-            write!( f, "{}", format!("\n{}", self.stack_trace.join("\nCaused: ")))
+            write!(f, "{}", format!("\n{}", self.stack_trace.join("\nCaused: ")))
         }
     }
 }
@@ -241,7 +241,6 @@ impl From<InternalError> for Error {
 impl From<ServerError> for Error {
     fn from(error: ServerError) -> Self {
         Self::Server(error)
-
     }
 }
 
@@ -255,15 +254,14 @@ impl From<Status> for Error {
     fn from(status: Status) -> Self {
         if let Ok(details) = status.check_error_details() {
             if let Some(bad_request) = details.bad_request() {
-                Self::Connection(ConnectionError::ServerConnectionFailedWithError { error: format!("{:?}", bad_request) })
+                Self::Connection(ConnectionError::ServerConnectionFailedWithError {
+                    error: format!("{:?}", bad_request),
+                })
             } else if let Some(error_info) = details.error_info() {
                 let code = error_info.reason.clone();
                 let domain = error_info.domain.clone();
-                let stack_trace = if let Some(debug_info) = details.debug_info() {
-                    debug_info.stack_entries.clone()
-                } else {
-                    vec![]
-                };
+                let stack_trace =
+                    if let Some(debug_info) = details.debug_info() { debug_info.stack_entries.clone() } else { vec![] };
                 Self::Server(ServerError::new(code, domain, status.message().to_owned(), stack_trace))
             } else {
                 Self::from_message(status.message())
@@ -277,7 +275,9 @@ impl From<Status> for Error {
                 || status.code() == Code::FailedPrecondition
                 || status.code() == Code::AlreadyExists
             {
-                Self::Connection(ConnectionError::ServerConnectionFailedStatusError { error: status.message().to_owned() })
+                Self::Connection(ConnectionError::ServerConnectionFailedStatusError {
+                    error: status.message().to_owned(),
+                })
             } else if status.code() == Code::Unimplemented {
                 Self::Connection(ConnectionError::RPCMethodUnavailable { message: status.message().to_owned() })
             } else {

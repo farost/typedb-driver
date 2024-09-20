@@ -20,10 +20,9 @@
 use std::{
     cell::RefCell,
     ffi::{c_char, CStr, CString},
-    ptr::null_mut,
+    ptr::{null, null_mut},
+    sync::Arc,
 };
-use std::ptr::null;
-use std::sync::Arc;
 
 use log::trace;
 use typedb_driver::Error;

@@ -17,15 +17,15 @@
  * under the License.
  */
 
-use std::ptr::null;
-use std::sync::Arc;
+use std::{ptr::null, sync::Arc};
+
 use typedb_driver::{BoxStream, Result};
-use crate::memory::arc_into_raw;
 
 use super::{
     error::try_release_optional,
     memory::{borrow_mut, release_optional},
 };
+use crate::memory::arc_into_raw;
 
 pub struct CIterator<T: 'static>(pub(super) BoxStream<'static, T>);
 

@@ -19,10 +19,11 @@
 
 use futures::StreamExt;
 use serial_test::serial;
-
-use typedb_driver::{DatabaseManager, TransactionType::Write};
-use typedb_driver::answer::QueryAnswer;
-use typedb_driver::TransactionType::Read;
+use typedb_driver::{
+    answer::QueryAnswer,
+    DatabaseManager,
+    TransactionType::{Read, Write},
+};
 
 use super::common;
 
@@ -35,7 +36,9 @@ fn basic_async_std() {
 
         let db = driver.databases().get("testing-db").await.unwrap();
         db.delete().await.unwrap();
-        common::create_test_database_with_schema(&driver, "define entity person, owns age; attribute age, value long;").await.unwrap();
+        common::create_test_database_with_schema(&driver, "define entity person, owns age; attribute age, value long;")
+            .await
+            .unwrap();
         assert!(driver.databases().contains(common::TEST_DATABASE).await.unwrap());
 
         let transaction = driver.transaction(common::TEST_DATABASE, Read).await.unwrap();

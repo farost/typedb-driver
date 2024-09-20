@@ -17,9 +17,8 @@
  * under the License.
  */
 
-use crate::common::IID;
-
 use super::{AttributeType, EntityType, RelationType, Value};
+use crate::common::IID;
 
 // TODO: Storing the Type here is *extremely* inefficient; we could be effectively creating
 //       1 million copies of the same data when matching concepts of homogeneous types

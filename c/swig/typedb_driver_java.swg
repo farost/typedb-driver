@@ -152,8 +152,6 @@
 %nojavaexception concept_to_string;
 %nojavaexception concept_equals;
 
-%nojavaexception attribute_type_get_value_type;
-
 %nojavaexception entity_get_iid;
 %nojavaexception relation_get_iid;
 %nojavaexception entity_get_type;
@@ -182,6 +180,8 @@
 %nojavaexception value_is_string;
 %nojavaexception value_is_struct;
 
+%nojavaexception value_get_value_type;
+%nojavaexception attribute_type_get_value_type;
 
 %nojavaexception attribute_type_is_boolean;
 %nojavaexception attribute_type_is_date;

@@ -49,6 +49,7 @@ import static com.vaticle.typedb.driver.jni.typedb_driver.value_is_duration;
 import static com.vaticle.typedb.driver.jni.typedb_driver.value_is_long;
 import static com.vaticle.typedb.driver.jni.typedb_driver.value_is_string;
 import static com.vaticle.typedb.driver.jni.typedb_driver.value_is_struct;
+import static com.vaticle.typedb.driver.jni.typedb_driver.value_get_value_type;
 
 public class ValueImpl extends ConceptImpl implements Value {
     private int hash = 0;
@@ -57,20 +58,10 @@ public class ValueImpl extends ConceptImpl implements Value {
         super(concept);
     }
 
-//    @Override
-//    public Type getType() {
-//        if (isBoolean()) return Type.BOOLEAN;
-//        else if (isLong()) return Type.LONG;
-//        else if (isDouble()) return Type.DOUBLE;
-//        else if (isDecimal()) return Type.DECIMAL;
-//        else if (isString()) return Type.STRING;
-//        else if (isDate()) return Type.DATE;
-//        else if (isDatetime()) return Type.DATETIME;
-//        else if (isDatetimeTZ()) return Type.DATETIME_TZ;
-//        else if (isDuration()) return Type.DURATION;
-//        else if (isStruct()) return Type.STRUCT;
-//        else throw new TypeDBDriverException(ILLEGAL_STATE);
-//    }
+    @Override
+    public String getType() {
+        return value_get_value_type(nativeObject);
+    }
 
     @Override
     public boolean isBoolean() {

@@ -20,22 +20,14 @@
 use std::ptr::addr_of_mut;
 
 use itertools::Itertools;
-
 use typedb_driver::{
-    BoxPromise,
-    concept::{
-        Attribute, AttributeType, Concept, Entity, EntityType, Relation, RelationType, RoleType,
-        Value,
-    }, Promise, Result,
+    answer::{ConceptRow, QueryAnswer, ValueGroup},
+    concept::{Attribute, AttributeType, Concept, Entity, EntityType, Relation, RelationType, RoleType, Value},
+    BoxPromise, Promise, Result,
 };
-use typedb_driver::answer::{ConceptRow, QueryAnswer, ValueGroup};
 
+use super::{iterator::iterator_try_next, memory::free};
 use crate::{error::try_release_optional, iterator::CIterator, memory::take_ownership};
-
-use super::{
-    iterator::iterator_try_next,
-    memory::free,
-};
 
 mod concept;
 mod thing;

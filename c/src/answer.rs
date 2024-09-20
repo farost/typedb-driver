@@ -19,18 +19,23 @@
 
 use std::ffi::c_char;
 
-use typedb_driver::{answer::{ConceptRow, ValueGroup}, box_stream, BoxPromise, concept::Concept, Promise, Result};
-use typedb_driver::answer::QueryAnswer;
-use crate::common::StringIterator;
-
-use crate::concept::{ConceptPromise, ConceptRowIterator};
-use crate::error::{try_release, try_release_optional};
-use crate::memory::{borrow_mut, take_ownership};
+use typedb_driver::{
+    answer::{ConceptRow, QueryAnswer, ValueGroup},
+    box_stream,
+    concept::Concept,
+    BoxPromise, Promise, Result,
+};
 
 use super::{
     concept::ConceptIterator,
     iterator::CIterator,
     memory::{borrow, free, release, release_optional, release_string, string_view},
+};
+use crate::{
+    common::StringIterator,
+    concept::{ConceptPromise, ConceptRowIterator},
+    error::{try_release, try_release_optional},
+    memory::{borrow_mut, take_ownership},
 };
 
 /// Promise object representing the result of an asynchronous operation.
@@ -59,13 +64,15 @@ pub extern "C" fn query_answer_is_ok(query_answer: *const QueryAnswer) -> bool {
 
 /// Checks if the query answer is a <code>ConceptRowsStream</code>.
 #[no_mangle]
-pub extern "C" fn query_answer_is_concept_rows_stream(query_answer: *const QueryAnswer) -> bool { // TODO: Rename?
+pub extern "C" fn query_answer_is_concept_rows_stream(query_answer: *const QueryAnswer) -> bool {
+    // TODO: Rename?
     borrow(query_answer).is_rows_stream()
 }
 
 /// Checks if the query answer is a <code>ConceptTreesStream</code>.
 #[no_mangle]
-pub extern "C" fn query_answer_is_concept_trees_stream(query_answer: *const QueryAnswer) -> bool { // TODO: Rename?
+pub extern "C" fn query_answer_is_concept_trees_stream(query_answer: *const QueryAnswer) -> bool {
+    // TODO: Rename?
     borrow(query_answer).is_json_stream()
 }
 
@@ -78,12 +85,14 @@ pub extern "C" fn query_answer_get_rows(query_answer: *mut QueryAnswer) -> *mut 
 /// Frees the native rust <code>QueryAnswer</code> object.
 #[no_mangle]
 pub extern "C" fn query_answer_drop(query_answer: *mut QueryAnswer) {
+    println!("concept row drop");
     free(query_answer);
 }
 
 /// Frees the native rust <code>ConceptRow</code> object.
 #[no_mangle]
 pub extern "C" fn concept_row_drop(concept_row: *mut ConceptRow) {
+    println!("concept row drop {}", borrow(concept_row).row.len());
     free(concept_row);
 }
 

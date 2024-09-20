@@ -17,16 +17,12 @@
  * under the License.
  */
 
-use std::ffi::c_char;
-use std::ptr::null_mut;
+use std::{ffi::c_char, ptr::null_mut};
 
 use typedb_driver::concept::Concept;
 
+use super::concept::{borrow_as_attribute, borrow_as_entity, borrow_as_relation};
 use crate::memory::{release, release_string};
-
-use super::concept::{
-    borrow_as_attribute, borrow_as_entity, borrow_as_relation,
-};
 
 /// Retrieves the unique id of the ``Entity``.
 #[no_mangle]
@@ -49,13 +45,19 @@ pub extern "C" fn entity_get_type(entity: *const Concept) -> *mut Concept {
 /// Retrieves the type which this ``Relation`` belongs to.
 #[no_mangle]
 pub extern "C" fn relation_get_type(relation: *const Concept) -> *mut Concept {
-    borrow_as_relation(relation).type_().map(|type_| release(Concept::RelationType(type_.clone()))).unwrap_or_else(null_mut)
+    borrow_as_relation(relation)
+        .type_()
+        .map(|type_| release(Concept::RelationType(type_.clone())))
+        .unwrap_or_else(null_mut)
 }
 
 /// Retrieves the type which this ``Attribute`` belongs to.
 #[no_mangle]
 pub extern "C" fn attribute_get_type(attribute: *const Concept) -> *mut Concept {
-    borrow_as_attribute(attribute).type_().map(|type_| release(Concept::AttributeType(type_.clone()))).unwrap_or_else(null_mut)
+    borrow_as_attribute(attribute)
+        .type_()
+        .map(|type_| release(Concept::AttributeType(type_.clone())))
+        .unwrap_or_else(null_mut)
 }
 
 /// Retrieves the value of the ``Attribute``.

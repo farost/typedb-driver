@@ -20,11 +20,11 @@
 use std::ffi::c_char;
 
 use chrono::{DateTime, NaiveTime};
-
-use typedb_driver::concept::{Attribute, AttributeType, Concept, Entity, EntityType, Relation, RelationType, RoleType, Value, ValueType};
+use typedb_driver::concept::{
+    Attribute, AttributeType, Concept, Entity, EntityType, Relation, RelationType, RoleType, Value, ValueType,
+};
 
 use crate::memory::{borrow, borrow_mut, free, release, release_string, string_view};
-
 
 /// Returns <code>true</code> if the attribute type does not have a value type.
 /// Otherwise, returns <code>false</code>.
@@ -231,7 +231,8 @@ pub extern "C" fn value_get_string(value: *const Concept) -> *mut c_char {
 /// Returns the value of this date value concept as milliseconds since the start of the UNIX epoch.
 /// If the value has another type, the error is set.
 #[no_mangle]
-pub extern "C" fn value_get_date_as_millis(value: *const Concept) -> i64 { // TODO: is it correct?
+pub extern "C" fn value_get_date_as_millis(value: *const Concept) -> i64 {
+    // TODO: is it correct?
     if let Value::Date(date) = borrow_as_value(value) {
         date.and_time(NaiveTime::MIN).and_utc().timestamp_millis()
     } else {
@@ -253,7 +254,8 @@ pub extern "C" fn value_get_datetime_as_millis(value: *const Concept) -> i64 {
 /// Returns the value of this datetime-tz value concept as milliseconds since the start of the UNIX epoch.
 /// If the value has another type, the error is set.
 #[no_mangle]
-pub extern "C" fn value_get_datetime_tz_as_millis(value: *const Concept) -> i64 { // TODO: add timezone...
+pub extern "C" fn value_get_datetime_tz_as_millis(value: *const Concept) -> i64 {
+    // TODO: add timezone...
     if let Value::DatetimeTZ(datetime_tz) = borrow_as_value(value) {
         datetime_tz.timestamp_millis()
     } else {
@@ -264,7 +266,8 @@ pub extern "C" fn value_get_datetime_tz_as_millis(value: *const Concept) -> i64 
 /// Returns the value of this duration value concept as milliseconds since the start of the UNIX epoch.
 /// If the value has another type, the error is set.
 #[no_mangle]
-pub extern "C" fn value_get_duration_as_millis(value: *const Concept) -> i64 { // TODO: fix
+pub extern "C" fn value_get_duration_as_millis(value: *const Concept) -> i64 {
+    // TODO: fix
     if let Value::Duration(duration) = borrow_as_value(value) {
         todo!()
     } else {
@@ -275,12 +278,19 @@ pub extern "C" fn value_get_duration_as_millis(value: *const Concept) -> i64 { /
 /// Returns the value of this struct value concept.
 /// If the value has another type, the error is set.
 #[no_mangle]
-pub extern "C" fn value_get_struct(value: *const Concept) -> i64 { // TODO: fix
+pub extern "C" fn value_get_struct(value: *const Concept) -> i64 {
+    // TODO: fix
     if let Value::Struct(struct_val, struct_name) = borrow_as_value(value) {
         todo!()
     } else {
         unreachable!("Attempting to unwrap a non-duration {:?} as duration", borrow_as_value(value))
     }
+}
+
+/// Gets the string representation of the value type of this attribute type.
+#[no_mangle]
+pub extern "C" fn value_get_value_type(value: *const Concept) -> *mut c_char {
+    release_string(borrow_as_value(value).get_type().name().to_owned())
 }
 
 /// Checks whether the provided <code>Concept</code> objects are equal
@@ -348,15 +358,6 @@ pub extern "C" fn concept_is_role_type(concept: *const Concept) -> bool {
 pub extern "C" fn concept_to_string(concept: *const Concept) -> *mut c_char {
     release_string(format!("{:?}", borrow(concept)))
 }
-
-// pub(super) fn borrow_as_thing(concept: *const Concept) -> &'static dyn ThingAPI {
-//     match borrow(concept) {
-//         Concept::Entity(entity) => entity,
-//         Concept::Relation(relation) => relation,
-//         Concept::Attribute(attribute) => attribute,
-//         _ => unreachable!(),
-//     }
-// }
 
 pub(super) fn borrow_as_entity(concept: *const Concept) -> &'static Entity {
     match borrow(concept) {

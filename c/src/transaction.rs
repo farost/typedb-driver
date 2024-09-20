@@ -17,17 +17,12 @@
  * under the License.
  */
 
-use std::ffi::c_char;
-use std::ptr::null_mut;
+use std::{ffi::c_char, ptr::null_mut};
 
 use typedb_driver::{DatabaseManager, Error, Transaction, TransactionType, TypeDBDriver};
 
-use crate::answer::QueryAnswerPromise;
-use crate::error::try_release;
-use crate::memory::string_view;
-use crate::promise::VoidPromise;
-
 use super::memory::{borrow, borrow_mut, free, release, take_ownership};
+use crate::{answer::QueryAnswerPromise, error::try_release, memory::string_view, promise::VoidPromise};
 
 /// Opens a transaction to perform read or write queries on the database connected to the session.
 ///
@@ -46,9 +41,7 @@ pub extern "C" fn transaction_new(
 /// Performs a TypeQL query in the transaction.
 #[no_mangle]
 pub extern "C" fn transaction_query(transaction: *mut Transaction, query: *const c_char) -> *mut QueryAnswerPromise {
-    release(QueryAnswerPromise::new(Box::new(
-        borrow(transaction).query(string_view(query)),
-    )))
+    release(QueryAnswerPromise::new(Box::new(borrow(transaction).query(string_view(query)))))
 }
 
 /// Closes the transaction and frees the native rust object.
@@ -94,5 +87,6 @@ pub extern "C" fn transaction_on_close(
     callback_id: usize,
     callback: extern "C" fn(usize, *mut Error),
 ) {
-    borrow(txn).on_close(move |error| callback(callback_id, error.map(|err| release(err.into())).unwrap_or(null_mut())));
+    borrow(txn)
+        .on_close(move |error| callback(callback_id, error.map(|err| release(err.into())).unwrap_or(null_mut())));
 }

@@ -31,16 +31,16 @@ import javax.annotation.CheckReturnValue;
  * can share ownership of the same attribute instance.
  */
 public interface AttributeType extends ThingType {
-//    /**
-//     * Retrieves the <code>Value.Type</code> of this <code>AttributeType</code>.
-//     *
-//     * <h3>Examples</h3>
-//     * <pre>
-//     * attributeType.getValueType();
-//     * </pre>
-//     */
-//    @CheckReturnValue
-//    Value.Type getValueType();
+    /**
+     * Retrieves the <code>String</code> describing the value type of this <code>AttributeType</code>.
+     *
+     * <h3>Examples</h3>
+     * <pre>
+     * attributeType.getValueType();
+     * </pre>
+     */
+    @CheckReturnValue
+    String getValueType();
 
     /**
      * Returns <code>True</code> if this attribute type does not have a value type.

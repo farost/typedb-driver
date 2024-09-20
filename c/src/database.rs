@@ -17,17 +17,16 @@
  * under the License.
  */
 
-use std::{ffi::c_char, ptr::addr_of_mut};
-use std::sync::Arc;
+use std::{ffi::c_char, ptr::addr_of_mut, sync::Arc};
 
 use typedb_driver::{box_stream, info::ReplicaInfo, Database};
-use crate::memory::{arc_from_raw, release_arc};
 
 use super::{
     error::{try_release_string, unwrap_void},
     iterator::{iterator_next, CIterator},
     memory::{borrow, borrow_mut, free, release, release_optional, release_string, take_ownership},
 };
+use crate::memory::{arc_from_raw, release_arc};
 
 /// Frees the native rust <code>Database</code> object
 #[no_mangle]

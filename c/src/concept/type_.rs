@@ -18,20 +18,11 @@
  */
 
 use std::ffi::c_char;
-use std::ptr::null_mut;
 
-use typedb_driver::{
-    concept::Concept,
-};
-use typedb_driver::answer::QueryAnswer;
-use typedb_driver::concept::ValueType;
+use typedb_driver::concept::Concept;
 
-use crate::memory::{free, release, release_string};
-
-use super::concept::{
-    borrow_as_attribute_type, borrow_as_entity_type,
-    borrow_as_relation_type, borrow_as_role_type
-};
+use super::concept::{borrow_as_attribute_type, borrow_as_entity_type, borrow_as_relation_type, borrow_as_role_type};
+use crate::memory::release_string;
 
 /// Gets the 'label' of this entity type.
 #[no_mangle]
@@ -57,14 +48,11 @@ pub extern "C" fn role_type_get_label(role_type: *const Concept) -> *mut c_char 
     release_string(borrow_as_role_type(role_type).label.clone())
 }
 
-/// Gets the 'value_type' of this attribute type.
+/// Gets the string representation of the value type of this attribute type.
 #[no_mangle]
-pub extern "C" fn attribute_type_get_value_type(attribute_type: *const Concept) -> *mut ValueType {
-    borrow_as_attribute_type(attribute_type).value_type.clone().map(|value_type| release(value_type)).unwrap_or(null_mut())
-}
-
-/// Frees the native rust <code>ValueTYpe</code> object.
-#[no_mangle]
-pub extern "C" fn value_type_drop(value_type: *mut ValueType) {
-    free(value_type);
+pub extern "C" fn attribute_type_get_value_type(attribute_type: *const Concept) -> *mut c_char {
+    release_string(match &borrow_as_attribute_type(attribute_type).value_type {
+        None => "none".to_owned(),
+        Some(value_type) => value_type.name().to_owned(),
+    })
 }

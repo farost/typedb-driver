@@ -42,16 +42,16 @@ public interface Value extends Concept {
     default Value asValue() {
         return this;
     }
-//
-//    /**
-//     * Retrieves the <code>Value.Type</code> of this value concept.
-//     *
-//     * <h3>Examples</h3>
-//     * <pre>
-//     * value.getType()
-//     * </pre>
-//     */
-//    Type getType();
+
+    /**
+     * Retrieves the string representation of the type of this value concept.
+     *
+     * <h3>Examples</h3>
+     * <pre>
+     * value.getType()
+     * </pre>
+     */
+    String getType();
 
     /**
      * Returns <code>True</code> if the value which this value concept holds is of type <code>boolean</code>.

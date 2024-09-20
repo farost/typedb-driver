@@ -82,7 +82,6 @@ struct Type {};
 
 %dropproxy(ValueGroup, value_group)
 %dropproxy(ValueGroupIterator, value_group_iterator)
-%dropproxy(ValueType, value_type)
 
 %define %promiseproxy(Type, function_prefix)
 struct Type {};
@@ -167,6 +166,8 @@ void transaction_on_close_register(const Transaction* transaction, TransactionCa
 %newobject attribute_get_type;
 
 %newobject attribute_get_value;
+%newobject attribute_type_get_value_type;
+%newobject value_get_value_type;
 
 %newobject entity_type_get_label;
 %newobject relation_type_get_label;

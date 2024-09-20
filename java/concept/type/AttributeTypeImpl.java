@@ -23,6 +23,7 @@ import com.vaticle.typedb.driver.api.concept.type.AttributeType;
 import com.vaticle.typedb.driver.common.Label;
 
 import static com.vaticle.typedb.driver.jni.typedb_driver.attribute_type_get_label;
+import static com.vaticle.typedb.driver.jni.typedb_driver.attribute_type_get_value_type;
 import static com.vaticle.typedb.driver.jni.typedb_driver.attribute_type_is_boolean;
 import static com.vaticle.typedb.driver.jni.typedb_driver.attribute_type_is_date;
 import static com.vaticle.typedb.driver.jni.typedb_driver.attribute_type_is_datetime;
@@ -45,10 +46,10 @@ public class AttributeTypeImpl extends ThingTypeImpl implements AttributeType {
         return Label.of(attribute_type_get_label(nativeObject));
     }
 
-//    @Override
-//    public Value.Type getValueType() {
-//        return Value.Type.of(attribute_type_get_value_type(nativeObject));
-//    }
+    @Override
+    public String getValueType() {
+        return attribute_type_get_value_type(nativeObject);
+    }
 
     @Override
     public boolean isUntyped() {

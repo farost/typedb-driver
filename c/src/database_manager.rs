@@ -17,19 +17,20 @@
  * under the License.
  */
 
-use std::{ffi::c_char, ptr::addr_of_mut};
-use std::ptr::null;
-use std::sync::Arc;
+use std::{
+    ffi::c_char,
+    ptr::{addr_of_mut, null},
+    sync::Arc,
+};
 
-use typedb_driver::{box_stream, TypeDBDriver, Database, DatabaseManager};
-use crate::iterator::iterator_arc_next;
-use crate::memory::arc_into_raw;
+use typedb_driver::{box_stream, Database, DatabaseManager, TypeDBDriver};
 
 use super::{
     error::{try_release, unwrap_or_default, unwrap_void},
     iterator::{iterator_next, CIterator},
     memory::{borrow, borrow_mut, free, release, string_view},
 };
+use crate::{iterator::iterator_arc_next, memory::arc_into_raw};
 
 /// An <code>Iterator</code> over databases present on the TypeDB server
 pub struct DatabaseIterator(CIterator<Arc<Database>>);
@@ -50,7 +51,9 @@ pub extern "C" fn database_iterator_drop(it: *mut DatabaseIterator) {
 /// Returns a <code>DatabaseIterator</code> over all databases present on the TypeDB server
 #[no_mangle]
 pub extern "C" fn databases_all(driver: *mut TypeDBDriver) -> *mut DatabaseIterator {
-    try_release(borrow_mut(driver).databases().all().map(|dbs| DatabaseIterator(CIterator(box_stream(dbs.into_iter())))))
+    try_release(
+        borrow_mut(driver).databases().all().map(|dbs| DatabaseIterator(CIterator(box_stream(dbs.into_iter())))),
+    )
 }
 
 /// Create a database with the given name
