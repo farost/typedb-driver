@@ -33,7 +33,7 @@ const DB_NAME: &'static str = "benchmark";
 
 fn prepare() -> Session {
     async_std::task::block_on(async {
-        let connection = Connection::new_core("127.0.0.1:1729").expect("Expected driver");
+        let connection = Connection::new_core("127.0.0.1:1730").expect("Expected driver");
         let db_manager = DatabaseManager::new(connection.clone());
         if db_manager.contains(DB_NAME).await.unwrap() {
             db_manager.get(DB_NAME).await.expect("Expected database get").delete().await.expect("Expected database delete");
@@ -51,7 +51,7 @@ fn open_transaction(session: &Session) {
 
 fn criterion_benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("test transaction open");
-    // group.sample_size(1000);
+    group.sample_size(1000);
     // group.measurement_time(Duration::from_secs(200));
     group.sampling_mode(SamplingMode::Linear);
 

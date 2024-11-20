@@ -33,7 +33,7 @@ const DB_NAME: &'static str = "benchmark";
 
 fn prepare() -> Session {
     async_std::task::block_on(async {
-        let connection = Connection::new_core("127.0.0.1:1729").expect("Expected driver");
+        let connection = Connection::new_core("127.0.0.1:1730").expect("Expected driver");
         let db_manager = DatabaseManager::new(connection.clone());
         if db_manager.contains(DB_NAME).await.unwrap() {
             db_manager.get(DB_NAME).await.expect("Expected database get").delete().await.expect("Expected database delete");

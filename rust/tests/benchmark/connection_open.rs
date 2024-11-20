@@ -24,14 +24,17 @@ use std::{
     fs::File,
     path::Path,
 };
-use criterion::{Criterion, criterion_group, criterion_main, SamplingMode};
+use std::time::Duration;
+use criterion::{Criterion, criterion_group, criterion_main, SamplingMode, Throughput};
 use criterion::profiler::Profiler;
 use pprof::ProfilerGuard;
 use typedb_driver::Connection;
 
 fn create_driver() {
     async_std::task::block_on(async {
-        Connection::new_core("127.0.0.1:1729").expect("Expected driver");
+        let driver = Connection::new_core("127.0.0.1:1730").expect("Expected driver");
+        driver.force_close().expect("Close success");
+        async_std::task::sleep(Duration::from_millis(1)).await;
     })
 }
 
@@ -41,11 +44,13 @@ fn criterion_benchmark(c: &mut Criterion) {
     // group.measurement_time(Duration::from_secs(200));
     group.sampling_mode(SamplingMode::Linear);
 
+    group.throughput(Throughput::Elements(1)); // calls/sec
     group.bench_function("connection_open", |b| {
         b.iter(|| {
             create_driver()
         });
     });
+    group.finish();
 }
 
 pub struct FlamegraphProfiler<'a> {
