@@ -32,23 +32,20 @@ use typedb_driver::TypeDBDriver;
 
 fn create_driver() {
     async_std::task::block_on(async {
-        let driver = TypeDBDriver::new_core(TypeDBDriver::DEFAULT_ADDRESS).await.expect("Expected driver");
-        driver.force_close().expect("Close success");
-        async_std::task::sleep(Duration::from_millis(1)).await;
+        TypeDBDriver::new_core(TypeDBDriver::DEFAULT_ADDRESS).await.expect("Expected driver");
     })
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("test connection open");
-    // group.sample_size(1000);
+    group.sample_size(10);
     // group.measurement_time(Duration::from_secs(200));
     group.sampling_mode(SamplingMode::Linear);
 
+    group.warm_up_time(Duration::from_secs(1));
     group.throughput(Throughput::Elements(1)); // calls/sec
     group.bench_function("connection_open", |b| {
-        b.iter(|| {
-            create_driver()
-        });
+        b.iter(|| create_driver());
     });
     group.finish();
 }

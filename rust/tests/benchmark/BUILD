@@ -45,6 +45,17 @@ rust_test(
 )
 
 # To run this via Bazel, Criterion must be provided the --bench argument:
+#   bazel run --compilation_mode=opt //rust/tests/benchmark:connection_open_multithreaded -- --bench
+rust_test(
+    name = "connection_open_multithreaded",
+    srcs = glob([
+        "connection_open_multithreaded.rs",
+    ]),
+    deps = benchmark_deps,
+    use_libtest_harness = False,
+)
+
+# To run this via Bazel, Criterion must be provided the --bench argument:
 #   bazel run --compilation_mode=opt //rust/tests/benchmark:transaction_open -- --bench
 rust_test(
     name = "transaction_open",
