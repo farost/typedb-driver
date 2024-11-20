@@ -42,6 +42,7 @@ use crate::{
     info::DatabaseInfo,
     Credential, Options, TransactionType, User,
 };
+use crate::driver::Counter;
 
 #[derive(Clone)]
 pub(crate) struct ServerConnection {
@@ -49,7 +50,7 @@ pub(crate) struct ServerConnection {
     connection_id: Uuid,
     request_transmitter: Arc<RPCTransmitter>,
     transaction_shutdown_senders: Arc<Mutex<HashMap<RequestID, UnboundedSender<()>>>>,
-    latency_tracker: LatencyTracker,
+    pub latency_tracker: LatencyTracker,
 }
 
 impl ServerConnection {
@@ -193,16 +194,17 @@ impl ServerConnection {
         database_name: &str,
         transaction_type: TransactionType,
         options: Options,
-    ) -> crate::Result<TransactionStream> {
+        start: std::time::Instant,
+    ) -> crate::Result<(TransactionStream, Duration)> {
         let network_latency = self.latency_tracker.current_latency();
 
-        let open_request_start = Instant::now();
+        let open_request_start = std::time::Instant::now();
         let tracker = self.latency_tracker.clone();
         let initial_response_handler = Arc::new(move |result: crate::common::Result<TransactionResponse>| {
             match result {
                 Ok(TransactionResponse::Open { server_duration_millis }) => {
                     let open_latency =
-                        Instant::now().duration_since(open_request_start).as_millis() as u64 - server_duration_millis;
+                        std::time::Instant::now().duration_since(open_request_start).as_millis() as u64 - server_duration_millis;
                     tracker.update_latency(open_latency)
                 }
                 Err(_) => {
@@ -227,6 +229,7 @@ impl ServerConnection {
             .await?
         {
             Response::TransactionStream { open_request_id: request_id, request_sink, response_source } => {
+                let end = std::time::Instant::now().duration_since(start);
                 let transmitter = TransactionTransmitter::new(
                     self.background_runtime.clone(),
                     request_sink,
@@ -237,7 +240,7 @@ impl ServerConnection {
                 let transmitter_shutdown_sink = transmitter.shutdown_sink().clone();
                 let transaction_stream = TransactionStream::new(transaction_type, options, transmitter);
                 self.transaction_shutdown_senders.lock().unwrap().insert(request_id, transmitter_shutdown_sink);
-                Ok(transaction_stream)
+                Ok((transaction_stream, end))
             }
             other => Err(InternalError::UnexpectedResponseType { response_type: format!("{other:?}") }.into()),
         }
@@ -328,7 +331,7 @@ impl LatencyTracker {
         self.latency_millis.store((latency_millis + previous_latency) / 2, Ordering::Relaxed);
     }
 
-    fn current_latency(&self) -> Duration {
+    pub fn current_latency(&self) -> Duration {
         Duration::from_millis(self.latency_millis.load(Ordering::Relaxed))
     }
 }

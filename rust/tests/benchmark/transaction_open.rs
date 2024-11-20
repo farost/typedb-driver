@@ -24,12 +24,15 @@ use std::{
     fs::File,
     path::Path,
 };
+use std::time::Instant;
 use criterion::{Criterion, criterion_group, criterion_main, SamplingMode, Throughput};
 use criterion::profiler::Profiler;
 use pprof::ProfilerGuard;
 use typedb_driver::{TransactionType, TypeDBDriver};
+use typedb_driver::driver::Counter;
 
 const DB_NAME: &'static str = "benchmark";
+
 
 fn prepare() -> TypeDBDriver {
     async_std::task::block_on(async {
@@ -49,8 +52,9 @@ fn open_transaction(driver: &TypeDBDriver) {
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
+    let mut counter = Counter::new();
     let mut group = c.benchmark_group("test transaction open");
-    group.sample_size(1000);
+    // group.sample_size(1000);
     // group.measurement_time(Duration::from_secs(200));
     group.sampling_mode(SamplingMode::Linear);
 
@@ -59,10 +63,15 @@ fn criterion_benchmark(c: &mut Criterion) {
     group.throughput(Throughput::Elements(1)); // calls/sec
     group.bench_function("transaction_open", |b| {
         b.iter(|| {
-            open_transaction(&driver)
+            let start = Instant::now();
+            open_transaction(&driver);
+            counter.add(Instant::now().duration_since(start).as_nanos());
         });
     });
     group.finish();
+
+    println!("Total avg: {} µs", counter.avg() / 1000);
+    println!("Network avg: {} µs", driver.counter.avg() / 1000);
 }
 
 pub struct FlamegraphProfiler<'a> {

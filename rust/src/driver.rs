@@ -22,6 +22,8 @@ use std::{
     fmt,
     sync::Arc,
 };
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::Instant;
 
 use itertools::Itertools;
 
@@ -35,6 +37,34 @@ use crate::{
     Credential, DatabaseManager, Options, Transaction, TransactionType, UserManager,
 };
 
+pub struct Counter {
+    sum: Arc<AtomicU64>,
+    count: Arc<AtomicU64>,
+}
+
+impl Counter {
+    pub fn new() -> Counter {
+        Counter {
+            sum: Arc::new(AtomicU64::new(0)),
+            count: Arc::new(AtomicU64::new(0)),
+        }
+    }
+
+    pub fn avg(&self) -> u64 {
+        let count = self.count.load(Ordering::SeqCst);
+        if count == 0 {
+            0 // Avoid division by zero
+        } else {
+            self.sum.load(Ordering::SeqCst) / count
+        }
+    }
+
+    pub fn add(&self, value: u128) {
+        self.sum.fetch_add(value as u64, Ordering::SeqCst);
+        self.count.fetch_add(1, Ordering::SeqCst);
+    }
+}
+
 /// A connection to a TypeDB server which serves as the starting point for all interaction.
 pub struct TypeDBDriver {
     server_connections: HashMap<Address, ServerConnection>,
@@ -42,6 +72,7 @@ pub struct TypeDBDriver {
     background_runtime: Arc<BackgroundRuntime>,
     username: Option<String>,
     is_cloud: bool,
+    pub counter: Counter,
 }
 
 impl TypeDBDriver {}
@@ -109,7 +140,7 @@ impl TypeDBDriver {
         let server_connections: HashMap<Address, ServerConnection> = [(address, server_connection)].into();
         let database_manager = DatabaseManager::new(server_connections.clone(), database_info)?;
 
-        Ok(Self { server_connections, database_manager, background_runtime, username: None, is_cloud: false })
+        Ok(Self { server_connections, database_manager, background_runtime, username: None, is_cloud: false, counter: Counter::new() })
     }
 
     /// Creates a new TypeDB Cloud connection.
@@ -295,7 +326,9 @@ impl TypeDBDriver {
         let database = self.database_manager.get_cached_or_fetch(database_name).await?;
         let transaction_stream = database
             .run_failsafe(|database| async move {
-                database.connection().open_transaction(database.name(), transaction_type, options).await
+                let (res, duration) = database.connection().open_transaction(database.name(), transaction_type, options, Instant::now()).await?;
+                self.counter.add(duration.as_nanos());
+                Ok(res)
             })
             .await?;
         Ok(Transaction::new(transaction_stream))

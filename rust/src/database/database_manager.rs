@@ -37,6 +37,7 @@ use crate::{
 pub struct DatabaseManager {
     server_connections: HashMap<Address, ServerConnection>,
     databases_cache: RwLock<HashMap<String, Arc<Database>>>,
+    only: Arc<Option<Arc<Database>>>,
 }
 
 /// Provides access to all database management methods.
@@ -45,12 +46,14 @@ impl DatabaseManager {
         server_connections: HashMap<Address, ServerConnection>,
         database_info: Vec<DatabaseInfo>,
     ) -> Result<Self> {
+        let mut only = Arc::new(None);
         let mut databases = HashMap::new();
         for info in database_info {
-            let database = Database::new(info, server_connections.clone())?;
-            databases.insert(database.name().to_owned(), Arc::new(database));
+            let database = Arc::new(Database::new(info, server_connections.clone())?);
+            only = Arc::new(Some(database.clone()));
+            databases.insert(database.name().to_owned(), database);
         }
-        Ok(Self { server_connections, databases_cache: RwLock::new(databases) })
+        Ok(Self { server_connections, databases_cache: RwLock::new(databases), only })
     }
 
     /// Retrieve the database with the given name.
@@ -149,6 +152,7 @@ impl DatabaseManager {
 
     #[cfg_attr(feature = "sync", maybe_async::must_be_sync)]
     pub(crate) async fn get_cached_or_fetch(&self, name: &str) -> Result<Arc<Database>> {
+        // Ok(self.only.as_ref().clone().unwrap())
         let cached_database = self.databases_cache.read().unwrap().get(name).cloned();
         Ok(cached_database.unwrap_or(self.get(name).await?))
     }
