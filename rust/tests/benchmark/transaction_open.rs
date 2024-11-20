@@ -24,7 +24,7 @@ use std::{
     fs::File,
     path::Path,
 };
-use criterion::{Criterion, criterion_group, criterion_main, SamplingMode};
+use criterion::{Criterion, criterion_group, criterion_main, SamplingMode, Throughput};
 use criterion::profiler::Profiler;
 use pprof::ProfilerGuard;
 use typedb_driver::{TransactionType, TypeDBDriver};
@@ -50,17 +50,19 @@ fn open_transaction(driver: &TypeDBDriver) {
 
 fn criterion_benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("test transaction open");
-    // group.sample_size(1000);
+    group.sample_size(1000);
     // group.measurement_time(Duration::from_secs(200));
     group.sampling_mode(SamplingMode::Linear);
 
     let driver = prepare();
 
+    group.throughput(Throughput::Elements(1)); // calls/sec
     group.bench_function("transaction_open", |b| {
         b.iter(|| {
             open_transaction(&driver)
         });
     });
+    group.finish();
 }
 
 pub struct FlamegraphProfiler<'a> {

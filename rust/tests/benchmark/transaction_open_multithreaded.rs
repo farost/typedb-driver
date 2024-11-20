@@ -49,9 +49,9 @@ fn open_transaction(driver: &TypeDBDriver) {
 }
 
 fn multi_threaded_inserts() {
-    let driver = prepare();
+    let driver = Arc::new(prepare());
 
-    const NUM_THREADS: usize = 32;
+    const NUM_THREADS: usize = 16;
     const INTERNAL_ITERS: usize = 1000;
     let start_signal_rw_lock = Arc::new(RwLock::new(()));
     let write_guard = start_signal_rw_lock.write().unwrap();
@@ -61,7 +61,7 @@ fn multi_threaded_inserts() {
         thread::spawn(move || {
             drop(rw_lock_cloned.read().unwrap());
             for _ in 0..INTERNAL_ITERS {
-                open_transaction(&driver_cloned)
+                open_transaction(driver_cloned.as_ref())
             }
         })
     });
