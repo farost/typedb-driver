@@ -24,10 +24,11 @@ use std::{
     fs::File,
     path::Path,
 };
+use std::time::Instant;
 use criterion::{Criterion, criterion_group, criterion_main, SamplingMode, Throughput};
 use criterion::profiler::Profiler;
 use pprof::ProfilerGuard;
-use typedb_driver::{Connection, DatabaseManager, Session, SessionType, TransactionType};
+use typedb_driver::{Connection, DatabaseManager, Session, SessionType, TransactionType, database::session::Counter};
 
 const DB_NAME: &'static str = "benchmark";
 
@@ -50,8 +51,9 @@ fn open_transaction(session: &Session) {
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
+    let mut counter = Counter::new();
     let mut group = c.benchmark_group("test transaction open");
-    group.sample_size(1000);
+    // group.sample_size(1000);
     // group.measurement_time(Duration::from_secs(200));
     group.sampling_mode(SamplingMode::Linear);
 
@@ -60,10 +62,15 @@ fn criterion_benchmark(c: &mut Criterion) {
     group.throughput(Throughput::Elements(1)); // calls/sec
     group.bench_function("transaction_open", |b| {
         b.iter(|| {
-            open_transaction(&session)
+            let start = Instant::now();
+            open_transaction(&session);
+            counter.add(Instant::now().duration_since(start).as_nanos());
         });
     });
     group.finish();
+
+    println!("Total avg: {} µs", counter.avg() / 1000);
+    println!("Network avg: {} µs", session.counter.avg() / 1000);
 }
 
 pub struct FlamegraphProfiler<'a> {

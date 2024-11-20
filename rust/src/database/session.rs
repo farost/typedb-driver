@@ -19,6 +19,8 @@
 
 use core::fmt;
 use std::sync::{Arc, Mutex, RwLock};
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::Instant;
 
 use crossbeam::atomic::AtomicCell;
 use log::warn;
@@ -31,6 +33,35 @@ use crate::{
 
 type Callback = Box<dyn FnMut() + Send>;
 
+
+pub struct Counter {
+    sum: Arc<AtomicU64>,
+    count: Arc<AtomicU64>,
+}
+
+impl Counter {
+    pub fn new() -> Counter {
+        Counter {
+            sum: Arc::new(AtomicU64::new(0)),
+            count: Arc::new(AtomicU64::new(0)),
+        }
+    }
+
+    pub fn avg(&self) -> u64 {
+        let count = self.count.load(Ordering::SeqCst);
+        if count == 0 {
+            0 // Avoid division by zero
+        } else {
+            self.sum.load(Ordering::SeqCst) / count
+        }
+    }
+
+    pub fn add(&self, value: u128) {
+        self.sum.fetch_add(value as u64, Ordering::SeqCst);
+        self.count.fetch_add(1, Ordering::SeqCst);
+    }
+}
+
 /// A session with a TypeDB database.
 pub struct Session {
     database: Database,
@@ -39,6 +70,7 @@ pub struct Session {
     is_open: Arc<AtomicCell<bool>>,
     on_close: Arc<Mutex<Vec<Callback>>>,
     on_reopen: Mutex<Vec<Callback>>,
+    pub counter: Counter,
 }
 
 #[derive(Clone, Debug)]
@@ -112,6 +144,7 @@ impl Session {
             is_open,
             on_close,
             on_reopen: Mutex::default(),
+            counter: Counter::new(),
         })
     }
 
@@ -233,16 +266,16 @@ impl Session {
         let ServerSession { connection: server_connection, info: SessionInfo { session_id, network_latency, .. } } =
             self.server_session.read().unwrap().clone();
 
-        let (transaction_stream, transaction_shutdown_sink) = match server_connection
-            .open_transaction(session_id.clone(), transaction_type, options, network_latency)
+        let (transaction_stream, transaction_shutdown_sink, duration) = match server_connection
+            .open_transaction(session_id.clone(), transaction_type, options, network_latency, Instant::now())
             .await
         {
-            Ok((transaction_stream, transaction_shutdown_sink)) => (transaction_stream, transaction_shutdown_sink),
+            Ok((transaction_stream, transaction_shutdown_sink, duration)) => (transaction_stream, transaction_shutdown_sink, duration),
             Err(_err) => {
                 self.is_open.store(false);
                 server_connection.close_session(session_id).ok();
 
-                let (server_session, (transaction_stream, transaction_shutdown_sink)) = self
+                let (server_session, (transaction_stream, transaction_shutdown_sink, duration)) = self
                     .database
                     .run_failsafe(|database| {
                         let session_type = self.session_type;
@@ -258,6 +291,7 @@ impl Session {
                                         transaction_type,
                                         options,
                                         session_info.network_latency,
+                                        Instant::now()
                                     )
                                     .await?,
                             ))
@@ -267,9 +301,11 @@ impl Session {
                 *self.server_session.write().unwrap() = server_session;
                 self.is_open.store(true);
                 self.reopened();
-                (transaction_stream, transaction_shutdown_sink)
+                (transaction_stream, transaction_shutdown_sink, duration)
             }
         };
+
+        self.counter.add(duration.as_nanos());
 
         self.on_server_session_close(move || {
             transaction_shutdown_sink.send(()).ok();

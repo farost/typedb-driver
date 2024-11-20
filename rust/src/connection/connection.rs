@@ -456,7 +456,8 @@ impl ServerConnection {
         transaction_type: TransactionType,
         options: Options,
         network_latency: Duration,
-    ) -> Result<(TransactionStream, UnboundedSender<()>)> {
+        start: std::time::Instant,
+    ) -> Result<(TransactionStream, UnboundedSender<()>, Duration)> {
         match self
             .request(Request::Transaction(TransactionRequest::Open {
                 session_id,
@@ -467,6 +468,7 @@ impl ServerConnection {
             .await?
         {
             Response::TransactionOpen { request_sink, response_source } => {
+                let end = std::time::Instant::now().duration_since(start);
                 let transmitter = TransactionTransmitter::new(
                     &self.background_runtime,
                     request_sink,
@@ -475,7 +477,7 @@ impl ServerConnection {
                 );
                 let transmitter_shutdown_sink = transmitter.shutdown_sink().clone();
                 let transaction_stream = TransactionStream::new(transaction_type, options, transmitter);
-                Ok((transaction_stream, transmitter_shutdown_sink))
+                Ok((transaction_stream, transmitter_shutdown_sink, end))
             }
             other => Err(InternalError::UnexpectedResponseType { response_type: format!("{other:?}") }.into()),
         }
