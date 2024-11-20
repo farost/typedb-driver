@@ -24,28 +24,46 @@ use std::{
     fs::File,
     path::Path,
 };
-use std::time::Duration;
 use criterion::{Criterion, criterion_group, criterion_main, SamplingMode, Throughput};
 use criterion::profiler::Profiler;
 use pprof::ProfilerGuard;
-use typedb_driver::Connection;
+use typedb_driver::{Connection, DatabaseManager, Session, SessionType, TransactionType};
 
-fn create_driver() {
+const DB_NAME: &'static str = "benchmark";
+
+fn prepare() -> DatabaseManager {
     async_std::task::block_on(async {
-        Connection::new_core("127.0.0.1:1730").expect("Expected driver");
+        let connection = Connection::new_core("127.0.0.1:1730").expect("Expected driver");
+        let db_manager = DatabaseManager::new(connection.clone());
+        if db_manager.contains(DB_NAME).await.unwrap() {
+            db_manager.get(DB_NAME).await.expect("Expected database get").delete().await.expect("Expected database delete");
+        }
+        db_manager.create(DB_NAME).await.expect("Expected database create");
+        db_manager
+    })
+}
+
+fn open_session_transaction(db_manager: &DatabaseManager) {
+    async_std::task::block_on(async {
+        let database = db_manager.get(DB_NAME).await.expect("Expected database");
+        let session = Session::new(database, SessionType::Schema).await.expect("Expected session");
+        session.transaction(TransactionType::Read).await.expect("Expected transaction");
     })
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
-    let mut group = c.benchmark_group("test connection open");
-    group.sample_size(10);
+    let mut group = c.benchmark_group("test transaction open");
+    // group.sample_size(100);
     // group.measurement_time(Duration::from_secs(200));
     group.sampling_mode(SamplingMode::Linear);
 
-    group.warm_up_time(Duration::from_secs(1));
+    let db_manager = prepare();
+
     group.throughput(Throughput::Elements(1)); // calls/sec
-    group.bench_function("connection_open", |b| {
-        b.iter(|| create_driver());
+    group.bench_function("transaction_open", |b| {
+        b.iter(|| {
+            open_session_transaction(&db_manager)
+        });
     });
     group.finish();
 }
