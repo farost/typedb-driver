@@ -86,5 +86,5 @@ fn profiled() -> Criterion {
 // );
 
 // TODO: disable profiling when running on mac, since pprof seems to crash sometimes?
-criterion_group!(benchmark, criterion_benchmark);
-criterion_main!(benchmark);
+criterion_group!(benches, criterion_benchmark);
+criterion_main!(benches);
