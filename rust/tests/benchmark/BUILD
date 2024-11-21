@@ -77,11 +77,33 @@ rust_test(
 )
 
 # To run this via Bazel, Criterion must be provided the --bench argument:
-#   bazel run --compilation_mode=opt //rust/tests/benchmark:transaction_open -- --bench
+#   bazel run --compilation_mode=opt //rust/tests/benchmark:session_transaction_open -- --bench
 rust_test(
     name = "session_transaction_open",
     srcs = glob([
         "session_transaction_open.rs",
+    ]),
+    deps = benchmark_deps,
+    use_libtest_harness = False,
+)
+
+# To run this via Bazel, Criterion must be provided the --bench argument:
+#   bazel run --compilation_mode=opt //rust/tests/benchmark:rollback -- --bench
+rust_test(
+    name = "rollback",
+    srcs = glob([
+        "rollback.rs",
+    ]),
+    deps = benchmark_deps,
+    use_libtest_harness = False,
+)
+
+# To run this via Bazel, Criterion must be provided the --bench argument:
+#   bazel run --compilation_mode=opt //rust/tests/benchmark:rollback_multithreaded -- --bench
+rust_test(
+    name = "rollback_multithreaded",
+    srcs = glob([
+        "rollback_multithreaded.rs",
     ]),
     deps = benchmark_deps,
     use_libtest_harness = False,
