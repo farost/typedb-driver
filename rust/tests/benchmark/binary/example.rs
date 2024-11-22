@@ -17,17 +17,21 @@
  * under the License.
  */
 
-#![deny(unused_must_use)]
-
-use std::{
-    array,
-    sync::{Arc, RwLock},
-    thread,
-    thread::{sleep, JoinHandle},
-    time::{Duration, Instant},
+use std::thread::sleep;
+use std::time::Duration;
+// EXAMPLE START MARKER
+use futures::{StreamExt, TryStreamExt};
+// EXAMPLE END MARKER
+use serial_test::serial;
+// EXAMPLE START MARKER
+use typedb_driver::{
+    answer::{
+        concept_document::{Leaf, Node},
+        ConceptRow, QueryAnswer,
+    },
+    concept::{Concept, ValueType},
+    Error, TransactionType, TypeDBDriver,
 };
-
-use typedb_driver::{TransactionType, TypeDBDriver};
 
 const DB_NAME: &'static str = "benchmark";
 
@@ -48,38 +52,11 @@ fn open_transaction(driver: &TypeDBDriver) {
     })
 }
 
-fn multi_threaded_inserts() {
-    let driver = Arc::new(prepare());
-
-    const NUM_THREADS: usize = 16;
-    const INTERNAL_ITERS: usize = 10000;
-    let start_signal_rw_lock = Arc::new(RwLock::new(()));
-    let write_guard = start_signal_rw_lock.write().unwrap();
-    let join_handles: [JoinHandle<()>; NUM_THREADS] = array::from_fn(|_| {
-        let driver_cloned = driver.clone();
-        let rw_lock_cloned = start_signal_rw_lock.clone();
-        thread::spawn(move || {
-            drop(rw_lock_cloned.read().unwrap());
-            for _ in 0..INTERNAL_ITERS {
-                open_transaction(driver_cloned.as_ref())
-            }
-        })
-    });
-    println!("Sleeping 1s before starting threads");
-    sleep(Duration::from_secs(1));
-    println!("Start!");
-    let start = Instant::now();
-    drop(write_guard); // Start
-    for join_handle in join_handles {
-        join_handle.join().unwrap()
-    }
-    let time_taken_ms = start.elapsed().as_millis();
-    println!(
-        "{NUM_THREADS} threads * {INTERNAL_ITERS} iters took: {time_taken_ms} ms = {} transactions/s",
-        (NUM_THREADS * INTERNAL_ITERS * 1000) / time_taken_ms as usize
-    );
-}
-
-fn main() {
-    multi_threaded_inserts();
+#[test]
+fn kek() {
+    let _ = env_logger::builder().is_test(true).try_init();
+    println!("Start");
+    let driver = prepare();
+    open_transaction(&driver);
+    println!("Stop");
 }

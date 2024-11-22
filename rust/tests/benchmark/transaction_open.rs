@@ -50,7 +50,7 @@ fn open_transaction(driver: &TypeDBDriver) {
 
 fn criterion_benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("test transaction open");
-    group.sample_size(1000);
+    group.sample_size(500);
     // group.measurement_time(Duration::from_secs(200));
     group.sampling_mode(SamplingMode::Linear);
 
