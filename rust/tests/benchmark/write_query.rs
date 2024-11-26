@@ -24,66 +24,53 @@ use std::{
     fs::File,
     path::Path,
 };
-use chrono::Utc;
-use std::io::Write;
-
-
-use env_logger::{Builder, Env};
-use env_logger::fmt::Formatter;
-use log::{LevelFilter, Record, trace, warn};
-
+use futures::{StreamExt, TryStreamExt};
 use criterion::{Criterion, criterion_group, criterion_main, SamplingMode, Throughput};
 use criterion::profiler::Profiler;
 use pprof::ProfilerGuard;
-use typedb_driver::{TransactionType, TypeDBDriver};
+use typedb_driver::{Transaction, TransactionType, TypeDBDriver, answer::ConceptRow};
 
 const DB_NAME: &'static str = "benchmark";
+const SCHEMA_QUERY: &'static str = "
+define
+  entity person, owns name, owns age;
+  attribute name, value string;
+  attribute age, value long;";
+const QUERY: &'static str = r#"insert $p isa person, has name "John", has age 15;"#;
 
-fn prepare() -> TypeDBDriver {
+fn prepare() -> Transaction {
     async_std::task::block_on(async {
         let driver = TypeDBDriver::new_core(TypeDBDriver::DEFAULT_ADDRESS).await.expect("Expected driver");
         if driver.databases().contains(DB_NAME).await.unwrap() {
             driver.databases().get(DB_NAME).await.expect("Expect database get").delete().await.expect("Expected database delete");
         }
         driver.databases().create(DB_NAME).await.expect("Expect database create");
-        driver
+        let tx = driver.transaction(DB_NAME, TransactionType::Schema).await.expect("Expected transaction");
+        async_std::task::block_on(async {
+            tx.query(SCHEMA_QUERY).await.expect("Expected query result");
+        });
+        tx
     })
 }
 
-fn open_transaction(driver: &TypeDBDriver) {
+fn write_query(transaction: &Transaction) {
     async_std::task::block_on(async {
-        driver.transaction(DB_NAME, TransactionType::Read).await.expect("Expected transaction");
+        let _ : Vec<ConceptRow> = transaction.query(QUERY).await.expect("Expected query result").into_rows().try_collect().await.expect("Expected collected rows");
     })
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
-    Builder::new()
-        .format(|buf: &mut Formatter, record: &Record| {
-            let now = Utc::now();
-            writeln!(
-                buf,
-                "[{}.{:09}] {} - {}",
-                now.format("%Y-%m-%d %H:%M:%S"),
-                now.timestamp_subsec_nanos(),
-                record.level(),
-                record.args()
-            )
-                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e)) // Convert the error type
-        })
-        .filter(None, LevelFilter::Info) // Adjust log level
-        .init();
-    let driver = prepare();
-
-    let mut group = c.benchmark_group("test transaction open");
-    group.sample_size(500);
+    let mut group = c.benchmark_group("test write query");
+    // group.sample_size(1000);
     // group.measurement_time(Duration::from_secs(200));
     group.sampling_mode(SamplingMode::Linear);
 
+    let transaction = prepare();
 
     group.throughput(Throughput::Elements(1)); // calls/sec
-    group.bench_function("transaction_open", |b| {
+    group.bench_function("write query", |b| {
         b.iter(|| {
-            open_transaction(&driver)
+            write_query(&transaction)
         });
     });
     group.finish();

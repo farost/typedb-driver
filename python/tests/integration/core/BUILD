@@ -17,7 +17,7 @@
 
 load("@typedb_dependencies//tool/checkstyle:rules.bzl", "checkstyle_test")
 load("@typedb_driver_pip//:requirements.bzl", "requirement")
-load("@rules_python//python:defs.bzl", "py_test")
+load("@rules_python//python:defs.bzl", "py_test", "py_binary")
 
 exports_files(
     ["test_example.py"],
@@ -38,6 +38,17 @@ py_test(
 py_test(
     name = "test_values",
     srcs = ["test_values.py"],
+    deps = [
+        "//python:driver_python",
+        requirement("PyHamcrest"),
+    ],
+    data = ["//python:native-driver-binary-link", "//python:native-driver-wrapper-link"],
+    python_version = "PY3"
+)
+
+py_binary(
+    name = "bench",
+    srcs = ["bench.py"],
     deps = [
         "//python:driver_python",
         requirement("PyHamcrest"),

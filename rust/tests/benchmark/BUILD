@@ -27,6 +27,8 @@ benchmark_deps = [
     "@crates//:itertools",
     "@crates//:smol",
     "@crates//:tokio",
+    "@crates//:env_logger",
+        "@crates//:log",
 
     "@crates//:criterion",
     "@crates//:rand",
@@ -94,6 +96,50 @@ rust_test(
     name = "rollback_multithreaded",
     srcs = glob([
         "rollback_multithreaded.rs",
+    ]),
+    deps = benchmark_deps,
+    use_libtest_harness = False,
+)
+
+# To run this via Bazel, Criterion must be provided the --bench argument:
+#   bazel run --compilation_mode=opt //rust/tests/benchmark:schema_query -- --bench
+rust_test(
+    name = "schema_query",
+    srcs = glob([
+        "schema_query.rs",
+    ]),
+    deps = benchmark_deps,
+    use_libtest_harness = False,
+)
+
+# To run this via Bazel, Criterion must be provided the --bench argument:
+#   bazel run --compilation_mode=opt //rust/tests/benchmark:write_query -- --bench
+rust_test(
+    name = "write_query",
+    srcs = glob([
+        "write_query.rs",
+    ]),
+    deps = benchmark_deps,
+    use_libtest_harness = False,
+)
+
+# To run this via Bazel, Criterion must be provided the --bench argument:
+#   bazel run --compilation_mode=opt //rust/tests/benchmark:large_write_query -- --bench
+rust_test(
+    name = "large_write_query",
+    srcs = glob([
+        "large_write_query.rs",
+    ]),
+    deps = benchmark_deps,
+    use_libtest_harness = False,
+)
+
+# To run this via Bazel, Criterion must be provided the --bench argument:
+#   bazel run --compilation_mode=opt //rust/tests/benchmark:large_write_query_fetch -- --bench
+rust_test(
+    name = "large_write_query_fetch",
+    srcs = glob([
+        "large_write_query_fetch.rs",
     ]),
     deps = benchmark_deps,
     use_libtest_harness = False,

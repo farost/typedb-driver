@@ -24,6 +24,7 @@ use std::{
 };
 
 use itertools::Itertools;
+use log::info;
 
 use crate::{
     common::{
@@ -281,7 +282,10 @@ impl TypeDBDriver {
         database_name: impl AsRef<str>,
         transaction_type: TransactionType,
     ) -> Result<Transaction> {
-        self.transaction_with_options(database_name, transaction_type, Options::new()).await
+        info!("Inner transaction");
+        let s = self.transaction_with_options(database_name, transaction_type, Options::new()).await;
+        info!("Inner transaction end");
+        s
     }
 
     #[cfg_attr(feature = "sync", maybe_async::must_be_sync)]
