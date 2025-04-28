@@ -17,151 +17,166 @@
  * under the License.
  */
 
-
+import {AttributeType} from "../type/AttributeType";
+import {Instance} from "./Instance";
 import {RequestBuilder} from "../../../common/rpc/RequestBuilder";
-import {Concept} from "../Concept";
+import {Value} from "../value/Value";
 
-export interface Value extends Concept {
+/**
+ * Attribute is an instance of the attribute type and has a value. This value is fixed and unique for every given instance of the attribute type.
+ * Attributes can be uniquely addressed by their type and value.
+ */
+export interface Attribute extends Instance {
     /**
      * {@inheritDoc}
      */
-    isValue(): boolean;
+    isAttribute(): boolean;
 
     /**
      * {@inheritDoc}
      */
-    asValue(): Value;
+    asAttribute(): Attribute;
 
     /**
      * {@inheritDoc}
      */
-    getType(): string;
+    getType(): AttributeType;
 
     /**
-     * Returns an untyped <code>Object</code> value of this value concept.
-     * This is useful for value equality or printing without having to switch on the actual contained value.
+     * Retrieves the value which this <code>Attribute</code> holds.
      *
      * ### Examples
      *
      * ```ts
-     * value.get();
+     * attribute.getValue();
      * ```
      */
-    get(): Object;
+    getValue(): Value;
 
     /**
-     * Returns a <code>boolean</code> value of this <code>Value</code>.
+     * Retrieves the <code>string</code> describing the value type of this <code>Attribute</code>.
      *
      * ### Examples
      *
      * ```ts
-     * value.getBoolean()
+     * attribute.getValueType();
+     * ```
+     */
+    getValueType(): string;
+
+    /**
+     * Returns a <code>boolean</code> value of this <code>Attribute</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * attribute.getBoolean()
      * ```
      */
     getBoolean(): boolean;
 
     /**
-     * Returns a <code>integer</code> value of this <code>Value</code>.
+     * Returns a <code>integer</code> value of this <code>Attribute</code>.
      *
      * ### Examples
      *
      * ```ts
-     * value.getInteger()
+     * attribute.getInteger()
      * ```
      */
     getInteger(): number;
 
     /**
-     * Returns a <code>double</code> value of this <code>Value</code>.
+     * Returns a <code>double</code> value of this <code>Attribute</code>.
      *
      * ### Examples
      *
      * ```ts
-     * value.getDouble()
+     * attribute.getDouble()
      * ```
      */
     getDouble(): number;
 
     /**
-     * Returns a <code>decimal</code> value of this <code>Value</code>.
+     * Returns a <code>decimal</code> value of this <code>Attribute</code>.
      *
      * ### Examples
      *
      * ```ts
-     * value.getDecimal()
+     * attribute.getDecimal()
      * ```
      */
     getDecimal(): string;
 
     /**
-     * Returns a <code>string</code> value of this <code>Value</code>.
+     * Returns a <code>string</code> value of this <code>Attribute</code>.
      *
      * ### Examples
      *
      * ```ts
-     * value.getString()
+     * attribute.getString()
      * ```
      */
     getString(): string;
 
     /**
-     * Returns a <code>date</code> value of this <code>Value</code>.
+     * Returns a <code>date</code> value of this <code>Attribute</code>.
      *
      * ### Examples
      *
      * ```ts
-     * value.getDate()
+     * attribute.getDate()
      * ```
      */
     getDate(): Date;
 
     /**
-     * Returns a <code>datetime</code> value of this <code>Value</code>.
+     * Returns a <code>datetime</code> value of this <code>Attribute</code>.
      *
      * ### Examples
      *
      * ```ts
-     * value.getDatetime()
+     * attribute.getDatetime()
      * ```
      */
     getDatetime(): Date;
 
     /**
-     * Returns a <code>datetime-tz</code> value of this <code>Value</code>.
+     * Returns a <code>datetime-tz</code> value of this <code>Attribute</code>.
      *
      * ### Examples
      *
      * ```ts
-     * value.getDatetimeTZ()
+     * attribute.getDatetimeTZ()
      * ```
      */
     getDatetimeTZ(): Date;
 
     /**
-     * Returns a <code>duration</code> value of this <code>Value</code>.
+     * Returns a <code>duration</code> value of this <code>Attribute</code>.
      *
      * ### Examples
      *
      * ```ts
-     * value.getDuration()
+     * attribute.getDuration()
      * ```
      */
     getDuration(): { years: number; months: number; days: number; hours: number; minutes: number; seconds: number; milliseconds: number };
 
     /**
-     * Returns a <code>struct</code> value of this <code>Value</code>.
+     * Returns a <code>struct</code> value of this <code>Attribute</code>.
      *
      * ### Examples
      *
      * ```ts
-     * value.getStruct()
+     * attribute.getStruct()
      * ```
      */
     getStruct(): Record<string, Value>;
 }
 
-export namespace Value {
-    export function proto(value: Value) {
-        return RequestBuilder.Value.protoValue(value.valueType.proto(), value.value);
+export namespace Attribute {
+    export function proto(attribute: Attribute) {
+        return RequestBuilder.Thing.Attribute.protoAttribute(attribute.iid);
     }
 }

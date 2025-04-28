@@ -33,7 +33,7 @@ public class TypeDB {
      *
      * <h3>Examples</h3>
      * <pre>
-     * TypeDB.driver(address);
+     * TypeDB.driver(DEFAULT_ADDRESS, new Credentials(username, password), new DriverOptions(false, null));
      * </pre>
      *
      * @param address       The address of the TypeDB server

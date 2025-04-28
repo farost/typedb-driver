@@ -18,13 +18,13 @@
  */
 
 import {Concept} from "../../api/concept/Concept";
-import {Attribute} from "../../api/concept/thing/Attribute";
-import {Relation} from "../../api/concept/thing/Relation";
-import {Thing} from "../../api/concept/thing/Thing";
+import {Attribute} from "../../api/concept/instance/Attribute";
+import {Relation} from "../../api/concept/instance/Relation";
+import {Instance} from "../../api/concept/instance/Instance";
 import {AttributeType} from "../../api/concept/type/AttributeType";
 import {RoleType} from "../../api/concept/type/RoleType";
 import {ThingType} from "../../api/concept/type/ThingType";
-import {TypeDBTransaction} from "../../api/connection/TypeDBTransaction";
+import {Transaction} from "../../api/connection/Transaction";
 import {ErrorMessage} from "../../common/errors/ErrorMessage";
 import {TypeDBDriverError} from "../../common/errors/TypeDBDriverError";
 import {RequestBuilder} from "../../common/rpc/RequestBuilder";
@@ -49,7 +49,7 @@ import {TransactionReq} from "typedb-protocol/proto/transaction";
 import Annotation = ThingType.Annotation;
 import BAD_ENCODING = ErrorMessage.Concept.BAD_ENCODING;
 
-export abstract class ThingImpl extends ConceptImpl implements Thing {
+export abstract class ThingImpl extends ConceptImpl implements Instance {
     private readonly _iid: string;
     private readonly _inferred: boolean;
 
@@ -83,24 +83,24 @@ export abstract class ThingImpl extends ConceptImpl implements Thing {
         return true;
     }
 
-    asThing(): Thing {
+    asThing(): Instance {
         return this;
     }
 
-    async delete(transaction: TypeDBTransaction): Promise<void> {
+    async delete(transaction: Transaction): Promise<void> {
         const request = RequestBuilder.Thing.deleteReq(this.iid);
         await this.execute(transaction, request);
     }
 
-    abstract isDeleted(transaction: TypeDBTransaction): Promise<boolean>;
+    abstract isDeleted(transaction: Transaction): Promise<boolean>;
 
-    getHas(transaction: TypeDBTransaction): Stream<Attribute>;
-    getHas(transaction: TypeDBTransaction, annotations: Annotation[]): Stream<Attribute>;
-    getHas(transaction: TypeDBTransaction, attributeType: AttributeType): Stream<Attribute>;
-    getHas(transaction: TypeDBTransaction, attributeTypes: AttributeType[]): Stream<Attribute>;
-    getHas(transaction: TypeDBTransaction, attributeTypes: AttributeType[], annotations: Annotation[]): Stream<Attribute>;
+    getHas(transaction: Transaction): Stream<Attribute>;
+    getHas(transaction: Transaction, annotations: Annotation[]): Stream<Attribute>;
+    getHas(transaction: Transaction, attributeType: AttributeType): Stream<Attribute>;
+    getHas(transaction: Transaction, attributeTypes: AttributeType[]): Stream<Attribute>;
+    getHas(transaction: Transaction, attributeTypes: AttributeType[], annotations: Annotation[]): Stream<Attribute>;
     getHas(
-        transaction: TypeDBTransaction,
+        transaction: Transaction,
         annotationOrAttrTypeOrAttrTypes?: Annotation[] | AttributeType | AttributeType[],
         maybeAnnotations?: Annotation[],
     ): Stream<Attribute> {
@@ -133,24 +133,24 @@ export abstract class ThingImpl extends ConceptImpl implements Thing {
         ).map(AttributeImpl.ofAttributeProto);
     }
 
-    async setHas(transaction: TypeDBTransaction, attribute: Attribute): Promise<void> {
+    async setHas(transaction: Transaction, attribute: Attribute): Promise<void> {
         const request = RequestBuilder.Thing.setHasReq(this.iid, Attribute.proto(attribute));
         await this.execute(transaction, request);
     }
 
-    async unsetHas(transaction: TypeDBTransaction, attribute: Attribute): Promise<void> {
+    async unsetHas(transaction: Transaction, attribute: Attribute): Promise<void> {
         const request = RequestBuilder.Thing.unsetHasReq(this.iid, Attribute.proto(attribute));
         await this.execute(transaction, request);
     }
 
-    getPlaying(transaction: TypeDBTransaction): Stream<RoleType> {
+    getPlaying(transaction: Transaction): Stream<RoleType> {
         const request = RequestBuilder.Thing.getPlayingReq(this.iid);
         return this.stream(transaction, request)
             .flatMap((resPart) => Stream.array(resPart.thing_get_playing_res_part.role_types))
             .map((res) => RoleTypeImpl.ofRoleTypeProto(res));
     }
 
-    getRelations(transaction: TypeDBTransaction, roleTypes?: RoleType[]): Stream<Relation> {
+    getRelations(transaction: Transaction, roleTypes?: RoleType[]): Stream<Relation> {
         if (!roleTypes) roleTypes = [];
         const request = RequestBuilder.Thing.getRelationsReq(this.iid, roleTypes.map((roleType) => RoleType.proto(roleType)));
         return this.stream(transaction, request)
@@ -158,19 +158,19 @@ export abstract class ThingImpl extends ConceptImpl implements Thing {
             .map((res) => RelationImpl.ofRelationProto(res));
     }
 
-    protected async execute(transaction: TypeDBTransaction, request: TransactionReq): Promise<ThingRes> {
+    protected async execute(transaction: Transaction, request: TransactionReq): Promise<ThingRes> {
         const ext = transaction as TypeDBTransaction.Extended;
         return (await ext.rpcExecute(request, false)).thing_res;
     }
 
-    protected stream(transaction: TypeDBTransaction, request: TransactionReq): Stream<ThingResPart> {
+    protected stream(transaction: Transaction, request: TransactionReq): Stream<ThingResPart> {
         const ext = transaction as TypeDBTransaction.Extended;
         return ext.rpcStream(request).map((res) => res.thing_res_part);
     }
 }
 
 export namespace ThingImpl {
-    export function ofThingProto(proto: ThingProto): Thing {
+    export function ofThingProto(proto: ThingProto): Instance {
         if (proto.has_entity) return EntityImpl.ofEntityProto(proto.entity);
         else if (proto.has_relation) return RelationImpl.ofRelationProto(proto.relation);
         else if (proto.has_attribute) return AttributeImpl.ofAttributeProto(proto.attribute);

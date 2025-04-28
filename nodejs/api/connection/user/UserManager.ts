@@ -30,36 +30,32 @@ export interface UserManager {
      * driver.users.contains(username)
      * ```
      *
-     * @param username - The user name to be checked
+     * @param username - The username to be checked
      */
-    contains(name: string): Promise<boolean>;
+    contains(username: string): Promise<boolean>;
 
     /**
-     * Create a user with the given name &amp; password.
+     * Retrieves a user with the given name.
      *
      * ### Examples
      *
      * ```ts
-     * driver.users.create(username, password)
+     * driver.users.get(username)
      * ```
      *
-     * @param username - The name of the user to be created
-     * @param password - The password of the user to be created
+     * @param username - The name of the user to retrieve
      */
-    create(name: string, password: string): Promise<void>;
+    get(username: string): Promise<User>;
 
     /**
-     * Deletes a user with the given name.
+     * Retrieves the name of the user who opened the current connection.
      *
-     * ### Examples
-     *
-     * ```ts
-     * driver.users.delete(username)
-     * ```
-     *
-     * @param username - The name of the user to be deleted
+     * <h3>Examples</h3>
+     * <pre>
+     * driver.users().getCurrentUsername()
+     * </pre>
      */
-    delete(name: string): Promise<void>;
+    getCurrentUser(): Promise<User>;
 
     /**
      * Retrieves all users which exist on the TypeDB server.
@@ -73,29 +69,16 @@ export interface UserManager {
     all(): Promise<User[]>;
 
     /**
-     * Sets a new password for a user. This operation can only be performed by administrators.
+     * Create a user with the given name &amp; password.
      *
      * ### Examples
      *
      * ```ts
-     * driver.users.passwordSet(username, password)
+     * driver.users.create(username, password)
      * ```
      *
-     * @param username - The name of the user to set the password of
-     * @param password - The new password
+     * @param username - The name of the user to be created
+     * @param password - The password of the user to be created
      */
-    passwordSet(name: string, password: string): Promise<void>;
-
-    /**
-     * Retrieve a user with the given name.
-     *
-     * ### Examples
-     *
-     * ```ts
-     * driver.users.get(username)
-     * ```
-     *
-     * @param username - The name of the user to retrieve
-     */
-    get(name: string): Promise<User>;
+    create(username: string, password: string): Promise<void>;
 }

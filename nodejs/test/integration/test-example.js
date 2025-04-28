@@ -17,10 +17,10 @@
  * under the License.
  */
 
-const { TypeDB, SessionType, TransactionType } = require("../../dist");
+const { TypeDB, TransactionType } = require("../../dist");
 
 async function run() {
-    const driver = await TypeDB.coreDriver();
+    const driver = await TypeDB.driver();
 
     try {
         const dbs = await driver.databases.all();
@@ -38,19 +38,9 @@ async function run() {
         process.exit(1);
     }
 
-    let session;
-    try {
-        session = await driver.session("typedb", SessionType.SCHEMA);
-        console.log("open schema session - SUCCESS");
-    } catch (err) {
-        console.error(`open schema session - ERROR: ${err.stack || err}`);
-        await driver.close();
-        process.exit(1);
-    }
-
     let tx;
     try {
-        tx = await session.transaction(TransactionType.WRITE);
+        tx = await driver.transaction(TransactionType.WRITE);
         console.log("open schema write tx - SUCCESS");
     } catch (err) {
         console.error(`open schema write tx - ERROR: ${err.stack || err}`);
@@ -70,15 +60,6 @@ async function run() {
     }
 
     try {
-        await session.close();
-        console.log("close schema session - SUCCESS");
-    } catch (err) {
-        console.error(`close schema session - ERROR: ${err.stack || err}`);
-        await driver.close();
-        process.exit(1);
-    }
-
-    try {
         await driver.close();
         console.log("driver.close - SUCCESS");
     } catch (err) {
@@ -87,7 +68,7 @@ async function run() {
     }
 
     try {
-        const driver = await TypeDB.coreDriver("localhost");
+        const driver = await TypeDB.driver("localhost");
         console.error("driver open with missing port successful - FAILURE");
         process.exit(1);
     } catch (err) {

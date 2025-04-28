@@ -33,10 +33,10 @@ public interface UserManager {
      *
      * <h3>Examples</h3>
      * <pre>
-     * driver.users().contains(username);
+     * driver.users().contains(username)
      * </pre>
      *
-     * @param username The user name to be checked
+     * @param username The username to be checked
      */
     @CheckReturnValue
     boolean contains(String username) throws TypeDBDriverException;
@@ -46,7 +46,7 @@ public interface UserManager {
      *
      * <h3>Examples</h3>
      * <pre>
-     * driver.users().get(username);
+     * driver.users().get(username)
      * </pre>
      *
      * @param username The name of the user to retrieve
@@ -61,7 +61,7 @@ public interface UserManager {
      *
      * <h3>Examples</h3>
      * <pre>
-     * driver.users().getCurrentUsername();
+     * driver.users().getCurrentUsername()
      * </pre>
      */
     @CheckReturnValue
@@ -72,7 +72,7 @@ public interface UserManager {
      *
      * <h3>Examples</h3>
      * <pre>
-     * driver.users().all();
+     * driver.users().all()
      * </pre>
      */
     Set<User> all() throws TypeDBDriverException;
@@ -82,7 +82,7 @@ public interface UserManager {
      *
      * <h3>Examples</h3>
      * <pre>
-     * driver.users().create(username, password);
+     * driver.users().create(username, password)
      * </pre>
      *
      * @param username The name of the user to be created

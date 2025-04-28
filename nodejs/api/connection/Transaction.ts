@@ -24,13 +24,9 @@ import {
     TransactionType as TransactionTypeProto
 } from "typedb-protocol/proto/transaction";
 import {Stream} from "../../common/util/Stream";
-import {ConceptManager} from "../concept/ConceptManager";
-import {LogicManager} from "../logic/LogicManager";
-import {QueryManager} from "../query/QueryManager";
-import {TypeDBOptions} from "./TypeDBOptions";
-import {TypeDBDriverError} from "../../common/errors/TypeDBDriverError";
+import {TransactionOptions} from "./TransactionOptions";
 
-export interface TypeDBTransaction {
+export interface Transaction {
     /**
      * Checks whether this transaction is open.
      *
@@ -42,31 +38,56 @@ export interface TypeDBTransaction {
      */
     isOpen(): boolean;
 
-    /** The transaction’s type (READ or WRITE) */
-    readonly type: TransactionType;
-
-    /** The options for the transaction. */
-    readonly options: TypeDBOptions;
-
-    /** The <code>ConceptManager</code> for this transaction, providing access to all Concept API methods. */
-    readonly concepts: ConceptManager;
-
-    /** The <code>LogicManager</code> for this Transaction, providing access to all Concept API - Logic methods. */
-    readonly logic: LogicManager;
-
-    /** The<code>QueryManager</code> for this Transaction, from which any TypeQL query can be executed. */
-    readonly query: QueryManager;
-
     /**
-     * Registers a callback function which will be executed when this transaction is closed.
+     * The transaction's type (READ, WRITE, or SCHEMA)
      *
      * ### Examples
      *
      * ```ts
-     * transaction.onClose(function);
+     * transaction.getType()
      * ```
+     */
+    getType(): TransactionType;
+
+    /**
+     * The options for the transaction
+     */
+    options(): TransactionOptions;
+
+    /**
+     * Execute a TypeQL query in this transaction.
+     * @param query - The query to execute.
      *
-     * @param callback The callback function.
+     * ### Examples
+     *
+     * ```ts
+     * transaction.query("define entity person;")
+     * ```
+     */
+    query(query: string): Promise<QueryAnswer>;
+
+    /**
+     * Execute a TypeQL query in this transaction.
+     * @param query - The query to execute.
+     * @param options - The <code>QueryOptions</code> to execute the query with.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * transaction.query("define entity person;", queryOptions)
+     * ```
+     */
+    query(query: string, options: QueryOptions): Promise<QueryAnswer>;
+
+    /**
+     * Registers a callback function which will be executed when this transaction is closed.
+     * @param callback - The callback function.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * transaction.onClose(function)
+     * ```
      */
     onClose(callback: (error?: Error | string) => Promise<void>): void;
 
@@ -79,7 +100,7 @@ export interface TypeDBTransaction {
      * transaction.commit()
      * ```
      */
-    commit(): Promise<void>;
+    commit(): void;
 
     /**
      * Rolls back the uncommitted changes made via this transaction.
@@ -90,7 +111,7 @@ export interface TypeDBTransaction {
      * transaction.rollback()
      * ```
      */
-    rollback(): Promise<void>;
+    rollback(): void;
 
     /**
      * Closes the transaction.
@@ -101,26 +122,29 @@ export interface TypeDBTransaction {
      * transaction.close()
      * ```
      */
-    close(): Promise<void>;
+    close(): void;
 }
 
 /**
- * This class is used to specify the type of transaction.
+ * Used to specify the type of transaction.
  *
  * ### Examples
  *
  * ```ts
- * session.transaction(TransactionType.READ)
+ * driver.transaction(dbName, TransactionType.READ)
  * ```
  */
 export interface TransactionType {
     proto(): TransactionTypeProto;
 
-    /** Checks whether this is the READ TransactionType  */
+    /** Checks whether this is the READ TransactionType */
     isRead(): boolean;
 
-    /** Checks whether this is the WRITE TransactionType  */
+    /** Checks whether this is the WRITE TransactionType */
     isWrite(): boolean;
+
+    /** Checks whether this is the SCHEMA TransactionType */
+    isSchema(): boolean;
 }
 
 export namespace TransactionType {
@@ -142,17 +166,23 @@ export namespace TransactionType {
         isWrite(): boolean {
             return this == WRITE;
         }
+
+        isSchema(): boolean {
+            return this == SCHEMA;
+        }
     }
 
-    /** Constant used to specify a READ transaction must be created  */
+    /** Constant used to specify a READ transaction must be created */
     export const READ = new TransactionTypeImpl(TransactionTypeProto.READ);
-    /** Constant used to specify a WRITE transaction must be created  */
+    /** Constant used to specify a WRITE transaction must be created */
     export const WRITE = new TransactionTypeImpl(TransactionTypeProto.WRITE);
+    /** Constant used to specify a SCHEMA transaction must be created */
+    export const SCHEMA = new TransactionTypeImpl(TransactionTypeProto.SCHEMA);
 }
 
 /** @ignore */
 export namespace TypeDBTransaction {
-    export interface Extended extends TypeDBTransaction {
+    export interface Extended extends Transaction {
         rpcExecute(request: TransactionReq, batch?: boolean): Promise<TransactionRes>;
 
         rpcStream(request: TransactionReq): Stream<TransactionResPart>;

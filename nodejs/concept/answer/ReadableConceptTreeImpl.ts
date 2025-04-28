@@ -26,7 +26,7 @@ import {
 } from "typedb-protocol/proto/answer";
 
 import {Type} from "../../api/concept/type/Type";
-import {Attribute} from "../../api/concept/thing/Attribute";
+import {Attribute} from "../../api/concept/instance/Attribute";
 import {Value} from "../../api/concept/value/Value";
 import {Concept} from "../../api/concept/Concept";
 import {AttributeType} from "../../api/concept/type/AttributeType";

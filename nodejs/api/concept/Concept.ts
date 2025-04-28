@@ -17,20 +17,21 @@
  * under the License.
  */
 
-import {Attribute} from "./thing/Attribute";
-import {Entity} from "./thing/Entity";
-import {Relation} from "./thing/Relation";
-import {Thing} from "./thing/Thing";
+import {Attribute} from "./instance/Attribute";
+import {Entity} from "./instance/Entity";
+import {Relation} from "./instance/Relation";
 import {AttributeType} from "./type/AttributeType";
 import {EntityType} from "./type/EntityType";
 import {RelationType} from "./type/RelationType";
 import {RoleType} from "./type/RoleType";
-import {ThingType} from "./type/ThingType";
 import {Type} from "./type/Type";
-import {TypeTransitivity as TransitivityProto, ValueType as ValueTypeProto} from "typedb-protocol/proto/concept";
+import {ValueType as ValueTypeProto} from "typedb-protocol/proto/concept";
 import {Value} from "./value/Value";
+import {Instance} from "./instance/Instance";
 
 export interface Concept {
+    readonly DECIMAL_SCALE: number;
+
     /**
      * Checks if the concept is a <code>Type</code>.
      *
@@ -43,27 +44,6 @@ export interface Concept {
     isType(): boolean;
 
     /**
-     * Checks if the concept is a <code>RoleType</code>.
-     *
-     * ### Examples
-     *
-     * ```ts
-     * concept.isRoleType()
-     * ```
-     */
-    isRoleType(): boolean;
-    /**
-     * Checks if the concept is a <code>ThingType</code>.
-     *
-     * ### Examples
-     *
-     * ```ts
-     * concept.isThingType()
-     * ```
-     */
-    isThingType(): boolean;
-
-    /**
      * Checks if the concept is an <code>EntityType</code>.
      *
      * ### Examples
@@ -73,16 +53,7 @@ export interface Concept {
      * ```
      */
     isEntityType(): boolean;
-    /**
-     * Checks if the concept is a <code>RelationType</code>.
-     *
-     * ### Examples
-     *
-     * ```ts
-     * concept.isRelationType()
-     * ```
-     */
-    isRelationType(): boolean;
+
     /**
      * Checks if the concept is an <code>AttributeType</code>.
      *
@@ -95,15 +66,37 @@ export interface Concept {
     isAttributeType(): boolean;
 
     /**
-     * Checks if the concept is a <code>Thing</code>.
+     * Checks if the concept is a <code>RelationType</code>.
      *
      * ### Examples
      *
      * ```ts
-     * concept.isThing()
+     * concept.isRelationType()
      * ```
      */
-    isThing(): boolean;
+    isRelationType(): boolean;
+
+    /**
+     * Checks if the concept is a <code>RoleType</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.isRoleType()
+     * ```
+     */
+    isRoleType(): boolean;
+
+    /**
+     * Checks if the concept is an <code>Instance</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.isInstance()
+     * ```
+     */
+    isInstance(): boolean;
 
     /**
      * Checks if the concept is an <code>Entity</code>.
@@ -115,6 +108,7 @@ export interface Concept {
      * ```
      */
     isEntity(): boolean;
+
     /**
      * Checks if the concept is a <code>Relation</code>.
      *
@@ -125,6 +119,7 @@ export interface Concept {
      * ```
      */
     isRelation(): boolean;
+
     /**
      * Checks if the concept is an <code>Attribute</code>.
      *
@@ -159,27 +154,6 @@ export interface Concept {
     asType(): Type;
 
     /**
-     * Casts the concept to <code>ThingType</code>.
-     *
-     * ### Examples
-     *
-     * ```ts
-     * concept.asThingType()
-     * ```
-     */
-    asThingType(): ThingType;
-    /**
-     * Casts the concept to <code>RoleType</code>.
-     *
-     * ### Examples
-     *
-     * ```ts
-     * concept.asRoleType()
-     * ```
-     */
-    asRoleType(): RoleType;
-
-    /**
      * Casts the concept to <code>EntityType</code>.
      *
      * ### Examples
@@ -189,6 +163,7 @@ export interface Concept {
      * ```
      */
     asEntityType(): EntityType;
+
     /**
      * Casts the concept to <code>RelationType</code>.
      *
@@ -199,6 +174,7 @@ export interface Concept {
      * ```
      */
     asRelationType(): RelationType;
+
     /**
      * Casts the concept to <code>AttributeType</code>.
      *
@@ -211,15 +187,26 @@ export interface Concept {
     asAttributeType(): AttributeType;
 
     /**
-     * Casts the concept to <code>Thing</code>.
+     * Casts the concept to <code>RoleType</code>.
      *
      * ### Examples
      *
      * ```ts
-     * concept.asThing()
+     * concept.asRoleType()
      * ```
      */
-    asThing(): Thing;
+    asRoleType(): RoleType;
+
+    /**
+     * Casts the concept to <code>Instance</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.asInstance()
+     * ```
+     */
+    asInstance(): Instance;
 
     /**
      * Casts the concept to <code>Entity</code>.
@@ -231,6 +218,7 @@ export interface Concept {
      * ```
      */
     asEntity(): Entity;
+
     /**
      * Casts the concept to <code>Relation</code>.
      *
@@ -241,6 +229,7 @@ export interface Concept {
      * ```
      */
     asRelation(): Relation;
+
     /**
      * Casts the concept to <code>Attribute</code>.
      *
@@ -264,70 +253,322 @@ export interface Concept {
     asValue(): Value;
 
     /**
-    * Checks if this concept is equal to the argument <code>concept</code>.
-    * @param concept - The concept to compare to.
-    */
+     * Returns <code>true</code> if the value which this <code>Concept</code> holds is of type <code>boolean</code>
+     * or if this <code>Concept</code> is an <code>AttributeType</code> of type <code>boolean</code>.
+     * Otherwise, returns <code>false</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.isBoolean()
+     * ```
+     */
+    isBoolean(): boolean;
+
+    /**
+     * Returns <code>true</code> if the value which this <code>Concept</code> holds is of type <code>integer</code>
+     * or if this <code>Concept</code> is an <code>AttributeType</code> of type <code>integer</code>.
+     * Otherwise, returns <code>false</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.isInteger()
+     * ```
+     */
+    isInteger(): boolean;
+
+    /**
+     * Returns <code>true</code> if the value which this <code>Concept</code> holds is of type <code>double</code>
+     * or if this <code>Concept</code> is an <code>AttributeType</code> of type <code>double</code>.
+     * Otherwise, returns <code>false</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.isDouble()
+     * ```
+     */
+    isDouble(): boolean;
+
+    /**
+     * Returns <code>true</code> if the value which this <code>Concept</code> holds is of type <code>decimal</code>
+     * or if this <code>Concept</code> is an <code>AttributeType</code> of type <code>decimal</code>.
+     * Otherwise, returns <code>false</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.isDecimal()
+     * ```
+     */
+    isDecimal(): boolean;
+
+    /**
+     * Returns <code>true</code> if the value which this <code>Concept</code> holds is of type <code>string</code>
+     * or if this <code>Concept</code> is an <code>AttributeType</code> of type <code>string</code>.
+     * Otherwise, returns <code>false</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.isString()
+     * ```
+     */
+    isString(): boolean;
+
+    /**
+     * Returns <code>true</code> if the value which this <code>Concept</code> holds is of type <code>date</code>
+     * or if this <code>Concept</code> is an <code>AttributeType</code> of type <code>date</code>.
+     * Otherwise, returns <code>false</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.isDate()
+     * ```
+     */
+    isDate(): boolean;
+
+    /**
+     * Returns <code>true</code> if the value which this <code>Concept</code> holds is of type <code>datetime</code>
+     * or if this <code>Concept</code> is an <code>AttributeType</code> of type <code>datetime</code>.
+     * Otherwise, returns <code>false</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.isDatetime()
+     * ```
+     */
+    isDatetime(): boolean;
+
+    /**
+     * Returns <code>true</code> if the value which this <code>Concept</code> holds is of type <code>datetime-tz</code>
+     * or if this <code>Concept</code> is an <code>AttributeType</code> of type <code>datetime-tz</code>.
+     * Otherwise, returns <code>false</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.isDatetimeTZ()
+     * ```
+     */
+    isDatetimeTZ(): boolean;
+
+    /**
+     * Returns <code>true</code> if the value which this <code>Concept</code> holds is of type <code>duration</code>
+     * or if this <code>Concept</code> is an <code>AttributeType</code> of type <code>duration</code>.
+     * Otherwise, returns <code>false</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.isDuration()
+     * ```
+     */
+    isDuration(): boolean;
+
+    /**
+     * Returns <code>true</code> if the value which this <code>Concept</code> holds is of type <code>struct</code>
+     * or if this <code>Concept</code> is an <code>AttributeType</code> of type <code>struct</code>.
+     * Otherwise, returns <code>false</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.isStruct()
+     * ```
+     */
+    isStruct(): boolean;
+
+    /**
+     * Returns a <code>boolean</code> value of this <code>Concept</code>.
+     * If it's not a <code>Value</code> or it has another type, returns <code>null</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.tryGetBoolean()
+     * ```
+     */
+    tryGetBoolean(): boolean | null;
+
+    /**
+     * Returns a <code>integer</code> value of this <code>Concept</code>.
+     * If it's not a <code>Value</code> or it has another type, returns <code>null</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.tryGetInteger()
+     * ```
+     */
+    tryGetInteger(): number | null;
+
+    /**
+     * Returns a <code>double</code> value of this <code>Concept</code>.
+     * If it's not a <code>Value</code> or it has another type, returns <code>null</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.tryGetDouble()
+     * ```
+     */
+    tryGetDouble(): number | null;
+
+    /**
+     * Returns a <code>decimal</code> value of this <code>Concept</code>.
+     * If it's not a <code>Value</code> or it has another type, returns <code>null</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.tryGetDecimal()
+     * ```
+     */
+    tryGetDecimal(): string | null;
+
+    /**
+     * Returns a <code>string</code> value of this <code>Concept</code>.
+     * If it's not a <code>Value</code> or it has another type, returns <code>null</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.tryGetString()
+     * ```
+     */
+    tryGetString(): string | null;
+
+    /**
+     * Returns a <code>date</code> value of this <code>Concept</code>.
+     * If it's not a <code>Value</code> or it has another type, returns <code>null</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.tryGetDate()
+     * ```
+     */
+    tryGetDate(): Date | null;
+
+    /**
+     * Returns a <code>datetime</code> value of this <code>Concept</code>.
+     * If it's not a <code>Value</code> or it has another type, returns <code>null</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.tryGetDatetime()
+     * ```
+     */
+    tryGetDatetime(): Date | null;
+
+    /**
+     * Returns a <code>datetime-tz</code> value of this <code>Concept</code>.
+     * If it's not a <code>Value</code> or it has another type, returns <code>null</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.tryGetDatetimeTZ()
+     * ```
+     */
+    tryGetDatetimeTZ(): Date | null;
+
+    /**
+     * Returns a <code>duration</code> value of this <code>Concept</code>.
+     * If it's not a <code>Value</code> or it has another type, returns <code>null</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.tryGetDuration()
+     * ```
+     */
+    tryGetDuration(): { years: number; months: number; days: number; hours: number; minutes: number; seconds: number; milliseconds: number } | null;
+
+    /**
+     * Returns a <code>struct</code> value of this <code>Concept</code>.
+     * If it's not a <code>Value</code> or it has another type, returns <code>null</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.tryGetStruct()
+     * ```
+     */
+    tryGetStruct(): Record<string, Value | null> | null;
+
+    /**
+     * Retrieves the unique label of the concept.
+     * If this is an <code>Instance</code>, return the label of the type of this instance ("unknown" if type fetching is disabled).
+     * If this is a <code>Value</code>, return the label of the value type of the value.
+     * If this is a <code>Type</code>, return the label of the type.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.getLabel()
+     * ```
+     */
+    getLabel(): string;
+
+    /**
+     * Retrieves the unique label of the concept.
+     * If this is an <code>Instance</code>, return the label of the type of this instance (<code>null</code> if type fetching is disabled).
+     * Returns <code>null</code> if type fetching is disabled.
+     * If this is a <code>Value</code>, return the label of the value type of the value.
+     * If this is a <code>Type</code>, return the label of the type.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.tryGetLabel()
+     * ```
+     */
+    tryGetLabel(): string | null;
+
+    /**
+     * Retrieves the unique id of the <code>Concept</code>. Returns <code>null</code> if absent.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.tryGetIID()
+     * ```
+     */
+    tryGetIID(): string | null;
+
+    /**
+     * Retrieves the <code>string</code> describing the value type of this <code>Concept</code>.
+     * Returns <code>null</code> if not absent.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.tryGetValueType()
+     * ```
+     */
+    tryGetValueType(): string | null;
+
+    /**
+     * Retrieves the value which this <code>Concept</code> holds.
+     * Returns <code>null</code> if this <code>Concept</code> does not hold any value.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * concept.tryGetValue()
+     * ```
+     */
+    tryGetValue(): Value | null;
+
+    /**
+     * Checks if this concept is equal to the argument <code>concept</code>.
+     * @param concept - The concept to compare to.
+     */
     equals(concept: Concept): boolean;
-}
-
-export namespace Concept {
-    export class ValueType {
-        private readonly _proto: ValueTypeProto;
-        private readonly _name: string;
-
-        constructor(type: ValueTypeProto, name: string) {
-            this._proto = type;
-            this._name = name;
-        }
-
-        proto(): ValueTypeProto {
-            return this._proto;
-        }
-
-        name(): string {
-            return this._name.toLowerCase();
-        }
-
-        toString() {
-            return "ValueType[" + this._name + "]";
-        }
-    }
-
-    /** TypeQL value types for attributes & value concepts. */
-    export namespace ValueType {
-        export const OBJECT = new ValueType(ValueTypeProto.OBJECT, "OBJECT");
-        export const BOOLEAN = new ValueType(ValueTypeProto.BOOLEAN, "BOOLEAN");
-        export const LONG = new ValueType(ValueTypeProto.LONG, "LONG");
-        export const DOUBLE = new ValueType(ValueTypeProto.DOUBLE, "DOUBLE");
-        export const STRING = new ValueType(ValueTypeProto.STRING, "STRING");
-        export const DATETIME = new ValueType(ValueTypeProto.DATETIME, "DATETIME");
-
-        export function of(proto: ValueTypeProto): ValueType {
-            switch (proto) {
-                case ValueTypeProto.OBJECT: return OBJECT;
-                case ValueTypeProto.BOOLEAN: return BOOLEAN;
-                case ValueTypeProto.LONG: return LONG;
-                case ValueTypeProto.DOUBLE: return DOUBLE;
-                case ValueTypeProto.STRING: return STRING;
-                case ValueTypeProto.DATETIME: return DATETIME;
-            }
-        }
-    }
-
-    export class Transitivity {
-        private readonly _transitivity: TransitivityProto;
-
-        constructor(transitivity: TransitivityProto) {
-            this._transitivity = transitivity;
-        }
-
-        proto(): TransitivityProto {
-            return this._transitivity;
-        }
-    }
-
-    export namespace Transitivity {
-        export const TRANSITIVE = new Transitivity(TransitivityProto.TRANSITIVE);
-        export const EXPLICIT = new Transitivity(TransitivityProto.EXPLICIT);
-    }
 }

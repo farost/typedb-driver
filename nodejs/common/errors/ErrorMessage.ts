@@ -78,11 +78,11 @@ export namespace ErrorMessage {
         }
     }
 
+    // TODO: Refactor errors
     export namespace Driver {
         export const RPC_METHOD_UNAVAILABLE = new Driver(1, (args: Stringable[]) => `The server does not support this method. Please ensure that the TypeDB Driver and TypeDB Server versions are compatible:\n'${args[0]}'.`);
         export const DRIVER_NOT_OPEN = new Driver(2, (args: Stringable[]) => `The driver is not open.`);
-        export const SESSION_ID_EXISTS = new Driver(3, (args: Stringable[]) => `The newly opened session id '${args[0]}' already exists`);
-        export const SESSION_CLOSED = new Driver(4, () => `Session is closed.`);
+        export const TRANSACTION_ID_EXISTS = new Driver(3, (args: Stringable[]) => `The newly opened transaction id '${args[0]}' already exists`);
         export const TRANSACTION_CLOSED = new Driver(5, () => `The transaction has been closed and no further operation is allowed.`);
         export const TRANSACTION_CLOSED_WITH_ERRORS = new Driver(6, (args: Stringable[]) => `The transaction has been closed with error(s): \n${args[0]}.`)
         export const UNABLE_TO_CONNECT = new Driver(7, () => `Unable to connect to TypeDB server.`);

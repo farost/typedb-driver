@@ -18,26 +18,37 @@
  */
 
 /**
- * `User` class
+ * TypeDB user information
  */
 export interface User {
     /** The name of this user. */
-    readonly username: string;
+    readonly name: string;
 
-    /** The number of seconds remaining till this user’s current password expires. */
-    readonly passwordExpirySeconds: number;
+    // TODO: Not implemented
+    // /** The number of seconds remaining till this user’s current password expires. */
+    // readonly passwordExpirySeconds: number;
 
     /**
-     * Updates the user's password.
+     * Updates the password for this user.
+     *
+     * @param password - The new password
      *
      * ### Examples
      *
      * ```ts
-     * user.passwordUpdate("oldpassword", "nEwp@ssw0rd");
+     * user.updatePassword("nEwp@ssw0rd")
      * ```
-     *
-     * @param oldPassword - Old password
-     * @param newPassword - New password
      */
-    passwordUpdate(oldPassword: string, newPassword: string): Promise<void>;
+    updatePassword(password: string): Promise<void>;
+
+    /**
+     * Deletes a user with the given name.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * user.delete();
+     * ```
+     */
+    delete(): Promise<void>;
 }

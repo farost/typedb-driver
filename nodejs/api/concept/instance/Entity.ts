@@ -18,19 +18,41 @@
  */
 
 import {EntityType} from "../type/EntityType";
-import {Thing} from "./Thing";
+import {Instance} from "./Instance";
 import {RequestBuilder} from "../../../common/rpc/RequestBuilder";
+import {Type} from "../type/Type";
 
 /**
  * Instance of data of an entity type, representing a standalone object that exists in the data model independently.
  * Entity does not have a value. It is usually addressed by its ownership over attribute instances and/or roles played in relation instances.
  *
  */
-export interface Entity extends Thing {
+export interface Entity extends Instance {
     /**
-     * The type which this <code>Entity</code> belongs to.
+     * {@inheritDoc}
      */
-    readonly type: EntityType;
+    isEntity(): boolean;
+
+    /**
+     * {@inheritDoc}
+     */
+    asEntity(): Entity;
+
+    /**
+     * {@inheritDoc}
+     */
+    getType(): EntityType;
+
+    /**
+     * Retrieves the unique id of the <code>Entity</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * entity.getIID()
+     * ```
+     */
+    getIID(): string;
 }
 
 export namespace Entity {

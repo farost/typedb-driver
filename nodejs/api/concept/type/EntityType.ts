@@ -17,45 +17,22 @@
  * under the License.
  */
 
-import {Stream} from "../../../common/util/Stream";
-import {TypeDBTransaction} from "../../connection/TypeDBTransaction";
-import {Concept} from "../Concept";
-import {Entity} from "../thing/Entity";
-import {ThingType} from "./ThingType";
 import {RequestBuilder} from "../../../common/rpc/RequestBuilder";
-import Transitivity = Concept.Transitivity;
+import {Type} from "./Type";
 
-export interface EntityType extends ThingType {
-    /** @inheritDoc */
-    create(transaction: TypeDBTransaction): Promise<Entity>;
-
-    /** @inheritDoc */
-    getSupertype(transaction: TypeDBTransaction): Promise<EntityType>;
+/**
+ * Entity types represent the classification of independent objects in the data model of the business domain.
+ */
+export interface EntityType extends Type {
+    /**
+     * {@inheritDoc}
+     */
+    isEntityType(): boolean;
 
     /**
-     * Sets the supplied <code>EntityType</code> as the supertype of the current <code>EntityType</code>.
-     *
-     * ### Examples
-     *
-     * ```ts
-     * entityType.setSupertype(transaction, superEntityType).resolve();
-     * ```
-     *
-     * @param transaction The current transaction
-     * @param superEntityType The <code>EntityType</code> to set as the supertype of this <code>EntityType</code>
+     * {@inheritDoc}
      */
-    setSupertype(transaction: TypeDBTransaction, superEntityType: EntityType): Promise<void>;
-
-    /** @inheritDoc */
-    getSupertypes(transaction: TypeDBTransaction): Stream<EntityType>;
-
-    /** @inheritDoc */
-    getSubtypes(transaction: TypeDBTransaction): Stream<EntityType>;
-    getSubtypes(transaction: TypeDBTransaction, transitivity: Transitivity): Stream<EntityType>;
-
-    /** @inheritDoc */
-    getInstances(transaction: TypeDBTransaction): Stream<Entity>;
-    getInstances(transaction: TypeDBTransaction, transitivity: Transitivity): Stream<Entity>;
+    asEntityType(): EntityType;
 }
 
 export namespace EntityType {

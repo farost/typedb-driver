@@ -34,7 +34,7 @@ import static com.typedb.driver.jni.typedb_driver.query_options_set_include_inst
 import static com.typedb.driver.jni.typedb_driver.query_options_set_prefetch_size;
 
 /**
- * TypeDB transaction options. <code>QueryOptions</code> object can be used to override
+ * TypeDB query options. <code>QueryOptions</code> object can be used to override
  * the default server behaviour for executed queries.
  */
 public class QueryOptions extends NativeObject<com.typedb.driver.jni.QueryOptions> {

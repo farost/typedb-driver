@@ -3,7 +3,7 @@
 
 *Package*: `com.typedb.driver.api`
 
-TypeDB transaction options. ``QueryOptions`` object can be used to override the default server behaviour for executed queries.
+TypeDB query options. ``QueryOptions`` object can be used to override the default server behaviour for executed queries.
 
 // tag::methods[]
 [#_QueryOptions_QueryOptions_]

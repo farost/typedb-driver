@@ -22,16 +22,16 @@ import {DatabaseManager} from "../api/connection/database/DatabaseManager";
 import {ErrorMessage} from "../common/errors/ErrorMessage";
 import {TypeDBDriverError} from "../common/errors/TypeDBDriverError";
 import {RequestBuilder} from "../common/rpc/RequestBuilder";
-import {ServerDriver, TypeDBDriverImpl} from "./TypeDBDriverImpl";
+import {ServerDriver, DriverImpl} from "./DriverImpl";
 import {TypeDBDatabaseImpl} from "./TypeDBDatabaseImpl";
 import CLOUD_ALL_NODES_FAILED = ErrorMessage.Driver.CLOUD_ALL_NODES_FAILED;
 import CLOUD_REPLICA_NOT_PRIMARY = ErrorMessage.Driver.CLOUD_REPLICA_NOT_PRIMARY;
 import DB_DOES_NOT_EXIST = ErrorMessage.Driver.DATABASE_DOES_NOT_EXIST;
 
 export class TypeDBDatabaseManagerImpl implements DatabaseManager {
-    private readonly _driver: TypeDBDriverImpl;
+    private readonly _driver: DriverImpl;
 
-    constructor(driver: TypeDBDriverImpl) {
+    constructor(driver: DriverImpl) {
         this._driver = driver;
     }
 

@@ -115,10 +115,14 @@ export namespace ValueImpl {
     export function ofValueProto(valueProto: ValueProto): Value {
         if (!valueProto) return null;
         if (valueProto.has_boolean) return new ValueImpl(ValueType.BOOLEAN, valueProto.boolean);
-        else if (valueProto.has_long) return new ValueImpl(ValueType.LONG, valueProto.long);
+        else if (valueProto.has_integer) return new ValueImpl(ValueType.INTEGER, valueProto.integer);
         else if (valueProto.has_double) return new ValueImpl(ValueType.DOUBLE, valueProto.double);
+        else if (valueProto.has_decimal) return new ValueImpl(ValueType.DECIMAL, valueProto.decimal);
         else if (valueProto.has_string) return new ValueImpl(ValueType.STRING, valueProto.string);
+        else if (valueProto.has_date) return new ValueImpl(ValueType.DATE, new Date(valueProto.date));
         else if (valueProto.has_date_time) return new ValueImpl(ValueType.DATETIME, new Date(valueProto.date_time));
+        else if (valueProto.has_date_time_tz) return new ValueImpl(ValueType.DATETIME_TZ, new Date(valueProto.date_time_tz));
+        else if (valueProto.has_duration) return new ValueImpl(ValueType.DURATION, new Date(valueProto.duration));
         else throw new TypeDBDriverError(BAD_VALUE_TYPE.message(valueProto));
     }
 }

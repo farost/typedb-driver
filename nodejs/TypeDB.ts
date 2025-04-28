@@ -17,43 +17,26 @@
  * under the License.
  */
 
-import {TypeDBDriver as TypeDBDriver} from "./api/connection/TypeDBDriver";
-import {TypeDBCredential} from "./api/connection/TypeDBCredential";
-import {TypeDBDriverImpl} from "./connection/TypeDBDriverImpl";
+import {Driver as TypeDBDriver} from "./api/connection/Driver";
+import {Credentials} from "./api/connection/Credentials";
+import {DriverImpl} from "./connection/DriverImpl";
 
 export namespace TypeDB {
     export const DEFAULT_ADDRESS = "127.0.0.1:1729";
 
     /**
-     * Creates a connection to TypeDB.
-     * @param address - Address of the TypeDB server.
+     * Open a TypeDB Driver to a TypeDB server available at the provided address.
+     * @param address - The address of the TypeDB server.
+     * @param credentials - The credentials to connect with. See <code>{@link Credentials}</code>
+     * @param driverOptions - The connection settings to connect with. See <code>{@link DriverOptions}</code>
      *
      * ### Examples
      *
      * ```ts
-     * const driver = TypeDB.coreDriver("127.0.0.1:11729");
+     * const driver = TypeDB.driver(DEFAULT_ADDRESS, new Credentials(username, password), new DriverOptions(false, null));
      * ```
      */
-    export function coreDriver(address: string = DEFAULT_ADDRESS): Promise<TypeDBDriver> {
-        return new TypeDBDriverImpl(address).open();
-    }
-
-    /**
-     * Creates a connection to TypeDB Cloud, authenticating with the provided credentials.
-     * @param addresses - List of addresses of the individual TypeDB Cloud servers.
-     * As long one specified address is provided, the driver will discover the other addresses from that server.
-     * Alternatively, a translation map from addresses to be used by the driver for connection
-     * to addresses received from the TypeDB server(s) may be provided.
-     * @param credential - The credentials to log in, and encryption settings. See <code>{@link TypeDBCredential}</code>
-     *
-     * ### Examples
-     *
-     * ```ts
-     * const driver = TypeDB.cloudDriver(["127.0.0.1:11729"], new TypeDBCredential(username, password));
-     * ```
-     */
-    export function cloudDriver(addresses: string | string[] | Record<string, string>, credential: TypeDBCredential): Promise<TypeDBDriver> {
-        if (typeof addresses === 'string') addresses = [addresses];
-        return new TypeDBDriverImpl(addresses, credential).open();
+    export function driver(address: string, credentials: Credentials, driverOptions: DriverOptions): Promise<TypeDBDriver> {
+        return new DriverImpl(address, credentials, driverOptions).open();
     }
 }

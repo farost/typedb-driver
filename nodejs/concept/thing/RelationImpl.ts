@@ -18,11 +18,11 @@
  */
 
 import {Relation as RelationProto} from "typedb-protocol/proto/concept";
-import {Relation} from "../../api/concept/thing/Relation";
-import {Thing} from "../../api/concept/thing/Thing";
+import {Relation} from "../../api/concept/instance/Relation";
+import {Instance} from "../../api/concept/instance/Instance";
 import {RelationType} from "../../api/concept/type/RelationType";
 import {RoleType} from "../../api/concept/type/RoleType";
-import {TypeDBTransaction} from "../../api/connection/TypeDBTransaction";
+import {Transaction} from "../../api/connection/Transaction";
 import {RequestBuilder} from "../../common/rpc/RequestBuilder";
 import {Bytes} from "../../common/util/Bytes";
 import {Stream} from "../../common/util/Stream";
@@ -52,21 +52,21 @@ export class RelationImpl extends ThingImpl implements Relation {
         return this;
     }
 
-    async isDeleted(transaction: TypeDBTransaction): Promise<boolean> {
+    async isDeleted(transaction: Transaction): Promise<boolean> {
         return !(await transaction.concepts.getRelation(this.iid));
     }
 
-    async addRolePlayer(transaction: TypeDBTransaction, roleType: RoleType, player: Thing): Promise<void> {
-        const request = RequestBuilder.Thing.Relation.addRolePlayerReq(this.iid, RoleType.proto(roleType), Thing.proto(player));
+    async addRolePlayer(transaction: Transaction, roleType: RoleType, player: Instance): Promise<void> {
+        const request = RequestBuilder.Thing.Relation.addRolePlayerReq(this.iid, RoleType.proto(roleType), Instance.proto(player));
         await this.execute(transaction, request);
     }
 
-    async removeRolePlayer(transaction: TypeDBTransaction, roleType: RoleType, player: Thing): Promise<void> {
-        const request = RequestBuilder.Thing.Relation.removeRolePlayerReq(this.iid, RoleType.proto(roleType), Thing.proto(player));
+    async removeRolePlayer(transaction: Transaction, roleType: RoleType, player: Instance): Promise<void> {
+        const request = RequestBuilder.Thing.Relation.removeRolePlayerReq(this.iid, RoleType.proto(roleType), Instance.proto(player));
         await this.execute(transaction, request);
     }
 
-    getPlayersByRoleType(transaction: TypeDBTransaction, roleTypes?: RoleType[]): Stream<Thing> {
+    getPlayersByRoleType(transaction: Transaction, roleTypes?: RoleType[]): Stream<Instance> {
         if (!roleTypes) roleTypes = []
         const request = RequestBuilder.Thing.Relation.getPlayersByRoleTypeReq(this.iid, roleTypes.map(RoleType.proto));
         return this.stream(transaction, request)
@@ -74,9 +74,9 @@ export class RelationImpl extends ThingImpl implements Relation {
             .map((thingProto) => ThingImpl.ofThingProto(thingProto));
     }
 
-    async getRolePlayers(transaction: TypeDBTransaction): Promise<Map<RoleType, Thing[]>> {
+    async getRolePlayers(transaction: Transaction): Promise<Map<RoleType, Instance[]>> {
         const request = RequestBuilder.Thing.Relation.getRolePlayersReq(this.iid);
-        const rolePlayersMap = new Map<RoleType, Thing[]>();
+        const rolePlayersMap = new Map<RoleType, Instance[]>();
         await this.stream(transaction, request)
             .flatMap((resPart) => Stream.array(resPart.relation_get_role_players_res_part.role_players))
             .forEach((roleTypeWithPlayerList) => {
@@ -92,14 +92,14 @@ export class RelationImpl extends ThingImpl implements Relation {
         return rolePlayersMap;
     }
 
-    getRelating(transaction: TypeDBTransaction): Stream<RoleType> {
+    getRelating(transaction: Transaction): Stream<RoleType> {
         const request = RequestBuilder.Thing.Relation.getRelatingReq(this.iid);
         return this.stream(transaction, request)
             .flatMap((resPart) => Stream.array(resPart.relation_get_relating_res_part.role_types))
             .map((roleTypeProto) => RoleTypeImpl.ofRoleTypeProto(roleTypeProto));
     }
 
-    private findRole(map: Map<RoleType, Thing[]>, role: RoleType) {
+    private findRole(map: Map<RoleType, Instance[]>, role: RoleType) {
         const iter = map.keys();
         let next = iter.next();
         while (!next.done) {
@@ -117,6 +117,6 @@ export namespace RelationImpl {
     export function ofRelationProto(proto: RelationProto) {
         if (!proto) return null;
         const iid = Bytes.bytesToHexString(proto.iid);
-        return new RelationImpl(iid, proto.inferred, RelationTypeImpl.ofRelationTypeProto(proto.relation_type));
+        return new RelationImpl(iid, RelationTypeImpl.ofRelationTypeProto(proto.relation_type));
     }
 }

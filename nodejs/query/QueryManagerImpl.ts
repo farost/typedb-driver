@@ -23,8 +23,8 @@ import {ConceptMap} from "../api/answer/ConceptMap";
 import {ConceptMapGroup} from "../api/answer/ConceptMapGroup";
 import {ValueGroup} from "../api/answer/ValueGroup";
 import {Value} from "../api/concept/value/Value";
-import {TypeDBOptions} from "../api/connection/TypeDBOptions";
-import {TypeDBTransaction} from "../api/connection/TypeDBTransaction";
+import {TransactionOptions} from "../api/connection/TransactionOptions";
+import {Transaction} from "../api/connection/Transaction";
 import {Explanation} from "../api/logic/Explanation";
 import {QueryManager} from "../api/query/QueryManager";
 import {RequestBuilder} from "../common/rpc/RequestBuilder";
@@ -44,8 +44,8 @@ export class QueryManagerImpl implements QueryManager {
         this._transaction = transaction;
     }
 
-    get(query: string, options?: TypeDBOptions): Stream<ConceptMap> {
-        if (!options) options = new TypeDBOptions();
+    get(query: string, options?: TransactionOptions): Stream<ConceptMap> {
+        if (!options) options = new TransactionOptions();
         const request = RequestBuilder.QueryManager.getReq(query, options.proto());
         return this.stream(request).flatMap((queryResPart) =>
             Stream.array(queryResPart.get_res_part.answers)
@@ -53,8 +53,8 @@ export class QueryManagerImpl implements QueryManager {
         );
     }
 
-    getAggregate(query: string, options?: TypeDBOptions): Promise<Value | null> {
-        if (!options) options = new TypeDBOptions();
+    getAggregate(query: string, options?: TransactionOptions): Promise<Value | null> {
+        if (!options) options = new TransactionOptions();
         const request = RequestBuilder.QueryManager.getAggregateReq(query, options.proto());
         return this.query(request).then((res) => {
             if (res.get_aggregate_res) {
@@ -65,8 +65,8 @@ export class QueryManagerImpl implements QueryManager {
         });
     }
 
-    getGroup(query: string, options?: TypeDBOptions): Stream<ConceptMapGroup> {
-        if (!options) options = new TypeDBOptions();
+    getGroup(query: string, options?: TransactionOptions): Stream<ConceptMapGroup> {
+        if (!options) options = new TransactionOptions();
         const request = RequestBuilder.QueryManager.getGroupReq(query, options.proto());
         return this.stream(request).flatMap((queryResPart) =>
             Stream.array(queryResPart.get_group_res_part.answers)
@@ -74,8 +74,8 @@ export class QueryManagerImpl implements QueryManager {
         );
     }
 
-    getGroupAggregate(query: string, options?: TypeDBOptions): Stream<ValueGroup> {
-        if (!options) options = new TypeDBOptions();
+    getGroupAggregate(query: string, options?: TransactionOptions): Stream<ValueGroup> {
+        if (!options) options = new TransactionOptions();
         const request = RequestBuilder.QueryManager.getGroupAggregateReq(query, options.proto());
         return this.stream(request).flatMap((queryResPart) =>
             Stream.array(queryResPart.get_group_aggregate_res_part.answers)
@@ -83,8 +83,8 @@ export class QueryManagerImpl implements QueryManager {
         );
     }
 
-    fetch(query: string, options?: TypeDBOptions): Stream<JSONObject> {
-        if (!options) options = new TypeDBOptions();
+    fetch(query: string, options?: TransactionOptions): Stream<JSONObject> {
+        if (!options) options = new TransactionOptions();
         const request = RequestBuilder.QueryManager.fetchReq(query, options.proto());
         return this.stream(request).flatMap((queryResPart) =>
             Stream.array(queryResPart.fetch_res_part.answers)
@@ -92,8 +92,8 @@ export class QueryManagerImpl implements QueryManager {
         );
     }
 
-    insert(query: string, options?: TypeDBOptions): Stream<ConceptMap> {
-        if (!options) options = new TypeDBOptions();
+    insert(query: string, options?: TransactionOptions): Stream<ConceptMap> {
+        if (!options) options = new TransactionOptions();
         const request = RequestBuilder.QueryManager.insertReq(query, options.proto());
         return this.stream(request).flatMap((queryResPart) =>
             Stream.array(queryResPart.insert_res_part.answers)
@@ -101,14 +101,14 @@ export class QueryManagerImpl implements QueryManager {
         );
     }
 
-    delete(query: string, options?: TypeDBOptions): Promise<void> {
-        if (!options) options = new TypeDBOptions();
+    delete(query: string, options?: TransactionOptions): Promise<void> {
+        if (!options) options = new TransactionOptions();
         const request = RequestBuilder.QueryManager.deleteReq(query, options.proto());
         return this.query(request).then(() => null);
     }
 
-    update(query: string, options?: TypeDBOptions): Stream<ConceptMap> {
-        if (!options) options = new TypeDBOptions();
+    update(query: string, options?: TransactionOptions): Stream<ConceptMap> {
+        if (!options) options = new TransactionOptions();
         const request = RequestBuilder.QueryManager.updateReq(query, options.proto());
         return this.stream(request).flatMap((queryResPart) =>
             Stream.array(queryResPart.update_res_part.answers)
@@ -116,20 +116,20 @@ export class QueryManagerImpl implements QueryManager {
         );
     }
 
-    define(query: string, options?: TypeDBOptions): Promise<void> {
-        if (!options) options = new TypeDBOptions();
+    define(query: string, options?: TransactionOptions): Promise<void> {
+        if (!options) options = new TransactionOptions();
         const request = RequestBuilder.QueryManager.defineReq(query, options.proto());
         return this.query(request).then(() => null);
     }
 
-    undefine(query: string, options?: TypeDBOptions): Promise<void> {
-        if (!options) options = new TypeDBOptions();
+    undefine(query: string, options?: TransactionOptions): Promise<void> {
+        if (!options) options = new TransactionOptions();
         const request = RequestBuilder.QueryManager.undefineReq(query, options.proto());
         return this.query(request).then(() => null);
     }
 
-    explain(explainable: ConceptMap.Explainable, options?: TypeDBOptions): Stream<Explanation> {
-        if (!options) options = new TypeDBOptions();
+    explain(explainable: ConceptMap.Explainable, options?: TransactionOptions): Stream<Explanation> {
+        if (!options) options = new TransactionOptions();
         const request = RequestBuilder.QueryManager.explainReq(explainable.id, options.proto());
         return this.stream(request)
             .flatMap((resPart) => Stream.array(resPart.explain_res_part.explanations))

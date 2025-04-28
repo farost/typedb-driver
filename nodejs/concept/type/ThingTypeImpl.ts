@@ -20,7 +20,7 @@
 import {AttributeType} from "../../api/concept/type/AttributeType";
 import {RoleType} from "../../api/concept/type/RoleType";
 import {ThingType} from "../../api/concept/type/ThingType";
-import {TypeDBTransaction} from "../../api/connection/TypeDBTransaction";
+import {Transaction} from "../../api/connection/Transaction";
 import {ErrorMessage} from "../../common/errors/ErrorMessage";
 import {TypeDBDriverError} from "../../common/errors/TypeDBDriverError";
 import {Label} from "../../common/Label";
@@ -40,7 +40,7 @@ import {
 } from "typedb-protocol/proto/concept";
 import {TransactionReq} from "typedb-protocol/proto/transaction";
 import assert from "assert";
-import {Thing} from "../../api/concept/thing/Thing";
+import {Instance} from "../../api/concept/instance/Instance";
 import BAD_ENCODING = ErrorMessage.Concept.BAD_ENCODING;
 import Annotation = ThingType.Annotation;
 import Transitivity = Concept.Transitivity;
@@ -63,42 +63,42 @@ export abstract class ThingTypeImpl extends TypeImpl implements ThingType {
         return this;
     }
 
-    abstract getSupertype(transaction: TypeDBTransaction): Promise<ThingType>;
+    abstract getSupertype(transaction: Transaction): Promise<ThingType>;
 
-    abstract getSupertypes(transaction: TypeDBTransaction): Stream<ThingType>;
+    abstract getSupertypes(transaction: Transaction): Stream<ThingType>;
 
-    abstract getSubtypes(transaction: TypeDBTransaction): Stream<ThingType>;
-    abstract getSubtypes(transaction: TypeDBTransaction, transitivity: Transitivity): Stream<ThingType>;
+    abstract getSubtypes(transaction: Transaction): Stream<ThingType>;
+    abstract getSubtypes(transaction: Transaction, transitivity: Transitivity): Stream<ThingType>;
 
-    abstract getInstances(transaction: TypeDBTransaction): Stream<Thing>;
-    abstract getInstances(transaction: TypeDBTransaction, transitivity: Transitivity): Stream<Thing>;
+    abstract getInstances(transaction: Transaction): Stream<Instance>;
+    abstract getInstances(transaction: Transaction, transitivity: Transitivity): Stream<Instance>;
 
-    async delete(transaction: TypeDBTransaction): Promise<void> {
+    async delete(transaction: Transaction): Promise<void> {
         await this.execute(transaction, RequestBuilder.Type.ThingType.deleteReq(this.label));
     }
 
-    async setLabel(transaction: TypeDBTransaction, newLabel: string): Promise<void> {
+    async setLabel(transaction: Transaction, newLabel: string): Promise<void> {
         await this.execute(transaction, RequestBuilder.Type.ThingType.setLabelReq(this.label, newLabel));
     }
 
-    async setAbstract(transaction: TypeDBTransaction): Promise<void> {
+    async setAbstract(transaction: Transaction): Promise<void> {
         await this.execute(transaction, RequestBuilder.Type.ThingType.setAbstractReq(this.label));
     }
 
-    async unsetAbstract(transaction: TypeDBTransaction): Promise<void> {
+    async unsetAbstract(transaction: Transaction): Promise<void> {
         await this.execute(transaction, RequestBuilder.Type.ThingType.unsetAbstractReq(this.label));
     }
 
-    getOwns(transaction: TypeDBTransaction): Stream<AttributeType>;
-    getOwns(transaction: TypeDBTransaction, valueType: Concept.ValueType): Stream<AttributeType>;
-    getOwns(transaction: TypeDBTransaction, annotations: Annotation[]): Stream<AttributeType>;
-    getOwns(transaction: TypeDBTransaction, valueType: Concept.ValueType, annotations: Annotation[]): Stream<AttributeType>;
-    getOwns(transaction: TypeDBTransaction, transitivity: Transitivity): Stream<AttributeType>;
-    getOwns(transaction: TypeDBTransaction, valueType: Concept.ValueType, transitivity: Transitivity): Stream<AttributeType>;
-    getOwns(transaction: TypeDBTransaction, annotations: Annotation[], transitivity: Transitivity): Stream<AttributeType>;
-    getOwns(transaction: TypeDBTransaction, valueType: Concept.ValueType, annotations: Annotation[], transitivity: Transitivity): Stream<AttributeType>
+    getOwns(transaction: Transaction): Stream<AttributeType>;
+    getOwns(transaction: Transaction, valueType: Concept.ValueType): Stream<AttributeType>;
+    getOwns(transaction: Transaction, annotations: Annotation[]): Stream<AttributeType>;
+    getOwns(transaction: Transaction, valueType: Concept.ValueType, annotations: Annotation[]): Stream<AttributeType>;
+    getOwns(transaction: Transaction, transitivity: Transitivity): Stream<AttributeType>;
+    getOwns(transaction: Transaction, valueType: Concept.ValueType, transitivity: Transitivity): Stream<AttributeType>;
+    getOwns(transaction: Transaction, annotations: Annotation[], transitivity: Transitivity): Stream<AttributeType>;
+    getOwns(transaction: Transaction, valueType: Concept.ValueType, annotations: Annotation[], transitivity: Transitivity): Stream<AttributeType>
     getOwns(
-        transaction: TypeDBTransaction,
+        transaction: Transaction,
         valueTypeOrAnnotationsOrTransitivity?: ValueType | Annotation[] | Transitivity,
         annotationsOrTransitivity?: Annotation[] | Transitivity,
         maybeTransitivity?: Transitivity,
@@ -137,17 +137,17 @@ export abstract class ThingTypeImpl extends TypeImpl implements ThingType {
         ).map(AttributeTypeImpl.ofAttributeTypeProto);
     }
 
-    async getOwnsOverridden(transaction: TypeDBTransaction, attributeType: AttributeType): Promise<AttributeType> {
+    async getOwnsOverridden(transaction: Transaction, attributeType: AttributeType): Promise<AttributeType> {
         const res = await this.execute(transaction, RequestBuilder.Type.ThingType.getOwnsOverriddenReq(this.label, AttributeType.proto(attributeType)));
         return AttributeTypeImpl.ofAttributeTypeProto(res.thing_type_get_owns_overridden_res.attribute_type);
     }
 
-    setOwns(transaction: TypeDBTransaction, attributeType: AttributeType): Promise<void>;
-    setOwns(transaction: TypeDBTransaction, attributeType: AttributeType, annotations: Annotation[]): Promise<void>;
-    setOwns(transaction: TypeDBTransaction, attributeType: AttributeType, overriddenType: AttributeType): Promise<void>;
-    setOwns(transaction: TypeDBTransaction, attributeType: AttributeType, overriddenType: AttributeType, annotations: Annotation[]): Promise<void>;
+    setOwns(transaction: Transaction, attributeType: AttributeType): Promise<void>;
+    setOwns(transaction: Transaction, attributeType: AttributeType, annotations: Annotation[]): Promise<void>;
+    setOwns(transaction: Transaction, attributeType: AttributeType, overriddenType: AttributeType): Promise<void>;
+    setOwns(transaction: Transaction, attributeType: AttributeType, overriddenType: AttributeType, annotations: Annotation[]): Promise<void>;
     async setOwns(
-        transaction: TypeDBTransaction,
+        transaction: Transaction,
         attributeType: AttributeType,
         overriddenTypeOrAnnotations?: AttributeType | Annotation[],
         maybeAnnotations?: Annotation[],
@@ -177,47 +177,47 @@ export abstract class ThingTypeImpl extends TypeImpl implements ThingType {
         ));
     }
 
-    async unsetOwns(transaction: TypeDBTransaction, attributeType: AttributeType): Promise<void> {
+    async unsetOwns(transaction: Transaction, attributeType: AttributeType): Promise<void> {
         await this.execute(transaction, RequestBuilder.Type.ThingType.unsetOwnsReq(this.label, AttributeType.proto(attributeType)));
     }
 
-    getPlays(transaction: TypeDBTransaction): Stream<RoleType>;
-    getPlays(transaction: TypeDBTransaction, transitivity: Transitivity): Stream<RoleType>;
-    getPlays(transaction: TypeDBTransaction, transitivity?: Transitivity): Stream<RoleType> {
+    getPlays(transaction: Transaction): Stream<RoleType>;
+    getPlays(transaction: Transaction, transitivity: Transitivity): Stream<RoleType>;
+    getPlays(transaction: Transaction, transitivity?: Transitivity): Stream<RoleType> {
         if (!transitivity) transitivity = Transitivity.TRANSITIVE;
         return this.stream(transaction, RequestBuilder.Type.ThingType.getPlaysReq(this.label, transitivity.proto())).flatMap(
             resPart => Stream.array(resPart.thing_type_get_plays_res_part.role_types)
         ).map(RoleTypeImpl.ofRoleTypeProto);
     }
 
-    async getPlaysOverridden(transaction: TypeDBTransaction, role: RoleType): Promise<RoleType> {
+    async getPlaysOverridden(transaction: Transaction, role: RoleType): Promise<RoleType> {
         const res = await this.execute(transaction, RequestBuilder.Type.ThingType.getPlaysOverriddenReq(this.label, RoleType.proto(role)));
         return RoleTypeImpl.ofRoleTypeProto(res.thing_type_get_plays_overridden_res.role_type);
     }
 
-    setPlays(transaction: TypeDBTransaction, role: RoleType): Promise<void>;
-    setPlays(transaction: TypeDBTransaction, role: RoleType, overriddenRole: RoleType): Promise<void>;
-    async setPlays(transaction: TypeDBTransaction, role: RoleType, overriddenRole?: RoleType): Promise<void> {
+    setPlays(transaction: Transaction, role: RoleType): Promise<void>;
+    setPlays(transaction: Transaction, role: RoleType, overriddenRole: RoleType): Promise<void>;
+    async setPlays(transaction: Transaction, role: RoleType, overriddenRole?: RoleType): Promise<void> {
         let overriddenProto;
         if (typeof overriddenRole !== "undefined") overriddenProto = RoleType.proto(overriddenRole);
         await this.execute(transaction, RequestBuilder.Type.ThingType.setPlaysReq(this.label, RoleType.proto(role), overriddenProto));
     }
 
-    async unsetPlays(transaction: TypeDBTransaction, role: RoleType): Promise<void> {
+    async unsetPlays(transaction: Transaction, role: RoleType): Promise<void> {
         await this.execute(transaction, RequestBuilder.Type.ThingType.unsetPlaysReq(this.label, RoleType.proto(role)));
     }
 
-    async getSyntax(transaction: TypeDBTransaction): Promise<string> {
+    async getSyntax(transaction: Transaction): Promise<string> {
         const res = await this.execute(transaction, RequestBuilder.Type.ThingType.getSyntaxReq(this.label));
         return res.thing_type_get_syntax_res.syntax;
     }
 
-    protected async execute(transaction: TypeDBTransaction, request: TransactionReq): Promise<ThingTypeRes> {
+    protected async execute(transaction: Transaction, request: TransactionReq): Promise<ThingTypeRes> {
         const ext = transaction as TypeDBTransaction.Extended;
         return (await ext.rpcExecute(request, false)).type_res.thing_type_res;
     }
 
-    protected stream(transaction: TypeDBTransaction, request: TransactionReq): Stream<ThingTypeResPart> {
+    protected stream(transaction: Transaction, request: TransactionReq): Stream<ThingTypeResPart> {
         const ext = transaction as TypeDBTransaction.Extended;
         return ext.rpcStream(request).map((res) => res.type_res_part.thing_type_res_part);
     }
@@ -229,21 +229,21 @@ export namespace ThingTypeImpl {
             super("thing", true, true);
         }
 
-        async isDeleted(transaction: TypeDBTransaction): Promise<boolean> {
+        async isDeleted(transaction: Transaction): Promise<boolean> {
             return false;
         }
 
-        async getSupertype(transaction: TypeDBTransaction): Promise<ThingType> {
+        async getSupertype(transaction: Transaction): Promise<ThingType> {
             return null;
         }
 
-        getSupertypes(transaction: TypeDBTransaction): Stream<ThingType> {
+        getSupertypes(transaction: Transaction): Stream<ThingType> {
             return Stream.array([this])
         }
 
-        getSubtypes(transaction: TypeDBTransaction): Stream<ThingType>;
-        getSubtypes(transaction: TypeDBTransaction, transitivity: Transitivity): Stream<ThingType>;
-        getSubtypes(transaction: TypeDBTransaction, transitivity?: Transitivity): Stream<ThingType> {
+        getSubtypes(transaction: Transaction): Stream<ThingType>;
+        getSubtypes(transaction: Transaction, transitivity: Transitivity): Stream<ThingType>;
+        getSubtypes(transaction: Transaction, transitivity?: Transitivity): Stream<ThingType> {
             if (!transitivity) transitivity = Transitivity.TRANSITIVE;
             const roots: Stream<ThingType> = Stream.promises([
                 transaction.concepts.getRootEntityType() as Promise<ThingType>,
@@ -254,9 +254,9 @@ export namespace ThingTypeImpl {
             else return roots.flatMap(tt => tt.getSubtypes(transaction, transitivity).map(t => t as ThingType));
         }
 
-        getInstances(transaction: TypeDBTransaction): Stream<Thing>;
-        getInstances(transaction: TypeDBTransaction, transitivity: Transitivity): Stream<Thing>;
-        getInstances(transaction: TypeDBTransaction, transitivity?: Transitivity): Stream<Thing> {
+        getInstances(transaction: Transaction): Stream<Instance>;
+        getInstances(transaction: Transaction, transitivity: Transitivity): Stream<Instance>;
+        getInstances(transaction: Transaction, transitivity?: Transitivity): Stream<Instance> {
             if (!transitivity) transitivity = Transitivity.TRANSITIVE;
             if (transitivity == Transitivity.EXPLICIT) return Stream.array([]);
             else {
@@ -265,7 +265,7 @@ export namespace ThingTypeImpl {
                     transaction.concepts.getRootRelationType() as Promise<ThingType>,
                     transaction.concepts.getRootAttributeType() as Promise<ThingType>,
                 ]);
-                return roots.flatMap(tt => tt.getInstances(transaction, transitivity).map(t => t as Thing));
+                return roots.flatMap(tt => tt.getInstances(transaction, transitivity).map(t => t as Instance));
             }
         }
     }

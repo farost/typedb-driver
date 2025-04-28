@@ -35,18 +35,7 @@ export interface DatabaseManager {
     get(name: string): Promise<Database>;
 
     /**
-     * Retrieves all databases present on the TypeDB server
-     *
-     * ### Examples
-     *
-     * ```ts
-     * driver.databases().all()
-     * ```
-     */
-    all(): Promise<Database[]>;
-
-    /**
-     * Checks if a database with the given name exists
+     * Checks if a database with the given name exists.
      *
      * ### Examples
      *
@@ -59,7 +48,18 @@ export interface DatabaseManager {
     contains(name: string): Promise<boolean>;
 
     /**
-     * Create a database with the given name
+     * Retrieves all databases present on the TypeDB server
+     *
+     * ### Examples
+     *
+     * ```ts
+     * driver.databases().all()
+     * ```
+     */
+    all(): Promise<Database[]>;
+
+    /**
+     * Create a database with the given name.
      *
      * ### Examples
      *

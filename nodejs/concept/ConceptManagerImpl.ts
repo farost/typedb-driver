@@ -22,7 +22,7 @@ import {AttributeType} from "../api/concept/type/AttributeType";
 import {EntityType} from "../api/concept/type/EntityType";
 import {RelationType} from "../api/concept/type/RelationType";
 import {ThingType} from "../api/concept/type/ThingType";
-import {TypeDBTransaction} from "../api/connection/TypeDBTransaction";
+import {Transaction} from "../api/connection/Transaction";
 import {RequestBuilder} from "../common/rpc/RequestBuilder";
 import {
     AttributeImpl,
@@ -36,9 +36,9 @@ import {
 import {Concept} from "../api/concept/Concept";
 import {ConceptManagerRes} from "typedb-protocol/proto/concept";
 import {TransactionReq} from "typedb-protocol/proto/transaction";
-import {Entity} from "../api/concept/thing/Entity";
-import {Attribute} from "../api/concept/thing/Attribute";
-import {Relation} from "../api/concept/thing/Relation";
+import {Entity} from "../api/concept/instance/Entity";
+import {Attribute} from "../api/concept/instance/Attribute";
+import {Relation} from "../api/concept/instance/Relation";
 import {TypeDBDriverError} from "../common/errors/TypeDBDriverError";
 
 export class ConceptManagerImpl implements ConceptManager {

@@ -28,7 +28,7 @@ use crate::{
 
 /// A transaction with a TypeDB database.
 pub struct Transaction {
-    /// The transaction’s type (READ or WRITE)
+    /// The transaction’s type (READ, WRITE, or SCHEMA)
     type_: TransactionType,
     /// The options for the transaction
     options: TransactionOptions,

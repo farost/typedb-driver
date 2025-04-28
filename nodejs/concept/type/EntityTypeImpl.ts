@@ -18,9 +18,9 @@
  */
 
 import {EntityType as EntityTypeProto} from "typedb-protocol/proto/concept";
-import {Entity} from "../../api/concept/thing/Entity";
+import {Entity} from "../../api/concept/instance/Entity";
 import {EntityType} from "../../api/concept/type/EntityType";
-import {TypeDBTransaction} from "../../api/connection/TypeDBTransaction";
+import {Transaction} from "../../api/connection/Transaction";
 import {RequestBuilder} from "../../common/rpc/RequestBuilder";
 import {Stream} from "../../common/util/Stream";
 import {EntityImpl, ThingTypeImpl} from "../../dependencies_internal";
@@ -44,42 +44,42 @@ export class EntityTypeImpl extends ThingTypeImpl implements EntityType {
         return this;
     }
 
-    async isDeleted(transaction: TypeDBTransaction): Promise<boolean> {
+    async isDeleted(transaction: Transaction): Promise<boolean> {
         return !(await transaction.concepts.getEntityType(this.label.name));
     }
 
-    async create(transaction: TypeDBTransaction): Promise<Entity> {
+    async create(transaction: Transaction): Promise<Entity> {
         const res = await this.execute(transaction, RequestBuilder.Type.EntityType.createReq(this.label));
         return EntityImpl.ofEntityProto(res.entity_type_create_res.entity);
     }
 
-    async getSupertype(transaction: TypeDBTransaction): Promise<EntityType> {
+    async getSupertype(transaction: Transaction): Promise<EntityType> {
         const res = await this.execute(transaction, RequestBuilder.Type.EntityType.getSupertypeReq(this.label));
         return EntityTypeImpl.ofEntityTypeProto(res.entity_type_get_supertype_res.entity_type);
     }
 
-    async setSupertype(transaction: TypeDBTransaction, superEntityType: EntityType): Promise<void> {
+    async setSupertype(transaction: Transaction, superEntityType: EntityType): Promise<void> {
         await this.execute(transaction, RequestBuilder.Type.EntityType.setSupertypeReq(this.label, EntityType.proto(superEntityType)));
     }
 
-    getSupertypes(transaction: TypeDBTransaction): Stream<EntityType> {
+    getSupertypes(transaction: Transaction): Stream<EntityType> {
         return this.stream(transaction, RequestBuilder.Type.EntityType.getSupertypesReq(this.label)).flatMap(
             resPart => Stream.array(resPart.entity_type_get_supertypes_res_part.entity_types)
         ).map(EntityTypeImpl.ofEntityTypeProto);
     }
 
-    getSubtypes(transaction: TypeDBTransaction): Stream<EntityType>;
-    getSubtypes(transaction: TypeDBTransaction, transitivity: Transitivity): Stream<EntityType>;
-    getSubtypes(transaction: TypeDBTransaction, transitivity?: Transitivity): Stream<EntityType> {
+    getSubtypes(transaction: Transaction): Stream<EntityType>;
+    getSubtypes(transaction: Transaction, transitivity: Transitivity): Stream<EntityType>;
+    getSubtypes(transaction: Transaction, transitivity?: Transitivity): Stream<EntityType> {
         if (!transitivity) transitivity = Transitivity.TRANSITIVE;
         return this.stream(transaction, RequestBuilder.Type.EntityType.getSubtypesReq(this.label, transitivity.proto())).flatMap(
             resPart => Stream.array(resPart.entity_type_get_subtypes_res_part.entity_types)
         ).map(EntityTypeImpl.ofEntityTypeProto);
     }
 
-    getInstances(transaction: TypeDBTransaction): Stream<Entity>;
-    getInstances(transaction: TypeDBTransaction, transitivity: Transitivity): Stream<Entity>;
-    getInstances(transaction: TypeDBTransaction, transitivity?: Transitivity): Stream<Entity> {
+    getInstances(transaction: Transaction): Stream<Entity>;
+    getInstances(transaction: Transaction, transitivity: Transitivity): Stream<Entity>;
+    getInstances(transaction: Transaction, transitivity?: Transitivity): Stream<Entity> {
         if (!transitivity) transitivity = Transitivity.TRANSITIVE;
         return this.stream(transaction, RequestBuilder.Type.EntityType.getInstancesReq(this.label, transitivity.proto())).flatMap(
             resPart => Stream.array(resPart.entity_type_get_instances_res_part.entities)
@@ -90,6 +90,6 @@ export class EntityTypeImpl extends ThingTypeImpl implements EntityType {
 export namespace EntityTypeImpl {
     export function ofEntityTypeProto(proto: EntityTypeProto): EntityType {
         if (!proto) return null;
-        return new EntityTypeImpl(proto.label, proto.is_root, proto.is_abstract);
+        return new EntityTypeImpl(proto.label);
     }
 }

@@ -17,17 +17,45 @@
  * under the License.
  */
 
+import {Instance} from "./Instance";
+import {RequestBuilder} from "../../../common/rpc/RequestBuilder";
+import {Type} from "../type/Type";
+import {RelationType} from "../type/RelationType";
 
-import {Concept} from "../Concept";
-
-export interface Type extends Concept {
+/**
+ * Relation is an instance of a relation type and can be uniquely addressed by
+ * a combination of its type, owned attributes and role players.
+ */
+export interface Relation extends Instance {
     /**
      * {@inheritDoc}
      */
-    isType(): boolean;
+    isRelation(): boolean;
 
     /**
      * {@inheritDoc}
      */
-    asType(): Type;
+    asRelation(): Relation;
+
+    /**
+     * {@inheritDoc}
+     */
+    getType(): RelationType;
+
+    /**
+     * Retrieves the unique id of the <code>Relation</code>.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * relation.getIID()
+     * ```
+     */
+    getIID(): string;
+}
+
+export namespace Relation {
+    export function proto(relation: Relation) {
+        return RequestBuilder.Thing.Relation.protoRelation(relation.iid);
+    }
 }

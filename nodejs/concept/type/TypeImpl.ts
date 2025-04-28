@@ -19,7 +19,7 @@
 
 import {Concept} from "../../api/concept/Concept";
 import {Type} from "../../api/concept/type/Type";
-import {TypeDBTransaction} from "../../api/connection/TypeDBTransaction";
+import {Transaction} from "../../api/connection/Transaction";
 import {ErrorMessage} from "../../common/errors/ErrorMessage";
 import {TypeDBDriverError} from "../../common/errors/TypeDBDriverError";
 import {Label} from "../../common/Label";
@@ -60,17 +60,17 @@ export abstract class TypeImpl extends ConceptImpl implements Type {
         return this;
     }
 
-    abstract delete(transaction: TypeDBTransaction): Promise<void>;
+    abstract delete(transaction: Transaction): Promise<void>;
 
-    abstract isDeleted(transaction: TypeDBTransaction): Promise<boolean>;
+    abstract isDeleted(transaction: Transaction): Promise<boolean>;
 
-    abstract setLabel(transaction: TypeDBTransaction, label: string): Promise<void>;
+    abstract setLabel(transaction: Transaction, label: string): Promise<void>;
 
-    abstract getSupertype(transaction: TypeDBTransaction): Promise<Type>;
+    abstract getSupertype(transaction: Transaction): Promise<Type>;
 
-    abstract getSupertypes(transaction: TypeDBTransaction): Stream<Type>;
+    abstract getSupertypes(transaction: Transaction): Stream<Type>;
 
-    abstract getSubtypes(transaction: TypeDBTransaction): Stream<Type>;
+    abstract getSubtypes(transaction: Transaction): Stream<Type>;
 
     equals(concept: Concept): boolean {
         if (!concept.isType()) return false;

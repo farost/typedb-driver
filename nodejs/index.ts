@@ -24,10 +24,10 @@ export * from "./api/answer/ConceptMapGroup";
 export * from "./api/answer/ValueGroup";
 export * from "./api/answer/JSON";
 
-export * from "./api/concept/thing/Attribute";
-export * from "./api/concept/thing/Entity";
-export * from "./api/concept/thing/Relation";
-export * from "./api/concept/thing/Thing";
+export * from "./api/concept/instance/Attribute";
+export * from "./api/concept/instance/Entity";
+export * from "./api/concept/instance/Relation";
+export * from "./api/concept/instance/Instance";
 
 export * from "./api/concept/value/Value";
 
@@ -47,11 +47,11 @@ export * from "./api/connection/database/DatabaseManager";
 export * from "./api/connection/user/User";
 export * from "./api/connection/user/UserManager";
 
-export * from "./api/connection/TypeDBDriver";
-export * from "./api/connection/TypeDBCredential";
-export * from "./api/connection/TypeDBOptions";
+export * from "./api/connection/Driver";
+export * from "./api/connection/Credentials";
+export * from "./api/connection/TransactionOptions";
 export * from "./api/connection/TypeDBSession";
-export * from "./api/connection/TypeDBTransaction";
+export * from "./api/connection/Transaction";
 
 export * from "./api/logic/Explanation";
 export * from "./api/logic/LogicManager";

@@ -17,20 +17,32 @@
  * under the License.
  */
 
-import {Concept} from "../concept/Concept";
-import {ConceptMap} from "./ConceptMap";
-
 /**
- * Contains an element of the group query result.
+ * User credentials for connecting to TypeDB Server.
+ *
+ * ### Examples
+ *
+ * ```ts
+ * credential = new TypeDBCredential(username, password)
+ * ```
  */
-export interface ConceptMapGroup {
+export class Credentials {
+    private readonly _username: string;
+    private readonly _password: string;
     /**
-     * The concept that is the group owner.
-     */
-    readonly owner: Concept;
+     * @param username - The name of the user to connect as
+     * @param password - The password for the user
+    */
+    constructor(username: string, password: string) {
+        this._username = username;
+        this._password = password;
+    }
 
-    /**
-     * The ConceptMaps of the group.
-     */
-    readonly conceptMaps: ConceptMap[];
+    get username(): string {
+        return this._username;
+    }
+
+    get password(): string {
+        return this._password;
+    }
 }

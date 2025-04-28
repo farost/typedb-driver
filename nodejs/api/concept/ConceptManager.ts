@@ -17,9 +17,9 @@
  * under the License.
  */
 
-import {Attribute} from "./thing/Attribute";
-import {Entity} from "./thing/Entity";
-import {Relation} from "./thing/Relation";
+import {Attribute} from "./instance/Attribute";
+import {Entity} from "./instance/Entity";
+import {Relation} from "./instance/Relation";
 import {AttributeType} from "./type/AttributeType";
 import {EntityType} from "./type/EntityType";
 import {RelationType} from "./type/RelationType";

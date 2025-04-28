@@ -21,7 +21,7 @@ import {User} from "../api/connection/user/User";
 import {UserManager} from "../api/connection/user/UserManager";
 import {RequestBuilder} from "../common/rpc/RequestBuilder";
 import {UserImpl} from "../dependencies_internal";
-import {ServerDriver, TypeDBDriverImpl} from "../connection/TypeDBDriverImpl";
+import {ServerDriver, DriverImpl} from "../connection/DriverImpl";
 import {TypeDBDatabaseImpl} from "../connection/TypeDBDatabaseImpl";
 import {TypeDBDriverError} from "../common/errors/TypeDBDriverError";
 import {ErrorMessage} from "../common/errors/ErrorMessage";
@@ -29,9 +29,9 @@ import USER_MANAGEMENT_CLOUD_ONLY = ErrorMessage.Driver.USER_MANAGEMENT_CLOUD_ON
 
 export class UserManagerImpl implements UserManager {
     static _SYSTEM_DB = "_system";
-    private readonly _driver: TypeDBDriverImpl;
+    private readonly _driver: DriverImpl;
 
-    constructor(driver: TypeDBDriverImpl) {
+    constructor(driver: DriverImpl) {
         this._driver = driver;
     }
 

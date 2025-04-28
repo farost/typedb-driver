@@ -54,7 +54,7 @@ class TypeDB:
     @staticmethod
     def driver(address: str, credentials: Credentials, driver_options: DriverOptions) -> Driver:
         """
-        Creates a connection to TypeDB.
+        Open a TypeDB Driver to a TypeDB server available at the provided address.
 
         :param address: Address of the TypeDB server.
         :param credentials: The credentials to connect with.

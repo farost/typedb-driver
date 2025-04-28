@@ -21,7 +21,7 @@ import {Stream} from "../../common/util/Stream";
 import {ConceptMap} from "../answer/ConceptMap";
 import {ConceptMapGroup} from "../answer/ConceptMapGroup";
 import {ValueGroup} from "../answer/ValueGroup";
-import {TypeDBOptions} from "../connection/TypeDBOptions";
+import {TransactionOptions} from "../connection/TransactionOptions";
 import {Explanation} from "../logic/Explanation";
 import {Value} from "../concept/value/Value";
 import {JSONObject} from "../answer/JSON";
@@ -40,7 +40,7 @@ export interface QueryManager {
      * @param query - The TypeQL Get query to be executed
      * @param options - Specify query options
      */
-    get(query: string, options?: TypeDBOptions): Stream<ConceptMap>;
+    get(query: string, options?: TransactionOptions): Stream<ConceptMap>;
 
     /**
      * Performs a TypeQL Get Aggregate query in the transaction. Returns an empty promise if the aggregate
@@ -55,7 +55,7 @@ export interface QueryManager {
      * @param query - The TypeQL Get Aggregate query to be executed
      * @param options - Specify query options
      */
-    getAggregate(query: string, options?: TypeDBOptions): Promise<Value | undefined>;
+    getAggregate(query: string, options?: TransactionOptions): Promise<Value | undefined>;
 
     /**
      * Performs a TypeQL Get Group query in the transaction.
@@ -69,7 +69,7 @@ export interface QueryManager {
      * @param query - The TypeQL Get Group query to be executed
      * @param options - Specify query options
      */
-    getGroup(query: string, options?: TypeDBOptions): Stream<ConceptMapGroup>;
+    getGroup(query: string, options?: TransactionOptions): Stream<ConceptMapGroup>;
 
     /**
      * Performs a TypeQL Get Group Aggregate query in the transaction.
@@ -83,7 +83,7 @@ export interface QueryManager {
      * @param query - The TypeQL Get Group Aggregate query to be executed
      * @param options - Specify query options
      */
-    getGroupAggregate(query: string, options?: TypeDBOptions): Stream<ValueGroup>;
+    getGroupAggregate(query: string, options?: TransactionOptions): Stream<ValueGroup>;
 
     /**
      * Performs a TypeQL Fetch query in the transaction.
@@ -100,7 +100,7 @@ export interface QueryManager {
      * @param query - The TypeQL Fetch query to be executed
      * @param options - Specify query options
      */
-    fetch(query: string, options?: TypeDBOptions): Stream<JSONObject>;
+    fetch(query: string, options?: TransactionOptions): Stream<JSONObject>;
 
     /**
      * Performs a TypeQL Insert query in the transaction.
@@ -114,7 +114,7 @@ export interface QueryManager {
      * @param query - The TypeQL Insert query to be executed
      * @param options - Specify query options
      */
-    insert(query: string, options?: TypeDBOptions): Stream<ConceptMap>;
+    insert(query: string, options?: TransactionOptions): Stream<ConceptMap>;
 
     /**
      * Performs a TypeQL Delete query in the transaction.
@@ -128,7 +128,7 @@ export interface QueryManager {
      * @param query - The TypeQL Delete query to be executed
      * @param options - Specify query options
      */
-    delete(query: string, options?: TypeDBOptions): Promise<void>;
+    delete(query: string, options?: TransactionOptions): Promise<void>;
 
     /**
      * Performs a TypeQL Update query in the transaction.
@@ -142,7 +142,7 @@ export interface QueryManager {
      * @param query - The TypeQL Update query to be executed
      * @param options - Specify query options
      */
-    update(query: string, options?: TypeDBOptions): Stream<ConceptMap>;
+    update(query: string, options?: TransactionOptions): Stream<ConceptMap>;
 
     /**
      * Performs a TypeQL Define query in the transaction.
@@ -156,7 +156,7 @@ export interface QueryManager {
      * @param query - The TypeQL Define query to be executed
      * @param options - Specify query options
      */
-    define(query: string, options?: TypeDBOptions): Promise<void>;
+    define(query: string, options?: TransactionOptions): Promise<void>;
 
     /**
      * Performs a TypeQL Undefine query in the transaction.
@@ -170,7 +170,7 @@ export interface QueryManager {
      * @param query - The TypeQL Undefine query to be executed
      * @param options - Specify query options
      */
-    undefine(query: string, options?: TypeDBOptions): Promise<void>;
+    undefine(query: string, options?: TransactionOptions): Promise<void>;
 
     /**
      * Performs a TypeQL Explain query in the transaction.
@@ -184,5 +184,5 @@ export interface QueryManager {
      * @param explainable - The Explainable to be explained
      * @param options - Specify query options
      */
-    explain(explainable: ConceptMap.Explainable, options?: TypeDBOptions): Stream<Explanation>;
+    explain(explainable: ConceptMap.Explainable, options?: TransactionOptions): Stream<Explanation>;
 }

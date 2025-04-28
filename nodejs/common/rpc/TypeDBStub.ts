@@ -27,29 +27,27 @@ import {
     DatabaseManagerCreateReq,
     DatabaseManagerGetReq,
     DatabaseManagerGetRes,
-    DatabaseRuleSchemaReq,
     DatabaseSchemaReq,
     DatabaseTypeSchemaReq
 } from "typedb-protocol/proto/database";
 import {TypeDBClient as GRPCStub} from "typedb-protocol/proto/typedb-service";
 import {TypeDBDriverError} from "../errors/TypeDBDriverError";
-import {ServerManagerAllReq, ServerManagerAllRes} from "typedb-protocol/proto/server";
 import {RequestBuilder} from "./RequestBuilder";
-import {SessionCloseReq, SessionOpenReq, SessionOpenRes, SessionPulseReq} from "typedb-protocol/proto/session";
 import {ClientDuplexStream} from "@grpc/grpc-js";
-import {TransactionClient, TransactionServer} from "typedb-protocol/proto/transaction";
+import {TransactionCloseReq, TransactionOpenReq, TransactionOpenRes, TransactionClient, TransactionServer} from "typedb-protocol/proto/transaction";
 import {
     UserManagerAllReq,
     UserManagerAllRes,
     UserManagerContainsReq,
     UserManagerCreateReq,
-    UserManagerDeleteReq,
     UserManagerGetReq,
     UserManagerGetRes,
-    UserManagerPasswordSetReq,
-    UserPasswordUpdateReq,
-    UserTokenReq
+    UserDeleteReq,
+    UserUpdateReq
 } from "typedb-protocol/proto/user";
+import {
+    AuthenticationTokenCreateReq
+} from "typedb-protocol/proto/authentication";
 import {ErrorMessage} from "../errors/ErrorMessage";
 
 /*
@@ -71,16 +69,17 @@ export abstract class TypeDBStub {
         );
     }
 
-    serversAll(req: ServerManagerAllReq): Promise<ServerManagerAllRes> {
-        return this.mayRenewToken(() =>
-            new Promise<ServerManagerAllRes>((resolve, reject) => {
-                this.stub().servers_all(req, (err, res) => {
-                    if (err) reject(new TypeDBDriverError(err));
-                    else resolve(res);
-                });
-            })
-        );
-    }
+    // TODO: Remove?
+    // serversAll(req: ServerManagerAllReq): Promise<ServerManagerAllRes> {
+    //     return this.mayRenewToken(() =>
+    //         new Promise<ServerManagerAllRes>((resolve, reject) => {
+    //             this.stub().servers_all(req, (err, res) => {
+    //                 if (err) reject(new TypeDBDriverError(err));
+    //                 else resolve(res);
+    //             });
+    //         })
+    //     );
+    // }
 
     databasesCreate(req: DatabaseManagerCreateReq): Promise<void> {
         return this.mayRenewToken(() =>
@@ -159,19 +158,8 @@ export abstract class TypeDBStub {
         );
     }
 
-    databaseRuleSchema(req: DatabaseRuleSchemaReq): Promise<string> {
-        return this.mayRenewToken(() =>
-            new Promise((resolve, reject) => {
-                return this.stub().database_rule_schema(req, (err, res) => {
-                    if (err) reject(err);
-                    else resolve(res.schema);
-                });
-            })
-        );
-    }
-
-    sessionOpen(openReq: SessionOpenReq): Promise<SessionOpenRes> {
-        return new Promise<SessionOpenRes>((resolve, reject) => {
+    transactionOpen(openReq: TransactionOpenReq): Promise<TransactionOpenRes> {
+        return new Promise<TransactionOpenRes>((resolve, reject) => {
             this.stub().session_open(openReq, (err, res) => {
                 if (err) reject(new TypeDBDriverError(err));
                 else resolve(res);
@@ -179,24 +167,13 @@ export abstract class TypeDBStub {
         });
     }
 
-    sessionClose(req: SessionCloseReq): Promise<void> {
+    transactionClose(req: TransactionCloseReq): Promise<void> {
         return new Promise<void>((resolve, _reject) => {
             this.stub().session_close(req, (err, _res) => {
                 if (err) {
-                    console.warn("An error has occurred when issuing session close request: %o", err)
+                    console.warn("An error has occurred when issuing transaction close request: %o", err)
                 }
                 resolve();
-            });
-        });
-    }
-
-    sessionPulse(pulse: SessionPulseReq): Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
-            this.stub().session_pulse(pulse, (err, res) => {
-                if (err) reject(err);
-                else {
-                    resolve(res.alive);
-                }
             });
         });
     }
@@ -234,39 +211,6 @@ export abstract class TypeDBStub {
         );
     }
 
-    usersCreate(req: UserManagerCreateReq): Promise<void> {
-        return this.mayRenewToken(() =>
-            new Promise<void>((resolve, reject) => {
-                this.stub().users_create(req, (err, _res) => {
-                    if (err) reject(new TypeDBDriverError(err));
-                    else resolve();
-                })
-            })
-        );
-    }
-
-    usersDelete(req: UserManagerDeleteReq): Promise<void> {
-        return this.mayRenewToken(() =>
-            new Promise<void>((resolve, reject) => {
-                this.stub().users_delete(req, (err, _res) => {
-                    if (err) reject(new TypeDBDriverError(err));
-                    else resolve();
-                });
-            })
-        );
-    }
-
-    usersPasswordSet(req: UserManagerPasswordSetReq): Promise<void> {
-        return this.mayRenewToken(() =>
-            new Promise<void>((resolve, reject) => {
-                this.stub().users_password_set(req, (err, _res) => {
-                    if (err) reject(new TypeDBDriverError(err));
-                    else resolve();
-                })
-            })
-        );
-    }
-
     usersGet(req: UserManagerGetReq): Promise<UserManagerGetRes> {
         return this.mayRenewToken(() =>
             new Promise<UserManagerGetRes>((resolve, reject) => {
@@ -278,7 +222,29 @@ export abstract class TypeDBStub {
         );
     }
 
-    userPasswordUpdate(req: UserPasswordUpdateReq): Promise<void> {
+    usersCreate(req: UserManagerCreateReq): Promise<void> {
+        return this.mayRenewToken(() =>
+            new Promise<void>((resolve, reject) => {
+                this.stub().users_create(req, (err, _res) => {
+                    if (err) reject(new TypeDBDriverError(err));
+                    else resolve();
+                })
+            })
+        );
+    }
+
+    userDelete(req: UserDeleteReq): Promise<void> {
+        return this.mayRenewToken(() =>
+            new Promise<void>((resolve, reject) => {
+                this.stub().user_delete(req, (err, _res) => {
+                    if (err) reject(new TypeDBDriverError(err));
+                    else resolve();
+                });
+            })
+        );
+    }
+
+    userUpdate(req: UserUpdateReq): Promise<void> {
         return this.mayRenewToken(() =>
             new Promise<void>((resolve, reject) => {
                 this.stub().user_password_update(req, (err, _res) => {
@@ -289,9 +255,9 @@ export abstract class TypeDBStub {
         );
     }
 
-    userToken(req: UserTokenReq): Promise<string> {
+    authenticationTokenCreate(req: AuthenticationTokenCreateReq): Promise<string> {
         return new Promise<string>((resolve, reject) => {
-            return this.stub().user_token(req, (err, res) => {
+            return this.stub().authentication_token_create(req, (err, res) => {
                 if (err) reject(err);
                 else resolve(res.token);
             });

@@ -17,20 +17,33 @@
  * under the License.
  */
 
-import Replica = Database.Replica;
+// import Replica = Database.Replica;
 
 export interface Database {
     /** The database name as a string. */
     readonly name: string;
 
-    /** The <code>Replica</code> instances for this database. _Only works in TypeDB Cloud_ */
-    readonly replicas: Replica[];
+    /**
+     * A full schema text as a valid TypeQL define query string.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * database.schema()
+     * ```
+     */
+    schema(): Promise<string>;
 
-    /** The primary replica for this database. _Only works in TypeDB Cloud_*/
-    readonly primaryReplica: Replica;
-
-     /** The preferred replica for this database. Operations which can be run on any replica will prefer to use this replica. _Only works in TypeDB Cloud_ */
-    readonly preferredReplica: Replica;
+    /**
+     * The types in the schema as a valid TypeQL define query string.
+     *
+     * ### Examples
+     *
+     * ```ts
+     * database.typeSchema()
+     * ```
+     */
+    typeSchema(): Promise<string>;
 
     /**
      * Deletes this database.
@@ -43,33 +56,31 @@ export interface Database {
      */
     delete(): Promise<void>;
 
-    /**
-     * Returns a full schema text as a valid TypeQL define query string.
-     *
-     * ### Examples
-     *
-     * ```ts
-     * database.schema()
-     * ```
-     */
-    schema(): Promise<string>;
+    // /** The <code>Replica</code> instances for this database. _Only works in TypeDB Cloud_ */
+    // readonly replicas: Replica[];
+    //
+    // /** The primary replica for this database. _Only works in TypeDB Cloud_*/
+    // readonly primaryReplica: Replica;
+    //
+    //  /** The preferred replica for this database. Operations which can be run on any replica will prefer to use this replica. _Only works in TypeDB Cloud_ */
+    // readonly preferredReplica: Replica;
 }
 
-export namespace Database {
-    /** The metadata and state of an individual raft replica of a database.*/
-    export interface Replica {
-        /** The database for which this is a replica. */
-        readonly databaseName: string;
-        /** The raft protocol ‘term’ of this replica. */
-        readonly term: number;
-        /** Checks whether this is the primary replica of the raft cluster.*/
-        readonly primary: boolean;
-        /**
-         * Checks whether this is the preferred replica of the raft cluster.
-         * If true, Operations which can be run on any replica will prefer to use this replica.
-         */
-        readonly preferred: boolean;
-        /** The server hosting this replica */
-        readonly server: string;
-    }
-}
+// export namespace Database {
+//     /** The metadata and state of an individual raft replica of a database.*/
+//     export interface Replica {
+//         /** The database for which this is a replica. */
+//         readonly databaseName: string;
+//         /** The raft protocol ‘term’ of this replica. */
+//         readonly term: number;
+//         /** Checks whether this is the primary replica of the raft cluster.*/
+//         readonly primary: boolean;
+//         /**
+//          * Checks whether this is the preferred replica of the raft cluster.
+//          * If true, Operations which can be run on any replica will prefer to use this replica.
+//          */
+//         readonly preferred: boolean;
+//         /** The server hosting this replica */
+//         readonly server: string;
+//     }
+// }

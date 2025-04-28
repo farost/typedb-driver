@@ -41,8 +41,12 @@ public interface User {
     /**
      * Updates the password for this user.
      *
-     * @param passwordOld The current password of this user
-     * @param passwordNew The new password
+     * @param password The new password
+     *
+     * <h3>Examples</h3>
+     * <pre>
+     * user.updatePassword("nEwp@ssw0rd")
+     * </pre>
      */
     void updatePassword(String password);
 
@@ -51,7 +55,7 @@ public interface User {
      *
      * <h3>Examples</h3>
      * <pre>
-     * driver.users().delete(username);
+     * user.delete()
      * </pre>
      */
     void delete();

@@ -17,120 +17,24 @@
  * under the License.
  */
 
-import {Stream} from "../../../common/util/Stream";
-import {TypeDBTransaction} from "../../connection/TypeDBTransaction";
-import {Concept} from "../Concept";
-import {Relation} from "../thing/Relation";
-import {RoleType} from "./RoleType";
-import {ThingType} from "./ThingType";
+import {Type} from "./Type";
 import {RequestBuilder} from "../../../common/rpc/RequestBuilder";
-import Transitivity = Concept.Transitivity;
 
-export interface RelationType extends ThingType {
+/**
+ * Relation types (or subtypes of the relation root type) represent relationships between types. Relation types have roles.
+ * Other types can play roles in relations if it's mentioned in their definition.
+ * A relation type must specify at least one role.
+ */
+export interface RelationType extends Type {
     /**
-     * Creates and returns an instance of this <code>RelationType</code>.
-     *
-     * ### Examples
-     *
-     * ```ts
-     * relationType.create(transaction)
-     * ```
-     *
-     * @param transaction - The current transaction
+     * {@inheritDoc}
      */
-    create(transaction: TypeDBTransaction): Promise<Relation>;
-
-    /** @inheritDoc */
-    getSupertype(transaction: TypeDBTransaction): Promise<RelationType | null>;
+    isRelationType(): boolean;
 
     /**
-     * Sets the supplied <code>RelationType</code> as the supertype of the current <code>RelationType</code>.
-     *
-     * ### Examples
-     *
-     * ```ts
-     * relationType.setSupertype(transaction, superRelationType).resolve();
-     * ```
-     *
-     * @param transaction The current transaction
-     * @param superRelationType The <code>RelationType</code> to set as the supertype of this <code>RelationType</code>
+     * {@inheritDoc}
      */
-    setSupertype(transaction: TypeDBTransaction, type: RelationType): Promise<void>;
-
-    /** @inheritDoc */
-    getSupertypes(transaction: TypeDBTransaction): Stream<RelationType>;
-
-    /** @inheritDoc */
-    getSubtypes(transaction: TypeDBTransaction): Stream<RelationType>;
-    /** @inheritDoc */
-    getSubtypes(transaction: TypeDBTransaction, transitivity: Transitivity): Stream<RelationType>;
-
-    /** @inheritDoc */
-    getInstances(transaction: TypeDBTransaction): Stream<Relation>;
-    /** @inheritDoc */
-    getInstances(transaction: TypeDBTransaction, transitivity: Transitivity): Stream<Relation>;
-
-    /** RelationType#getRelates:(1) */
-    getRelates(transaction: TypeDBTransaction): Stream<RoleType>;
-    /**
-     * Retrieves roles that this <code>RelationType</code> relates to directly or via inheritance. If <code>role_label</code> is given, returns a corresponding <code>RoleType</code> or <code>None</code>.
-     *
-     * ### Examples
-     *
-     * ```ts
-     * relationType.getRelates(transaction, roleLabel, transitivity)
-     * ```
-     *
-     * @param transaction - The current transaction
-     * @param roleLabel - Label of the role we wish to retrieve (optional)
-     * @param transitivity - <code>Transitivity.TRANSITIVE</code> for direct and inherited relates, <code>Transitivity.EXPLICIT</code> for direct relates only
-     */
-    getRelates(transaction: TypeDBTransaction, transitivity: Transitivity): Stream<RoleType>;
-
-    getRelatesForRoleLabel(transaction: TypeDBTransaction, roleLabel: string): Promise<RoleType | null>;
-
-    /**
-     * Retrieves a <code>RoleType</code> that is overridden by the role with the <code>role_label</code>.
-     *
-     * ### Examples
-     *
-     * ```ts
-     * relationType.getRelatesOverridden(transaction, roleLabel)
-     * ```
-     *
-     * @param transaction - The current transaction
-     * @param roleLabel - Label of the role that overrides an inherited role
-     */
-    getRelatesOverridden(transaction: TypeDBTransaction, roleLabel: string): Promise<RoleType | null>;
-
-    /**
-     * Sets the new role that this <code>RelationType</code> relates to. If we are setting an overriding type this way, we have to also pass the overridden type as a second argument.
-     *
-     * ### Examples
-     *
-     * ```ts
-     * relationType.setRelates(transaction, roleLabel)
-     * relationType.setRelates(transaction, roleLabel, overriddenLabel)
-     * ```
-     *
-     * @param transaction - The current transaction
-     * @param roleLabel - The new role for the <code>RelationType</code> to relate to
-     * @param overriddenLabel - The label being overridden, if applicable
-     */
-    setRelates(transaction: TypeDBTransaction, roleLabel: string, overriddenLabel?: string): Promise<void>;
-    /**
-     * Disallows this <code>RelationType</code> from relating to the given role.
-     *
-     * ### Examples
-     *
-     * ```ts
-     * relationType.unsetRelates(transaction, roleLabel)
-     * ```
-     *
-     * @param transaction - The current transaction
-     * @param roleLabel - The role to not relate to the relation type.
-     */
-    unsetRelates(transaction: TypeDBTransaction, roleLabel: string): Promise<void>;
+    asRelationType(): RelationType;
 }
 
 export namespace RelationType {

@@ -22,7 +22,7 @@ import {
     DatabaseReplicasReplica as ReplicaProto
 } from "typedb-protocol/proto/database";
 import {Database} from "../api/connection/database/Database";
-import {ServerDriver, TypeDBDriverImpl} from "./TypeDBDriverImpl";
+import {ServerDriver, DriverImpl} from "./DriverImpl";
 import {TypeDBDriverError} from "../common/errors/TypeDBDriverError";
 import {RequestBuilder} from "../common/rpc/RequestBuilder";
 import {ErrorMessage} from "../common/errors/ErrorMessage";
@@ -36,21 +36,21 @@ const WAIT_FOR_PRIMARY_REPLICA_SELECTION_MS = 2000;
 
 export class TypeDBDatabaseImpl implements Database {
     private readonly _name: string;
-    private readonly _driver: TypeDBDriverImpl;
+    private readonly _driver: DriverImpl;
     private _replicas: Replica[];
 
-    private constructor(name: string, driver: TypeDBDriverImpl, replicas: Replica[]) {
+    private constructor(name: string, driver: DriverImpl, replicas: Replica[]) {
         this._name = name;
         this._driver = driver;
         this._replicas = replicas;
         driver._database_cache[name] = this;
     }
 
-    static get(name: string, driver: TypeDBDriverImpl): Promise<TypeDBDatabaseImpl> {
+    static get(name: string, driver: DriverImpl): Promise<TypeDBDatabaseImpl> {
         return this.fetchReplicas(name, driver).then(replicas => new TypeDBDatabaseImpl(name, driver, replicas));
     }
 
-    private static async fetchReplicas(name: string, driver: TypeDBDriverImpl): Promise<Replica[]> {
+    private static async fetchReplicas(name: string, driver: DriverImpl): Promise<Replica[]> {
         for (const serverDriver of driver.serverDrivers.values()) {
             try {
                 const res = await serverDriver.stub.databasesGet(RequestBuilder.DatabaseManager.getReq(name));
@@ -69,7 +69,7 @@ export class TypeDBDatabaseImpl implements Database {
         throw new TypeDBDriverError(UNABLE_TO_CONNECT.message());
     }
 
-    static of(protoDB: DatabaseProto, driver: TypeDBDriverImpl): Database {
+    static of(protoDB: DatabaseProto, driver: DriverImpl): Database {
         const name = protoDB.name;
         const replicas = protoDB.replicas.map(
             proto => Replica.of(proto, new ServerDatabase(name, driver.serverDrivers.get(proto.address)))

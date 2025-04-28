@@ -17,16 +17,16 @@
  * under the License.
  */
 
-import {Attribute} from "../api/concept/thing/Attribute";
+import {Attribute} from "../api/concept/instance/Attribute";
 import {AttributeType} from "../api/concept/type/AttributeType";
 import {Concept} from "../api/concept/Concept";
-import {Entity} from "../api/concept/thing/Entity";
+import {Entity} from "../api/concept/instance/Entity";
 import {EntityType} from "../api/concept/type/EntityType";
 import {ErrorMessage} from "../common/errors/ErrorMessage";
-import {Relation} from "../api/concept/thing/Relation";
+import {Relation} from "../api/concept/instance/Relation";
 import {RelationType} from "../api/concept/type/RelationType";
 import {RoleType} from "../api/concept/type/RoleType";
-import {Thing} from "../api/concept/thing/Thing";
+import {Instance} from "../api/concept/instance/Instance";
 import {ThingType} from "../api/concept/type/ThingType";
 import {Type} from "../api/concept/type/Type";
 import {TypeDBDriverError} from "../common/errors/TypeDBDriverError";
@@ -112,7 +112,7 @@ export abstract class ConceptImpl implements Concept {
         throw new TypeDBDriverError(INVALID_CONCEPT_CASTING.message(this.className, "RoleType"));
     }
 
-    asThing(): Thing {
+    asThing(): Instance {
         throw new TypeDBDriverError(INVALID_CONCEPT_CASTING.message(this.className, "Thing"));
     }
 

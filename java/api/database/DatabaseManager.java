@@ -43,7 +43,7 @@ public interface DatabaseManager {
     Database get(String name) throws TypeDBDriverException;
 
     /**
-     * Checks if a database with the given name exists
+     * Checks if a database with the given name exists.
      *
      * <h3>Examples</h3>
      * <pre>
@@ -56,7 +56,18 @@ public interface DatabaseManager {
     boolean contains(String name) throws TypeDBDriverException;
 
     /**
-     * Create a database with the given name
+     * Retrieves all databases present on the TypeDB server.
+     *
+     * <h3>Examples</h3>
+     * <pre>
+     * driver.databases().all()
+     * </pre>
+     */
+    @CheckReturnValue
+    List<Database> all() throws TypeDBDriverException;
+
+    /**
+     * Create a database with the given name.
      *
      * <h3>Examples</h3>
      * <pre>
@@ -67,15 +78,4 @@ public interface DatabaseManager {
      */
     // TODO: Return type should be 'Database' but right now that would require 2 server calls in Cluster
     void create(String name) throws TypeDBDriverException;
-
-    /**
-     * Retrieves all databases present on the TypeDB server
-     *
-     * <h3>Examples</h3>
-     * <pre>
-     * driver.databases().all()
-     * </pre>
-     */
-    @CheckReturnValue
-    List<Database> all() throws TypeDBDriverException;
 }

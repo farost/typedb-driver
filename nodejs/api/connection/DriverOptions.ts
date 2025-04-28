@@ -23,27 +23,23 @@ import {TypeDBDriverError} from "../../common/errors/TypeDBDriverError";
 import CLOUD_INVALID_ROOT_CA_PATH = ErrorMessage.Driver.CLOUD_INVALID_ROOT_CA_PATH;
 
 /**
- * User credentials and TLS encryption settings for connecting to TypeDB Cloud.
+ * User connection settings (TLS encryption, etc.) for connecting to TypeDB Server.
  *
  * ### Examples
  *
  * ```ts
- * credential = new TypeDBCredential(username, password)
- * credential = new TypeDBCredential(username, password, "path/to/ca-certificate.pem")
+ * driverOptions = new DriverOptions(true, "path/to/ca-certificate.pem")
  * ```
  */
-export class TypeDBCredential {
-    private readonly _username: string;
-    private readonly _password: string;
+export class DriverOptions {
+    private readonly _isTlsEnabled: boolean;
     private readonly _tlsRootCAPath: string;
     /**
-     * @param username The name of the user to connect as
-     * @param password The password for the user
-     * @param tlsRootCAPath Path to the CA certificate to use for authenticating server certificates.
+     * @param isTlsEnabled - Specify whether the connection to TypeDB Server must be done over TLS.
+     * @param tlsRootCAPath - Path to the CA certificate to use for authenticating server certificates.
     */
-    constructor(username: string, password: string, tlsRootCAPath?: string) {
-        this._username = username;
-        this._password = password;
+    constructor(isTlsEnabled: boolean, tlsRootCAPath: string) {
+        this._isTlsEnabled = isTlsEnabled;
 
         if (tlsRootCAPath != null && !fs.existsSync(tlsRootCAPath)) {
             throw new TypeDBDriverError(CLOUD_INVALID_ROOT_CA_PATH.message(tlsRootCAPath));
@@ -51,12 +47,8 @@ export class TypeDBCredential {
         this._tlsRootCAPath = tlsRootCAPath;
     }
 
-    get username(): string {
-        return this._username;
-    }
-
-    get password(): string {
-        return this._password;
+    get isTlsEnabled(): boolean {
+        return this._isTlsEnabled;
     }
 
     get tlsRootCAPath(): string {

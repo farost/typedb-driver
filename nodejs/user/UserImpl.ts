@@ -20,20 +20,20 @@
 import {User as UserProto} from "typedb-protocol/proto/user";
 import {User} from "../api/connection/user/User";
 import {RequestBuilder} from "../common/rpc/RequestBuilder";
-import {TypeDBDriverImpl} from "../connection/TypeDBDriverImpl";
+import {DriverImpl} from "../connection/DriverImpl";
 
 export class UserImpl implements User {
-    private readonly _driver: TypeDBDriverImpl;
+    private readonly _driver: DriverImpl;
     private readonly _username: string;
     private readonly _passwordExpirySeconds: number;
 
-    constructor(driver: TypeDBDriverImpl, username: string, passwordExpirySeconds: number) {
+    constructor(driver: DriverImpl, username: string, passwordExpirySeconds: number) {
         this._driver = driver;
         this._username = username;
         this._passwordExpirySeconds = passwordExpirySeconds;
     }
 
-    static of(user: UserProto, driver: TypeDBDriverImpl): UserImpl {
+    static of(user: UserProto, driver: DriverImpl): UserImpl {
         if (user.has_password_expiry_seconds) return new UserImpl(driver, user.username, user.password_expiry_seconds);
         else return new UserImpl(driver, user.username, null);
     }
@@ -44,11 +44,11 @@ export class UserImpl implements User {
 
     async passwordUpdate(oldPassword: string, newPassword: string): Promise<void> {
         return this._driver.users.runFailsafe((driver) =>
-            driver.stub.userPasswordUpdate(RequestBuilder.User.passwordUpdateReq(this.username, oldPassword, newPassword))
+            driver.stub.userPasswordUpdate(RequestBuilder.User.passwordUpdateReq(this.name, oldPassword, newPassword))
         );
     }
 
-    get username(): string {
+    get name(): string {
         return this._username;
     }
 }

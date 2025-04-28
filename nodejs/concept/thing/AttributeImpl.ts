@@ -20,14 +20,14 @@
 import {Attribute as AttributeProto} from "typedb-protocol/proto/concept";
 import {AttributeTypeImpl, ThingImpl} from "../../dependencies_internal";
 import {AttributeType} from "../../api/concept/type/AttributeType";
-import {Attribute} from "../../api/concept/thing/Attribute";
+import {Attribute} from "../../api/concept/instance/Attribute";
 import {Bytes} from "../../common/util/Bytes";
 import {Concept} from "../../api/concept/Concept";
 import {RequestBuilder} from "../../common/rpc/RequestBuilder";
 import {Stream} from "../../common/util/Stream";
 import {ThingType} from "../../api/concept/type/ThingType";
-import {Thing} from "../../api/concept/thing/Thing";
-import {TypeDBTransaction} from "../../api/connection/TypeDBTransaction";
+import {Instance} from "../../api/concept/instance/Instance";
+import {Transaction} from "../../api/connection/Transaction";
 import {ValueImpl} from "../value/ValueImpl";
 import {Value} from "../../api/concept/value/Value";
 import ValueType = Concept.ValueType;
@@ -67,11 +67,11 @@ export class AttributeImpl extends ThingImpl implements Attribute {
         return this._value.value;
     }
 
-    async isDeleted(transaction: TypeDBTransaction): Promise<boolean> {
+    async isDeleted(transaction: Transaction): Promise<boolean> {
         return !(await transaction.concepts.getAttribute(this.iid));
     }
 
-    getOwners(transaction: TypeDBTransaction, ownerType?: ThingType): Stream<Thing> {
+    getOwners(transaction: Transaction, ownerType?: ThingType): Stream<Instance> {
         let request;
         if (!ownerType) {
             request = RequestBuilder.Thing.Attribute.getOwnersReq(this.iid);
@@ -90,7 +90,6 @@ export namespace AttributeImpl {
         const iid = Bytes.bytesToHexString(proto.iid);
         return new AttributeImpl(
             iid,
-            proto.inferred,
             AttributeTypeImpl.ofAttributeTypeProto(proto.attribute_type),
             ValueImpl.ofValueProto(proto.value),
         );

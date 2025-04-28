@@ -17,9 +17,9 @@
  * under the License.
  */
 
-import {Entity} from "../../api/concept/thing/Entity";
+import {Entity} from "../../api/concept/instance/Entity";
 import {EntityType} from "../../api/concept/type/EntityType";
-import {TypeDBTransaction} from "../../api/connection/TypeDBTransaction";
+import {Transaction} from "../../api/connection/Transaction";
 import {Bytes} from "../../common/util/Bytes";
 import {EntityTypeImpl, ThingImpl} from "../../dependencies_internal";
 import {Entity as EntityProto} from "typedb-protocol/proto/concept";
@@ -48,7 +48,7 @@ export class EntityImpl extends ThingImpl implements Entity {
         return this;
     }
 
-    async isDeleted(transaction: TypeDBTransaction): Promise<boolean> {
+    async isDeleted(transaction: Transaction): Promise<boolean> {
         return !(await transaction.concepts.getEntity(this.iid));
     }
 }
@@ -57,6 +57,6 @@ export namespace EntityImpl {
     export function ofEntityProto(proto: EntityProto): Entity {
         if (!proto) return null;
         const iid = Bytes.bytesToHexString(proto.iid);
-        return new EntityImpl(iid, proto.inferred, EntityTypeImpl.ofEntityTypeProto(proto.entity_type));
+        return new EntityImpl(iid, EntityTypeImpl.ofEntityTypeProto(proto.entity_type));
     }
 }

@@ -19,10 +19,10 @@
 
 
 import {AttributeType as AttributeTypeProto, TypeAnnotation, TypeTransitivity,} from "typedb-protocol/proto/concept";
-import {Attribute} from "../../api/concept/thing/Attribute";
+import {Attribute} from "../../api/concept/instance/Attribute";
 import {AttributeType} from "../../api/concept/type/AttributeType";
 import {ThingType} from "../../api/concept/type/ThingType";
-import {TypeDBTransaction} from "../../api/connection/TypeDBTransaction";
+import {Transaction} from "../../api/connection/Transaction";
 import {RequestBuilder} from "../../common/rpc/RequestBuilder";
 import {Stream} from "../../common/util/Stream";
 import {AttributeImpl, ThingTypeImpl, ValueImpl} from "../../dependencies_internal";
@@ -57,81 +57,81 @@ export class AttributeTypeImpl extends ThingTypeImpl implements AttributeType {
         return this;
     }
 
-    async isDeleted(transaction: TypeDBTransaction): Promise<boolean> {
+    async isDeleted(transaction: Transaction): Promise<boolean> {
         return !(await transaction.concepts.getAttributeType(this.label.name));
     }
 
-    async put(transaction: TypeDBTransaction, value: Value): Promise<Attribute> {
+    async put(transaction: Transaction, value: Value): Promise<Attribute> {
         const res = await this.execute(transaction, RequestBuilder.Type.AttributeType.putReq(this.label, Value.proto(value)));
         return AttributeImpl.ofAttributeProto(res.attribute_type_put_res.attribute);
     }
 
-    putBoolean(transaction: TypeDBTransaction, value: boolean): Promise<Attribute> {
+    putBoolean(transaction: Transaction, value: boolean): Promise<Attribute> {
         return this.put(transaction, new ValueImpl(ValueType.BOOLEAN, value));
     }
 
-    putLong(transaction: TypeDBTransaction, value: number): Promise<Attribute> {
+    putLong(transaction: Transaction, value: number): Promise<Attribute> {
         return this.put(transaction, new ValueImpl(ValueType.LONG, value));
     }
 
-    putDouble(transaction: TypeDBTransaction, value: number): Promise<Attribute> {
+    putDouble(transaction: Transaction, value: number): Promise<Attribute> {
         return this.put(transaction, new ValueImpl(ValueType.DOUBLE, value));
     }
 
-    putString(transaction: TypeDBTransaction, value: string): Promise<Attribute> {
+    putString(transaction: Transaction, value: string): Promise<Attribute> {
         return this.put(transaction, new ValueImpl(ValueType.STRING, value));
     }
 
-    putDateTime(transaction: TypeDBTransaction, value: Date): Promise<Attribute> {
+    putDateTime(transaction: Transaction, value: Date): Promise<Attribute> {
         return this.put(transaction, new ValueImpl(ValueType.DATETIME, value));
     }
 
-    async get(transaction: TypeDBTransaction, value: Value): Promise<Attribute> {
+    async get(transaction: Transaction, value: Value): Promise<Attribute> {
         const res = await this.execute(transaction, RequestBuilder.Type.AttributeType.getReq(this.label, Value.proto(value)));
         return AttributeImpl.ofAttributeProto(res.attribute_type_get_res.attribute);
     }
 
-    getBoolean(transaction: TypeDBTransaction, value: boolean): Promise<Attribute> {
+    getBoolean(transaction: Transaction, value: boolean): Promise<Attribute> {
         return this.get(transaction, new ValueImpl(ValueType.BOOLEAN, value));
     }
 
-    getLong(transaction: TypeDBTransaction, value: number): Promise<Attribute> {
+    getLong(transaction: Transaction, value: number): Promise<Attribute> {
         return this.get(transaction, new ValueImpl(ValueType.LONG, value));
     }
 
-    getDouble(transaction: TypeDBTransaction, value: number): Promise<Attribute> {
+    getDouble(transaction: Transaction, value: number): Promise<Attribute> {
         return this.get(transaction, new ValueImpl(ValueType.DOUBLE, value));
     }
 
-    getString(transaction: TypeDBTransaction, value: string): Promise<Attribute> {
+    getString(transaction: Transaction, value: string): Promise<Attribute> {
         return this.get(transaction, new ValueImpl(ValueType.STRING, value));
     }
 
-    getDateTime(transaction: TypeDBTransaction, value: Date): Promise<Attribute> {
+    getDateTime(transaction: Transaction, value: Date): Promise<Attribute> {
         return this.get(transaction, new ValueImpl(ValueType.DATETIME, value));
     }
 
-    async getSupertype(transaction: TypeDBTransaction): Promise<AttributeType> {
+    async getSupertype(transaction: Transaction): Promise<AttributeType> {
         const res = await this.execute(transaction, RequestBuilder.Type.AttributeType.getSupertypeReq(this.label));
         return AttributeTypeImpl.ofAttributeTypeProto(res.attribute_type_get_supertype_res.attribute_type);
     }
 
-    async setSupertype(transaction: TypeDBTransaction, superAttributeType: AttributeType): Promise<void> {
+    async setSupertype(transaction: Transaction, superAttributeType: AttributeType): Promise<void> {
         await this.execute(transaction, RequestBuilder.Type.AttributeType.setSupertypeReq(this.label, AttributeType.proto(superAttributeType)));
     }
 
-    getSupertypes(transaction: TypeDBTransaction): Stream<AttributeType> {
+    getSupertypes(transaction: Transaction): Stream<AttributeType> {
         return this.stream(transaction, RequestBuilder.Type.AttributeType.getSupertypesReq(this.label)).flatMap(
             resPart => Stream.array(resPart.attribute_type_get_supertypes_res_part.attribute_types)
         ).map(AttributeTypeImpl.ofAttributeTypeProto);
     }
 
-    getSubtypes(transaction: TypeDBTransaction): Stream<AttributeType>;
-    getSubtypes(transaction: TypeDBTransaction, valueType: ValueType): Stream<AttributeType>;
-    getSubtypes(transaction: TypeDBTransaction, transitivity: Transitivity): Stream<AttributeType>;
-    getSubtypes(transaction: TypeDBTransaction, valueType: ValueType, transitivity: Transitivity): Stream<AttributeType>;
+    getSubtypes(transaction: Transaction): Stream<AttributeType>;
+    getSubtypes(transaction: Transaction, valueType: ValueType): Stream<AttributeType>;
+    getSubtypes(transaction: Transaction, transitivity: Transitivity): Stream<AttributeType>;
+    getSubtypes(transaction: Transaction, valueType: ValueType, transitivity: Transitivity): Stream<AttributeType>;
     getSubtypes(
-        transaction: TypeDBTransaction,
+        transaction: Transaction,
         valueTypeOrTransitivity?: ValueType | Transitivity,
         maybeTransitivity?: Transitivity,
     ): Stream<AttributeType> {
@@ -157,21 +157,21 @@ export class AttributeTypeImpl extends ThingTypeImpl implements AttributeType {
         ).map(AttributeTypeImpl.ofAttributeTypeProto);
     }
 
-    getInstances(transaction: TypeDBTransaction): Stream<Attribute>;
-    getInstances(transaction: TypeDBTransaction, transitivity: Transitivity): Stream<Attribute>;
-    getInstances(transaction: TypeDBTransaction, transitivity?: Transitivity): Stream<Attribute> {
+    getInstances(transaction: Transaction): Stream<Attribute>;
+    getInstances(transaction: Transaction, transitivity: Transitivity): Stream<Attribute>;
+    getInstances(transaction: Transaction, transitivity?: Transitivity): Stream<Attribute> {
         if (!transitivity) transitivity = Transitivity.TRANSITIVE;
         return this.stream(transaction, RequestBuilder.Type.AttributeType.getInstancesReq(this.label, transitivity.proto())).flatMap(
             resPart => Stream.array(resPart.attribute_type_get_instances_res_part.attributes)
         ).map(AttributeImpl.ofAttributeProto);
     }
 
-    getOwners(transaction: TypeDBTransaction): Stream<ThingType>;
-    getOwners(transaction: TypeDBTransaction, annotations: Annotation[]): Stream<ThingType>;
-    getOwners(transaction: TypeDBTransaction, transitivity: Transitivity): Stream<ThingType>;
-    getOwners(transaction: TypeDBTransaction, annotations: Annotation[], transitivity: Transitivity): Stream<ThingType>;
+    getOwners(transaction: Transaction): Stream<ThingType>;
+    getOwners(transaction: Transaction, annotations: Annotation[]): Stream<ThingType>;
+    getOwners(transaction: Transaction, transitivity: Transitivity): Stream<ThingType>;
+    getOwners(transaction: Transaction, annotations: Annotation[], transitivity: Transitivity): Stream<ThingType>;
     getOwners(
-        transaction: TypeDBTransaction,
+        transaction: Transaction,
         annotationsOrTransitivity?: Annotation[] | Transitivity,
         maybeTransitivity?: Transitivity,
     ): Stream<ThingType> {
@@ -196,16 +196,16 @@ export class AttributeTypeImpl extends ThingTypeImpl implements AttributeType {
         ).map(ThingTypeImpl.ofThingTypeProto);
     }
 
-    async getRegex(transaction: TypeDBTransaction): Promise<string> {
+    async getRegex(transaction: Transaction): Promise<string> {
         const res = await this.execute(transaction, RequestBuilder.Type.AttributeType.getRegexReq(this.label));
         return res.attribute_type_get_regex_res.regex;
     }
 
-    async setRegex(transaction: TypeDBTransaction, regex: string): Promise<void> {
+    async setRegex(transaction: Transaction, regex: string): Promise<void> {
         await this.execute(transaction, RequestBuilder.Type.AttributeType.setRegexReq(this.label, regex));
     }
 
-    async unsetRegex(transaction: TypeDBTransaction): Promise<void> {
+    async unsetRegex(transaction: Transaction): Promise<void> {
         await this.setRegex(transaction, "");
     }
 }
@@ -213,6 +213,6 @@ export class AttributeTypeImpl extends ThingTypeImpl implements AttributeType {
 export namespace AttributeTypeImpl {
     export function ofAttributeTypeProto(proto: AttributeTypeProto): AttributeType {
         if (!proto) return null;
-        return new AttributeTypeImpl(proto.label, proto.is_root, proto.is_abstract, Concept.ValueType.of(proto.value_type));
+        return new AttributeTypeImpl(proto.label, Concept.ValueType.of(proto.value_type));
     }
 }
