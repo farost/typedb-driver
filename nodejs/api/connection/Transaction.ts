@@ -25,6 +25,7 @@ import {
 } from "typedb-protocol/proto/transaction";
 import {Stream} from "../../common/util/Stream";
 import {TransactionOptions} from "./TransactionOptions";
+import {QueryOptions} from "./QueryOptions";
 
 export interface Transaction {
     /**
@@ -57,18 +58,6 @@ export interface Transaction {
     /**
      * Execute a TypeQL query in this transaction.
      * @param query - The query to execute.
-     *
-     * ### Examples
-     *
-     * ```ts
-     * transaction.query("define entity person;")
-     * ```
-     */
-    query(query: string): Promise<QueryAnswer>;
-
-    /**
-     * Execute a TypeQL query in this transaction.
-     * @param query - The query to execute.
      * @param options - The <code>QueryOptions</code> to execute the query with.
      *
      * ### Examples
@@ -77,7 +66,7 @@ export interface Transaction {
      * transaction.query("define entity person;", queryOptions)
      * ```
      */
-    query(query: string, options: QueryOptions): Promise<QueryAnswer>;
+    query(query: string, options?: QueryOptions): Promise<QueryAnswer>;
 
     /**
      * Registers a callback function which will be executed when this transaction is closed.

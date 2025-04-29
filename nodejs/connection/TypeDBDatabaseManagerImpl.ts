@@ -27,6 +27,8 @@ import {TypeDBDatabaseImpl} from "./TypeDBDatabaseImpl";
 import CLOUD_ALL_NODES_FAILED = ErrorMessage.Driver.CLOUD_ALL_NODES_FAILED;
 import CLOUD_REPLICA_NOT_PRIMARY = ErrorMessage.Driver.CLOUD_REPLICA_NOT_PRIMARY;
 import DB_DOES_NOT_EXIST = ErrorMessage.Driver.DATABASE_DOES_NOT_EXIST;
+import {ResponseReader} from "../common/rpc/ResponseReader";
+import Databases = ResponseReader.Databases;
 
 export class TypeDBDatabaseManagerImpl implements DatabaseManager {
     private readonly _driver: DriverImpl;
@@ -63,7 +65,7 @@ export class TypeDBDatabaseManagerImpl implements DatabaseManager {
         for (const serverDriver of this._driver.serverDrivers.values()) {
             try {
                 const dbs = await serverDriver.stub.databasesAll(RequestBuilder.DatabaseManager.allReq());
-                return dbs.databases.map(db => TypeDBDatabaseImpl.of(db, this._driver));
+                return Databases.of(this._driver, dbs.databases);
             } catch (e) {
                 errors += `- ${serverDriver.address}: ${e}\n`;
             }

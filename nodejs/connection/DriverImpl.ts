@@ -41,6 +41,8 @@ import ADDRESS_TRANSLATION_MISMATCH = ErrorMessage.Driver.ADDRESS_TRANSLATION_MI
 import {DriverOptions} from "../api/connection/DriverOptions";
 import {TypeDBTransactionImpl} from "./TypeDBTransactionImpl";
 import {TransactionType} from "../api/connection/Transaction";
+import {ResponseReader} from "../common/rpc/ResponseReader";
+import Databases = ResponseReader.Databases;
 
 export class DriverImpl implements Driver {
     private _isOpen: boolean;
@@ -71,9 +73,11 @@ export class DriverImpl implements Driver {
 
     async open(): Promise<Driver> {
         const serverStub = new TypeDBStubImpl(this._address, this._credentials, this._driverOptions);
-        await serverStub.open();
-        const advertisedAddress = (await serverStub.serversAll(RequestBuilder.ServerManager.allReq())).servers[0].address;
-        this.serverDrivers.set(advertisedAddress, new ServerDriver(this._address, serverStub));
+        const [latency, connectionId, databases] = await serverStub.open();
+        for (const db of Databases.of(this, databases)) {
+            this._database_cache[db.name] = db;
+        }
+        this.serverDrivers.set(this._address, new ServerDriver(this._address, latency, connectionId, serverStub));
         this._isOpen = true;
         return this;
     }
@@ -86,7 +90,7 @@ export class DriverImpl implements Driver {
         if (!this.isOpen()) throw new TypeDBDriverError(DRIVER_NOT_OPEN);
         if (!options) options = new TransactionOptions();
         const transaction = new TypeDBTransactionImpl(databaseName, type, options, this);
-        await transaction.open();
+        await transaction.open(); // TODO: transaction ids? How to close them? Ignore for now?
         if (this._transactions[transaction.id]) throw new TypeDBDriverError(TRANSACTION_ID_EXISTS.message(transaction.id));
         this._transactions[transaction.id] = transaction;
         return transaction;
@@ -124,9 +128,13 @@ export class ServerDriver {
     private readonly _address: string;
     private readonly _stub: TypeDBStub;
     private readonly _requestTransmitter: RequestTransmitter;
+    private readonly _latency: number;
+    private readonly _connectionId: string;
 
-    constructor(address: string, stub: TypeDBStub) {
+    constructor(address: string, latency: number, connectionId: string, stub: TypeDBStub) {
         this._address = address;
+        this._latency = latency;
+        this._connectionId = connectionId;
         this._stub = stub;
         this._requestTransmitter = new RequestTransmitter();
     }

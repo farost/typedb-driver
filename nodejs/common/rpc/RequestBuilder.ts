@@ -68,6 +68,12 @@ import {Credentials} from "../../api/connection/Credentials";
 
 /* eslint no-inner-declarations: "off" */
 export namespace RequestBuilder {
+    export namespace Authentication {
+        export function tokenCreateReq(username: string, password: string) {
+            return new AuthenticationTokenCreateReq({username: username, password: password });
+        }
+    }
+
     export namespace DatabaseManager {
         export function getReq(name: string) {
             return new DatabaseManagerGetReq({name: name});
@@ -136,7 +142,7 @@ export namespace RequestBuilder {
 
     export namespace Connection {
         export function openReq(driver_lang: string, driver_version: string, credentials: Credentials) {
-            let authentication = new AuthenticationTokenCreateReq({username: credentials.username, password: credentials.password })
+            const authentication = Authentication.tokenCreateReq(credentials.username, credentials.password);
             return new ConnectionOpenReq({version: Version.VERSION, driver_lang, driver_version, authentication})
         }
     }

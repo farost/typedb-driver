@@ -17,7 +17,11 @@
  * under the License.
  */
 
-import {Concept as ConceptProto} from "typedb-protocol/proto/concept"
+import {Concept as ConceptProto} from "typedb-protocol/proto/concept";
+import {
+    DatabaseReplicas as DatabaseProto,
+    DatabaseReplicasReplica as ReplicaProto
+} from "typedb-protocol/proto/database";
 import {EntityTypeImpl} from "../../concept/type/EntityTypeImpl";
 import {RelationTypeImpl} from "../../concept/type/RelationTypeImpl";
 import {AttributeTypeImpl} from "../../concept/type/AttributeTypeImpl";
@@ -30,9 +34,18 @@ import {ValueImpl} from "../../concept/value/ValueImpl";
 import {TypeDBDriverError} from "../errors/TypeDBDriverError";
 import {ErrorMessage} from "../errors/ErrorMessage";
 import BAD_ENCODING = ErrorMessage.Concept.BAD_ENCODING;
+import {Database} from "../../api/connection/database/Database";
+import {TypeDBDatabaseImpl} from "../../connection/TypeDBDatabaseImpl";
+import {DriverImpl} from "../../connection/DriverImpl";
 
 /* eslint no-inner-declarations: "off" */
 export namespace ResponseReader {
+    export namespace Databases {
+        export function of(driver: DriverImpl, databases: DatabaseProto[]): Database[] {
+            return databases.map(db => TypeDBDatabaseImpl.of(db, driver))
+        }
+    }
+
     export namespace Concept {
         export function of(proto: ConceptProto) {
             if (proto.has_entity_type) return EntityTypeImpl.ofEntityTypeProto(proto.entity_type);

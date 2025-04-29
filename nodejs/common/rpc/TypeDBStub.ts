@@ -18,7 +18,7 @@
  */
 
 
-import {ConnectionOpenReq} from "typedb-protocol/proto/connection";
+import {ConnectionOpenReq, ConnectionOpenRes} from "typedb-protocol/proto/connection";
 import {
     DatabaseDeleteReq,
     DatabaseManagerAllReq,
@@ -54,16 +54,14 @@ import {ErrorMessage} from "../errors/ErrorMessage";
 TODO implement ResilientCall
  */
 export abstract class TypeDBStub {
-    async open(): Promise<void> {
-        await this.connectionOpen(RequestBuilder.Connection.openReq());
-    }
+    abstract open(): Promise<[number, string, DatabaseManagerAllRes]>;
 
-    connectionOpen(req: ConnectionOpenReq): Promise<void> {
+    connectionOpen(req: ConnectionOpenReq): Promise<ConnectionOpenRes> {
         return this.mayRenewToken(() =>
             new Promise((resolve, reject) => {
-                this.stub().connection_open(req, (err) => {
+                this.stub().connection_open(req, (err, res) => {
                     if (err) reject(new TypeDBDriverError(err));
-                    else resolve();
+                    else resolve(res);
                 })
             })
         );

@@ -41,7 +41,7 @@ export abstract class Stream<T> implements AsyncIterable<T> {
      * ### Examples
      *
      * ```ts
-     * results = transaction.query.match(query).collect().await;
+     * results = transaction.query(query).collect().await;
      * ```
      */
     async collect(): Promise<T[]> {
@@ -52,6 +52,7 @@ export abstract class Stream<T> implements AsyncIterable<T> {
         return answers;
     }
 
+    // TODO: Can be used on any?
     /**
      * Checks whether a condition is satisfied by ALL answers in this stream.
      * @param callbackFn: The condition to evaluate.
@@ -59,7 +60,7 @@ export abstract class Stream<T> implements AsyncIterable<T> {
      *
      * ```ts
      * // For a query "match $a isa age;", check if all results for $a are positive.
-     * results = transaction.query.match(query).every(cm => cm.get("a").value > 0).await;
+     * results = transaction.query(query).every(cm => cm.get("a").value > 0).await;
      * ```
      */
     async every(callbackFn: (value: T) => unknown): Promise<boolean> {
@@ -76,10 +77,10 @@ export abstract class Stream<T> implements AsyncIterable<T> {
      *
      * ```ts
      * // For a query "match $a isa age;", check if any results for $a are negative.
-     * results = transaction.query.match(query).some(cm => cm.get("a").value < 0).await;
+     * results = transaction.query(query).any(cm => cm.get("a").value < 0).await;
      * ```
      */
-    async some(callbackFn: (value: T) => unknown): Promise<boolean> {
+    async any(callbackFn: (value: T) => unknown): Promise<boolean> {
         for await (const item of this) {
             if (callbackFn(item)) return true;
         }
@@ -93,7 +94,7 @@ export abstract class Stream<T> implements AsyncIterable<T> {
      *
      * ```ts
      * // For a query "match $p isa person, has age $a;", only retrieve results having $a >= 60.
-     * results = transaction.query.match(query).filter(cm => cm.get("a").value > 60).collect();
+     * results = transaction.query(query).filter(cm => cm.get("a").value > 60).collect();
      * ```
      */
     filter(filter: (value: T) => boolean): Stream<T> {

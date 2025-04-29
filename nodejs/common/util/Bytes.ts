@@ -20,14 +20,6 @@
 export class Bytes {
     private static PREFIX = "0x";
 
-    static hexStringToBytes(hexString: string): Uint8Array {
-        if (hexString.length % 2 != 0) throw new Error("hexString length not divisible by 2: " + hexString.length)
-        if (!hexString.startsWith(Bytes.PREFIX)) throw new Error("hexString does not start with '" + Bytes.PREFIX + "': " + hexString + "'")
-        hexString = hexString.replace(Bytes.PREFIX, "");
-
-        return Uint8Array.from(Buffer.from(hexString, 'hex'))
-    }
-
     static bytesToHexString(bytes: Uint8Array): string {
         return Bytes.PREFIX + Buffer.from(bytes).toString('hex')
     }

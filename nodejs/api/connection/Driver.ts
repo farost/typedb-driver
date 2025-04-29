@@ -19,6 +19,8 @@
 
 import {DatabaseManager} from "./database/DatabaseManager";
 import {UserManager} from "./user/UserManager";
+import {TransactionOptions} from "./TransactionOptions";
+import {Transaction} from "./Transaction";
 
 export interface Driver {
     /**
@@ -52,19 +54,6 @@ export interface Driver {
      * Opens a communication tunnel (transaction) to the given database on the running TypeDB server.
      * @param database - The name of the database with which the transaction connects
      * @param type - The type of transaction to be created (READ, WRITE, or SCHEMA)
-     *
-     * ### Examples
-     *
-     * ```ts
-     * driver.transaction(database, transactionType)
-     * ```
-     */
-    transaction(database: string, type: Transaction.Type): Transaction;
-
-    /**
-     * Opens a communication tunnel (transaction) to the given database on the running TypeDB server.
-     * @param database - The name of the database with which the transaction connects
-     * @param type - The type of transaction to be created (READ, WRITE, or SCHEMA)
      * @param options - <code>TransactionOptions</code> to configure the opened transaction
      *
      * ### Examples
@@ -73,7 +62,7 @@ export interface Driver {
      * driver.transaction(database, transactionType, options)
      * ```
      */
-    transaction(database: string, type: Transaction.Type, options: TransactionOptions): Transaction;
+    transaction(database: string, type: Transaction.Type, options?: TransactionOptions): Transaction;
 
     /**
      * Closes the driver. Before instantiating a new driver, the driver that's currently open should first be closed.
