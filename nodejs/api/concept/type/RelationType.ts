@@ -36,12 +36,3 @@ export interface RelationType extends Type {
      */
     asRelationType(): RelationType;
 }
-
-export namespace RelationType {
-
-    export const NAME = "relation";
-
-    export function proto(relationType: RelationType) {
-        return RequestBuilder.Type.RelationType.protoRelationType(relationType.label);
-    }
-}

@@ -440,7 +440,7 @@ impl chrono::TimeZone for TimeZone {
 }
 
 /// A relative duration, which contains months, days, and nanoseconds.
-/// Can be used for calendar-relative durations (eg 7 days forward), or for absolute durations using the nanosecond component
+/// Can be used for calendar-relative durations (e.g., 7 days forward), or for absolute durations using the nanosecond component
 /// When used as an absolute duration, convertible to chrono::Duration
 #[repr(C)]
 #[derive(Clone, Copy, Hash, PartialEq, Eq)]

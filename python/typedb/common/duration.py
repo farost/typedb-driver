@@ -25,7 +25,7 @@ from typedb.common.datetime import NANOS_IN_SECOND, DAYS_IN_WEEK, MONTHS_IN_YEAR
 class Duration:
     """
     A relative duration, which contains months, days, and nanoseconds.
-    Can be used for calendar-relative durations (eg 7 days forward), or for absolute durations using the nanosecond
+    Can be used for calendar-relative durations (e.g., 7 days forward), or for absolute durations using the nanosecond
     component.
     Not convertible to datetime.timedelta due to the lack of months and nanos alternatives.
     """

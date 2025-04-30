@@ -37,6 +37,8 @@ import {ExplanationImpl} from "../logic/ExplanationImpl";
 import {ValueImpl} from "../concept/value/ValueImpl";
 import {JSONObject} from "../api/answer/JSON";
 
+// TODO: Can steal from here to TypeDBTransactionImpl for `query()`
+
 export class QueryManagerImpl implements QueryManager {
     private _transaction: TypeDBTransaction.Extended;
 

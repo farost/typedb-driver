@@ -41,6 +41,8 @@ import {Database} from "../api/connection/database/Database";
 import {TypeDBStub} from "../common/rpc/TypeDBStub";
 import {RequestTransmitter} from "../stream/RequestTransmitter";
 
+// TODO: Reimplement
+
 export class TypeDBTransactionImpl implements TypeDBTransaction.Extended {
     private readonly _database: string;
     private readonly _type: TransactionType;

@@ -39,7 +39,7 @@ import {EntityTypeImpl} from "../type/EntityTypeImpl";
 import {RelationTypeImpl} from "../type/RelationTypeImpl";
 import {AttributeTypeImpl} from "../type/AttributeTypeImpl";
 import {RoleTypeImpl} from "../type/RoleTypeImpl";
-import {AttributeImpl} from "../thing/AttributeImpl";
+import {AttributeImpl} from "../instance/AttributeImpl";
 import {ValueImpl} from "../value/ValueImpl";
 import {ThingTypeImpl} from "../type/ThingTypeImpl";
 import {TypeDBDriverError} from "../../common/errors/TypeDBDriverError";

@@ -74,16 +74,17 @@ export class TypeDBDatabaseManagerImpl implements DatabaseManager {
     }
 
     private async runFailsafe<T>(name: string, task: (driver: ServerDriver) => Promise<T>): Promise<T> {
-        let errors = "";
-        for (const serverDriver of this._driver.serverDrivers.values()) {
-            try {
-                return await task(serverDriver);
-            } catch (e) {
-                if (e instanceof TypeDBDriverError && CLOUD_REPLICA_NOT_PRIMARY === e.messageTemplate) {
-                    return await (await TypeDBDatabaseImpl.get(name, this._driver)).runOnPrimaryReplica(task);
-                } else errors += `- ${serverDriver.address}: ${e}\n`;
-            }
-        }
-        throw new TypeDBDriverError(CLOUD_ALL_NODES_FAILED.message(errors));
+        return await task(this._driver.serverDrivers.values().next().value);
+        // let errors = "";
+        // for (const serverDriver of this._driver.serverDrivers.values()) {
+        //     try {
+        //         return await task(serverDriver);
+        //     } catch (e) {
+        //         if (e instanceof TypeDBDriverError && CLOUD_REPLICA_NOT_PRIMARY === e.messageTemplate) {
+        //             return await (await TypeDBDatabaseImpl.get(name, this._driver)).runOnPrimaryReplica(task);
+        //         } else errors += `- ${serverDriver.address}: ${e}\n`;
+        //     }
+        // }
+        // throw new TypeDBDriverError(CLOUD_ALL_NODES_FAILED.message(errors));
     }
 }

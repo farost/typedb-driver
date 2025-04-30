@@ -17,46 +17,46 @@
  * under the License.
  */
 
-import {Entity} from "../../api/concept/instance/Entity";
-import {EntityType} from "../../api/concept/type/EntityType";
+import {Relation as RelationProto} from "typedb-protocol/proto/concept";
+import {Relation} from "../../api/concept/instance/Relation";
+import {Instance} from "../../api/concept/instance/Instance";
+import {RelationType} from "../../api/concept/type/RelationType";
+import {RoleType} from "../../api/concept/type/RoleType";
 import {Transaction} from "../../api/connection/Transaction";
+import {RequestBuilder} from "../../common/rpc/RequestBuilder";
 import {Bytes} from "../../common/util/Bytes";
-import {EntityTypeImpl, ThingImpl} from "../../dependencies_internal";
-import {Entity as EntityProto} from "typedb-protocol/proto/concept";
+import {Stream} from "../../common/util/Stream";
+import {RelationTypeImpl, RoleTypeImpl, InstanceImpl} from "../../dependencies_internal";
 
-export class EntityImpl extends ThingImpl implements Entity {
-    private readonly _type: EntityType;
+export class RelationImpl extends InstanceImpl implements Relation {
+    private readonly _type: RelationType;
 
-    constructor(iid: string, inferred: boolean, type: EntityType) {
+    constructor(iid: string, inferred: boolean, type: RelationType) {
         super(iid, inferred);
         this._type = type;
     }
 
     protected get className(): string {
-        return "Entity";
+        return "Relation";
     }
 
-    get type(): EntityType {
+    get type(): RelationType {
         return this._type;
     }
 
-    isEntity(): boolean {
+    isRelation(): boolean {
         return true;
     }
 
-    asEntity(): Entity {
+    asRelation(): Relation {
         return this;
-    }
-
-    async isDeleted(transaction: Transaction): Promise<boolean> {
-        return !(await transaction.concepts.getEntity(this.iid));
     }
 }
 
-export namespace EntityImpl {
-    export function ofEntityProto(proto: EntityProto): Entity {
+export namespace RelationImpl {
+    export function ofRelationProto(proto: RelationProto) {
         if (!proto) return null;
         const iid = Bytes.bytesToHexString(proto.iid);
-        return new EntityImpl(iid, EntityTypeImpl.ofEntityTypeProto(proto.entity_type));
+        return new RelationImpl(iid, RelationTypeImpl.ofRelationTypeProto(proto.relation_type));
     }
 }

@@ -18,7 +18,7 @@
  */
 
 import {Attribute as AttributeProto} from "typedb-protocol/proto/concept";
-import {AttributeTypeImpl, ThingImpl} from "../../dependencies_internal";
+import {AttributeTypeImpl, InstanceImpl} from "../../dependencies_internal";
 import {AttributeType} from "../../api/concept/type/AttributeType";
 import {Attribute} from "../../api/concept/instance/Attribute";
 import {Bytes} from "../../common/util/Bytes";
@@ -32,7 +32,7 @@ import {ValueImpl} from "../value/ValueImpl";
 import {Value} from "../../api/concept/value/Value";
 import ValueType = Concept.ValueType;
 
-export class AttributeImpl extends ThingImpl implements Attribute {
+export class AttributeImpl extends InstanceImpl implements Attribute {
     private readonly _type: AttributeType;
 
     private readonly _value: Value;
@@ -69,18 +69,6 @@ export class AttributeImpl extends ThingImpl implements Attribute {
 
     async isDeleted(transaction: Transaction): Promise<boolean> {
         return !(await transaction.concepts.getAttribute(this.iid));
-    }
-
-    getOwners(transaction: Transaction, ownerType?: ThingType): Stream<Instance> {
-        let request;
-        if (!ownerType) {
-            request = RequestBuilder.Thing.Attribute.getOwnersReq(this.iid);
-        } else {
-            request = RequestBuilder.Thing.Attribute.getOwnersReq(this.iid, ThingType.proto(ownerType));
-        }
-        return this.stream(transaction, request)
-            .flatMap((resPart) => Stream.array(resPart.attribute_get_owners_res_part.things))
-            .map((thingProto) => ThingImpl.ofThingProto(thingProto));
     }
 }
 

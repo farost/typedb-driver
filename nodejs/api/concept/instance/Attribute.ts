@@ -21,6 +21,9 @@ import {AttributeType} from "../type/AttributeType";
 import {Instance} from "./Instance";
 import {RequestBuilder} from "../../../common/rpc/RequestBuilder";
 import {Value} from "../value/Value";
+import {Duration} from "../../../common/Duration";
+import {Concept} from "../Concept";
+import ValueType = Concept.ValueType;
 
 /**
  * Attribute is an instance of the attribute type and has a value. This value is fixed and unique for every given instance of the attribute type.
@@ -62,7 +65,7 @@ export interface Attribute extends Instance {
      * attribute.getValueType();
      * ```
      */
-    getValueType(): string;
+    getValueType(): ValueType;
 
     /**
      * Returns a <code>boolean</code> value of this <code>Attribute</code>.
@@ -161,7 +164,7 @@ export interface Attribute extends Instance {
      * attribute.getDuration()
      * ```
      */
-    getDuration(): { years: number; months: number; days: number; hours: number; minutes: number; seconds: number; milliseconds: number };
+    getDuration(): Duration;
 
     /**
      * Returns a <code>struct</code> value of this <code>Attribute</code>.
@@ -172,11 +175,5 @@ export interface Attribute extends Instance {
      * attribute.getStruct()
      * ```
      */
-    getStruct(): Record<string, Value>;
-}
-
-export namespace Attribute {
-    export function proto(attribute: Attribute) {
-        return RequestBuilder.Thing.Attribute.protoAttribute(attribute.iid);
-    }
+    getStruct(): Map<string, Value | null>;
 }

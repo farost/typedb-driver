@@ -28,11 +28,9 @@ import {ConceptImpl} from "../../dependencies_internal";
 import MISSING_LABEL = ErrorMessage.Concept.MISSING_LABEL;
 
 export abstract class TypeImpl extends ConceptImpl implements Type {
-    private readonly _label: Label;
-    private readonly _root: boolean;
-    private readonly _abstract: boolean;
+    private readonly _label: string;
 
-    protected constructor(label: Label, root: boolean, abstract: boolean) {
+    protected constructor(label: string, root: boolean, abstract: boolean) {
         super();
         if (!label) throw new TypeDBDriverError(MISSING_LABEL);
         this._label = label;
@@ -40,15 +38,7 @@ export abstract class TypeImpl extends ConceptImpl implements Type {
         this._abstract = abstract;
     }
 
-    get root(): boolean {
-        return this._root;
-    }
-
-    get abstract(): boolean {
-        return this._abstract;
-    }
-
-    get label(): Label {
+    getLabel(): string {
         return this._label;
     }
 
@@ -60,23 +50,12 @@ export abstract class TypeImpl extends ConceptImpl implements Type {
         return this;
     }
 
-    abstract delete(transaction: Transaction): Promise<void>;
-
-    abstract isDeleted(transaction: Transaction): Promise<boolean>;
-
-    abstract setLabel(transaction: Transaction, label: string): Promise<void>;
-
-    abstract getSupertype(transaction: Transaction): Promise<Type>;
-
-    abstract getSupertypes(transaction: Transaction): Stream<Type>;
-
-    abstract getSubtypes(transaction: Transaction): Stream<Type>;
-
     equals(concept: Concept): boolean {
         if (!concept.isType()) return false;
         return concept.asType().label.equals(this.label);
     }
 
+    // TODO: ???
     toString(): string {
         return `${this.className}[label:${this._label}]`;
     }

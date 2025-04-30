@@ -54,9 +54,3 @@ export interface Entity extends Instance {
      */
     getIID(): string;
 }
-
-export namespace Entity {
-    export function proto(relation: Entity) {
-        return RequestBuilder.Thing.Entity.protoEntity(relation.iid);
-    }
-}

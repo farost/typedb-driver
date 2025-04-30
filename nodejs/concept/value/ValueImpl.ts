@@ -17,7 +17,7 @@
  * under the License.
  */
 
-import {Value} from "../../api/concept/value/Value";
+import {NativeValue, Value} from "../../api/concept/value/Value";
 import {ConceptImpl} from "../ConceptImpl";
 import {Concept} from "../../api/concept/Concept";
 import {TypeDBDriverError} from "../../common/errors/TypeDBDriverError";
@@ -27,12 +27,13 @@ import ValueType = Concept.ValueType;
 import INVALID_CONCEPT_CASTING = ErrorMessage.Concept.INVALID_CONCEPT_CASTING;
 
 import BAD_VALUE_TYPE = ErrorMessage.Concept.BAD_VALUE_TYPE;
+import {Duration} from "../../common/Duration";
 
 export class ValueImpl extends ConceptImpl implements Value {
     private readonly _valueType: ValueType;
-    private readonly _value: boolean | string | number | Date;
+    private readonly _value: NativeValue;
 
-    constructor(type: ValueType, value: boolean | string | number | Date) {
+    constructor(type: ValueType, value: NativeValue) {
         super();
         this._valueType = type;
         this._value = value;
@@ -42,11 +43,11 @@ export class ValueImpl extends ConceptImpl implements Value {
         return "Value";
     }
 
-    get valueType(): ValueType {
+    getType(): ValueType {
         return this._valueType;
     }
 
-    get value(): boolean | string | number | Date {
+    get(): NativeValue {
         return this._value;
     }
 
@@ -61,53 +62,98 @@ export class ValueImpl extends ConceptImpl implements Value {
     equals(concept: Concept): boolean {
         if (!concept.isValue()) return false;
         else {
-            return this.valueType == concept.asValue().valueType && this.value == concept.asValue().value;
+            return this.getType() == concept.asValue().getType() && this.get() == concept.asValue().get();
         }
     }
 
     isBoolean(): boolean {
-        return this.valueType == ValueType.BOOLEAN;
+        return this.getType() == ValueType.BOOLEAN;
     }
 
-    isLong(): boolean {
-        return this.valueType == ValueType.LONG;
+    isInteger(): boolean {
+        return this.getType() == ValueType.INTEGER;
     }
 
     isDouble(): boolean {
-        return this.valueType == ValueType.DOUBLE;
+        return this.getType() == ValueType.DOUBLE;
+    }
+
+    isDecimal(): boolean {
+        return this.getType() == ValueType.DECIMAL;
     }
 
     isString(): boolean {
-        return this.valueType == ValueType.STRING;
+        return this.getType() == ValueType.STRING;
     }
 
-    isDateTime(): boolean {
-        return this.valueType == ValueType.DATETIME;
+    isDate(): boolean {
+        return this.getType() == ValueType.DATE;
     }
 
-    asBoolean(): boolean {
-        if (!this.isBoolean()) throw new TypeDBDriverError(INVALID_CONCEPT_CASTING.message(this.className, "Value.Boolean"));
-        return this.value as boolean;
+    isDatetime(): boolean {
+        return this.getType() == ValueType.DATETIME;
     }
 
-    asLong(): number {
-        if (!this.isLong()) throw new TypeDBDriverError(INVALID_CONCEPT_CASTING.message(this.className, "Value.Long"));
-        return this.value as number;
+    isDatetimeTZ(): boolean {
+        return this.getType() == ValueType.DATETIME_TZ;
     }
 
-    asDouble(): number {
-        if (!this.isDouble()) throw new TypeDBDriverError(INVALID_CONCEPT_CASTING.message(this.className, "Value.Double"));
-        return this.value as number;
+    isDuration(): boolean {
+        return this.getType() == ValueType.DURATION;
     }
 
-    asString(): string {
-        if (!this.isString()) throw new TypeDBDriverError(INVALID_CONCEPT_CASTING.message(this.className, "Value.String"));
-        return this.value as string;
+    isStruct(): boolean {
+        return this.getType().isStruct();
     }
 
-    asDateTime(): Date {
-        if (!this.isDateTime()) throw new TypeDBDriverError(INVALID_CONCEPT_CASTING.message(this.className, "Value.DateTime"));
-        return this.value as Date;
+    getBoolean(): boolean {
+        if (!this.isBoolean()) throw new TypeDBDriverError(INVALID_CONCEPT_CASTING.message(this.className, "boolean"));
+        return this.get() as boolean;
+    }
+
+    getInteger(): number {
+        if (!this.isInteger()) throw new TypeDBDriverError(INVALID_CONCEPT_CASTING.message(this.className, "integer"));
+        return this.get() as number;
+    }
+
+    getDouble(): number {
+        if (!this.isDouble()) throw new TypeDBDriverError(INVALID_CONCEPT_CASTING.message(this.className, "double"));
+        return this.get() as number;
+    }
+
+    getDecimal(): number { // TODO: String?..
+        if (!this.isDecimal()) throw new TypeDBDriverError(INVALID_CONCEPT_CASTING.message(this.className, "decimal"));
+        return this.get() as number;
+    }
+
+    getString(): string {
+        if (!this.isString()) throw new TypeDBDriverError(INVALID_CONCEPT_CASTING.message(this.className, "string"));
+        return this.get() as string;
+    }
+
+    getDate(): Date {
+        if (!this.isDate()) throw new TypeDBDriverError(INVALID_CONCEPT_CASTING.message(this.className, "date"));
+        return this.get() as Date;
+    }
+
+    getDatetime(): Date {
+        if (!this.isDatetime()) throw new TypeDBDriverError(INVALID_CONCEPT_CASTING.message(this.className, "datetime"));
+        return this.get() as Date;
+    }
+
+    getDatetimeTZ(): Date {
+        if (!this.isDatetimeTZ()) throw new TypeDBDriverError(INVALID_CONCEPT_CASTING.message(this.className, "datetime-tz"));
+        return this.get() as Date;
+    }
+
+    getDuration(): Duration {
+        if (!this.isDuration()) throw new TypeDBDriverError(INVALID_CONCEPT_CASTING.message(this.className, "duration"));
+        return this.get() as Duration;
+    }
+
+    getStruct(): Map<string, Value | null> {
+        if (!this.isStruct()) throw new TypeDBDriverError(INVALID_CONCEPT_CASTING.message(this.className, "struct"));
+        return this.get() as Map<string, Value | null>;
     }
 }
 

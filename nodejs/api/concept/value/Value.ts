@@ -20,6 +20,11 @@
 
 import {RequestBuilder} from "../../../common/rpc/RequestBuilder";
 import {Concept} from "../Concept";
+import {Duration} from "../../../common/Duration";
+import ValueType = Concept.ValueType;
+
+
+export type NativeValue = boolean | string | number | Date | Duration | Map<string, Value | null>;
 
 export interface Value extends Concept {
     /**
@@ -35,7 +40,7 @@ export interface Value extends Concept {
     /**
      * {@inheritDoc}
      */
-    getType(): string;
+    getType(): ValueType;
 
     /**
      * Returns an untyped <code>Object</code> value of this value concept.
@@ -47,7 +52,7 @@ export interface Value extends Concept {
      * value.get();
      * ```
      */
-    get(): Object;
+    get(): NativeValue;
 
     /**
      * Returns a <code>boolean</code> value of this <code>Value</code>.
@@ -91,7 +96,7 @@ export interface Value extends Concept {
      * value.getDecimal()
      * ```
      */
-    getDecimal(): string;
+    getDecimal(): number;
 
     /**
      * Returns a <code>string</code> value of this <code>Value</code>.
@@ -146,7 +151,7 @@ export interface Value extends Concept {
      * value.getDuration()
      * ```
      */
-    getDuration(): { years: number; months: number; days: number; hours: number; minutes: number; seconds: number; milliseconds: number };
+    getDuration(): Duration;
 
     /**
      * Returns a <code>struct</code> value of this <code>Value</code>.
@@ -157,11 +162,5 @@ export interface Value extends Concept {
      * value.getStruct()
      * ```
      */
-    getStruct(): Record<string, Value>;
-}
-
-export namespace Value {
-    export function proto(value: Value) {
-        return RequestBuilder.Value.protoValue(value.valueType.proto(), value.value);
-    }
+    getStruct(): Map<string, Value | null>;
 }

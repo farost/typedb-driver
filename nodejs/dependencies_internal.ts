@@ -32,10 +32,10 @@
 export * from "./concept/ConceptImpl";
 
 /* concept.thing */
-export * from "./concept/thing/ThingImpl";
-export * from "./concept/thing/EntityImpl";
-export * from "./concept/thing/RelationImpl";
-export * from "./concept/thing/AttributeImpl";
+export * from "./concept/instance/InstanceImpl";
+export * from "./concept/instance/EntityImpl";
+export * from "./concept/instance/RelationImpl";
+export * from "./concept/instance/AttributeImpl";
 
 /* concept.type */
 export * from "./concept/type/TypeImpl";

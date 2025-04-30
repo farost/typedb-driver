@@ -28,10 +28,10 @@ import {Type} from "./type/Type";
 import {ValueType as ValueTypeProto} from "typedb-protocol/proto/concept";
 import {Value} from "./value/Value";
 import {Instance} from "./instance/Instance";
+import {Duration} from "../../common/Duration";
+import ValueType = Concept.ValueType;
 
 export interface Concept {
-    readonly DECIMAL_SCALE: number;
-
     /**
      * Checks if the concept is a <code>Type</code>.
      *
@@ -488,7 +488,7 @@ export interface Concept {
      * concept.tryGetDuration()
      * ```
      */
-    tryGetDuration(): { years: number; months: number; days: number; hours: number; minutes: number; seconds: number; milliseconds: number } | null;
+    tryGetDuration(): Duration | null;
 
     /**
      * Returns a <code>struct</code> value of this <code>Concept</code>.
@@ -500,7 +500,7 @@ export interface Concept {
      * concept.tryGetStruct()
      * ```
      */
-    tryGetStruct(): Record<string, Value | null> | null;
+    tryGetStruct(): Map<string, Value | null> | null;
 
     /**
      * Retrieves the unique label of the concept.
@@ -552,7 +552,7 @@ export interface Concept {
      * concept.tryGetValueType()
      * ```
      */
-    tryGetValueType(): string | null;
+    tryGetValueType(): ValueType | null;
 
     /**
      * Retrieves the value which this <code>Concept</code> holds.
@@ -571,4 +571,100 @@ export interface Concept {
      * @param concept - The concept to compare to.
      */
     equals(concept: Concept): boolean;
+}
+
+export namespace Concept {
+    export class ValueType {
+        private static readonly NONE_STR: string = "none";
+        private static readonly BOOLEAN_STR: string = "boolean";
+        private static readonly INTEGER_STR: string = "integer";
+        private static readonly DOUBLE_STR: string = "double";
+        private static readonly DECIMAL_STR: string = "decimal";
+        private static readonly STRING_STR: string = "string";
+        private static readonly DATE_STR: string = "date";
+        private static readonly DATETIME_STR: string = "datetime";
+        private static readonly DATETIME_TZ_STR: string = "datetime-tz";
+        private static readonly DURATION_STR: string = "duration";
+        private static readonly STRUCT_STR: string = "struct";
+
+        private readonly _type: typeof ValueType.BOOLEAN_STR | typeof ValueType.INTEGER_STR |
+            typeof ValueType.DOUBLE_STR | typeof ValueType.DECIMAL_STR |
+            typeof ValueType.STRING_STR | typeof ValueType.DATE_STR |
+            typeof ValueType.DATETIME_STR | typeof ValueType.DATETIME_TZ_STR |
+            typeof ValueType.DURATION_STR | typeof ValueType.STRUCT_STR;
+        private readonly _structName?: string;
+
+        public static readonly BOOLEAN = new ValueType(ValueType.BOOLEAN_STR);
+        public static readonly INTEGER = new ValueType(ValueType.INTEGER_STR);
+        public static readonly DOUBLE = new ValueType(ValueType.DOUBLE_STR);
+        public static readonly DECIMAL = new ValueType(ValueType.DECIMAL_STR);
+        public static readonly STRING = new ValueType(ValueType.STRING_STR);
+        public static readonly DATE = new ValueType(ValueType.DATE_STR);
+        public static readonly DATETIME = new ValueType(ValueType.DATETIME_STR);
+        public static readonly DATETIME_TZ = new ValueType(ValueType.DATETIME_TZ_STR);
+        public static readonly DURATION = new ValueType(ValueType.DURATION_STR);
+
+        private constructor(
+            type: typeof ValueType.BOOLEAN_STR | typeof ValueType.INTEGER_STR |
+                typeof ValueType.DOUBLE_STR | typeof ValueType.DECIMAL_STR |
+                typeof ValueType.STRING_STR | typeof ValueType.DATE_STR |
+                typeof ValueType.DATETIME_STR | typeof ValueType.DATETIME_TZ_STR |
+                typeof ValueType.DURATION_STR | typeof ValueType.STRUCT_STR,
+            structName?: string
+        ) {
+            this._type = type;
+            this._structName = structName;
+        }
+
+        static struct(name: string): ValueType {
+            return new ValueType(ValueType.STRUCT_STR, name);
+        }
+
+        public static fromProto(proto: any): ValueType {
+            if (proto.boolean !== undefined) {
+                return ValueType.BOOLEAN;
+            } else if (proto.integer !== undefined) {
+                return ValueType.INTEGER;
+            } else if (proto.double !== undefined) {
+                return ValueType.DOUBLE;
+            } else if (proto.decimal !== undefined) {
+                return ValueType.DECIMAL;
+            } else if (proto.string !== undefined) {
+                return ValueType.STRING;
+            } else if (proto.date !== undefined) {
+                return ValueType.DATE;
+            } else if (proto.datetime !== undefined) {
+                return ValueType.DATETIME;
+            } else if (proto.datetime_tz !== undefined) {
+                return ValueType.DATETIME_TZ;
+            } else if (proto.duration !== undefined) {
+                return ValueType.DURATION;
+            } else if (proto.struct !== undefined) {
+                return ValueType.struct(proto.struct.name);
+            } else {
+                throw new Error("Unknown ValueType in protocol buffer message");
+            }
+        }
+
+        /**
+         * Get the name of the <code>ValueType</code> as a string.
+         *
+         * ### Examples
+         *
+         * ```ts
+         * valueType.name
+         * ```
+         */
+        public get name(): string {
+            if (this._type == ValueType.STRUCT_STR && this._structName) {
+                return this._structName;
+            } else {
+                return this._type;
+            }
+        }
+
+        public isStruct(): boolean {
+            return this._structName != null;
+        }
+    }
 }

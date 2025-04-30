@@ -17,36 +17,42 @@
  * under the License.
  */
 
-import {EntityType as EntityTypeProto} from "typedb-protocol/proto/concept";
 import {Entity} from "../../api/concept/instance/Entity";
 import {EntityType} from "../../api/concept/type/EntityType";
 import {Transaction} from "../../api/connection/Transaction";
-import {RequestBuilder} from "../../common/rpc/RequestBuilder";
-import {Stream} from "../../common/util/Stream";
-import {EntityImpl, ThingTypeImpl} from "../../dependencies_internal";
-import {Concept} from "../../api/concept/Concept";
+import {Bytes} from "../../common/util/Bytes";
+import {EntityTypeImpl, InstanceImpl} from "../../dependencies_internal";
+import {Entity as EntityProto} from "typedb-protocol/proto/concept";
 
-export class EntityTypeImpl extends ThingTypeImpl implements EntityType {
-    constructor(name: string, root: boolean, abstract: boolean) {
-        super(name, root, abstract);
+export class EntityImpl extends InstanceImpl implements Entity {
+    private readonly _type: EntityType;
+
+    constructor(iid: string, inferred: boolean, type: EntityType) {
+        super(iid, inferred);
+        this._type = type;
     }
 
     protected get className(): string {
-        return "EntityType";
+        return "Entity";
     }
 
-    isEntityType(): boolean {
+    get type(): EntityType {
+        return this._type;
+    }
+
+    isEntity(): boolean {
         return true;
     }
 
-    asEntityType(): EntityType {
+    asEntity(): Entity {
         return this;
     }
 }
 
-export namespace EntityTypeImpl {
-    export function ofEntityTypeProto(proto: EntityTypeProto): EntityType {
+export namespace EntityImpl {
+    export function ofEntityProto(proto: EntityProto): Entity {
         if (!proto) return null;
-        return new EntityTypeImpl(proto.label);
+        const iid = Bytes.bytesToHexString(proto.iid);
+        return new EntityImpl(iid, EntityTypeImpl.ofEntityTypeProto(proto.entity_type));
     }
 }

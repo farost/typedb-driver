@@ -53,9 +53,3 @@ export interface Relation extends Instance {
      */
     getIID(): string;
 }
-
-export namespace Relation {
-    export function proto(relation: Relation) {
-        return RequestBuilder.Thing.Relation.protoRelation(relation.iid);
-    }
-}

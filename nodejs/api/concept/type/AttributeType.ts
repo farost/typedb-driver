@@ -43,12 +43,3 @@ export interface AttributeType extends Type {
      */
     asAttributeType(): AttributeType;
 }
-
-export namespace AttributeType {
-
-    export const NAME = "attribute";
-
-    export function proto(attributeType: AttributeType) {
-        return RequestBuilder.Type.AttributeType.protoAttributeType(attributeType.label);
-    }
-}
