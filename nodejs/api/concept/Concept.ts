@@ -567,10 +567,16 @@ export interface Concept {
     tryGetValue(): Value | null;
 
     /**
-     * Checks if this concept is equal to the argument <code>concept</code>.
+     * Checks if this concept is equal to the argument <code>Concept</code>.
      * @param concept - The concept to compare to.
      */
     equals(concept: Concept): boolean;
+
+
+    /**
+     * Returns the string representation of the current <code>Concept</code>.
+     */
+    toString(): string;
 }
 
 export namespace Concept {

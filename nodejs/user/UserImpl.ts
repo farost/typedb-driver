@@ -25,26 +25,19 @@ import {DriverImpl} from "../connection/DriverImpl";
 export class UserImpl implements User {
     private readonly _driver: DriverImpl;
     private readonly _username: string;
-    private readonly _passwordExpirySeconds: number;
 
-    constructor(driver: DriverImpl, username: string, passwordExpirySeconds: number) {
+    constructor(driver: DriverImpl, username: string) {
         this._driver = driver;
         this._username = username;
-        this._passwordExpirySeconds = passwordExpirySeconds;
     }
 
     static of(user: UserProto, driver: DriverImpl): UserImpl {
-        if (user.has_password_expiry_seconds) return new UserImpl(driver, user.username, user.password_expiry_seconds);
-        else return new UserImpl(driver, user.username, null);
+        return new UserImpl(driver, user.username);
     }
 
-    get passwordExpirySeconds(): number {
-        return this._passwordExpirySeconds;
-    }
-
-    async passwordUpdate(oldPassword: string, newPassword: string): Promise<void> {
+    async updatePassword(password: string): Promise<void> {
         return this._driver.users.runFailsafe((driver) =>
-            driver.stub.userPasswordUpdate(RequestBuilder.User.passwordUpdateReq(this.name, oldPassword, newPassword))
+            driver.stub.userUpdate(RequestBuilder.User.updateReq(this.name, "", password))
         );
     }
 

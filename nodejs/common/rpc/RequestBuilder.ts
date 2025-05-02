@@ -37,7 +37,8 @@ import {
     UserManagerCreateReq,
     UserManagerGetReq,
     UserUpdateReq,
-    UserDeleteReq
+    UserDeleteReq,
+    User as UserProto
 } from "typedb-protocol/proto/user";
 import {
     DatabaseDeleteReq,
@@ -113,12 +114,12 @@ export namespace RequestBuilder {
     }
 
     export namespace UserManager {
-        export function containsReq(name: string): UserManagerContainsReq {
-            return new UserManagerContainsReq({username: name});
+        export function containsReq(username: string): UserManagerContainsReq {
+            return new UserManagerContainsReq({name: username});
         }
 
-        export function createReq(name: string, password: string): UserManagerCreateReq {
-            return new UserManagerCreateReq({username: name, password: password});
+        export function createReq(username: string, password: string): UserManagerCreateReq {
+            return new UserManagerCreateReq({name: username, password: password});
         }
 
         export function allReq(): UserManagerAllReq {
@@ -126,17 +127,17 @@ export namespace RequestBuilder {
         }
 
         export function getReq(name: string): UserManagerGetReq {
-            return new UserManagerGetReq({username: name});
+            return new UserManagerGetReq({name: name});
         }
     }
 
     export namespace User {
-        export function updateReq(name: string, password: string): UserUpdateReq {
-            return new UserUpdateReq({username: name, password: password});
+        export function updateReq(username: string, new_username: string, new_password: string): UserUpdateReq {
+            return new UserUpdateReq({name: username, user: new UserProto({name: new_username, password: new_password})});
         }
 
-        export function deleteReq(name: string): UserDeleteReq {
-            return new UserDeleteReq({username: name});
+        export function deleteReq(username: string): UserDeleteReq {
+            return new UserDeleteReq({name: username});
         }
     }
 

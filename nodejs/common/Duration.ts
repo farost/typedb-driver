@@ -102,14 +102,14 @@ export class Duration {
     }
 
     /**
-     * Returns a string representation of the duration
+     * Returns a string representation of the duration.
      */
     toString(): string {
         return `months: ${this.months}, days: ${this.days}, nanos: ${this.nanos}`;
     }
 
     /**
-     * Checks if this duration is equal to another duration
+     * Checks if this duration is equal to another duration.
      *
      * @param other The other duration to compare with
      */

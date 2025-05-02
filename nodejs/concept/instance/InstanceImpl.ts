@@ -64,11 +64,6 @@ export abstract class InstanceImpl extends ConceptImpl implements Instance {
         else return concept.asInstance().iid === this._iid;
     }
 
-    // TODO ???
-    toString(): string {
-        return `${this.className}[iid:${this._iid}]`;
-    }
-
     getIID(): string {
         return this._iid;
     }

@@ -25,38 +25,17 @@ import {ServerDriver, DriverImpl} from "../connection/DriverImpl";
 import {TypeDBDatabaseImpl} from "../connection/TypeDBDatabaseImpl";
 import {TypeDBDriverError} from "../common/errors/TypeDBDriverError";
 import {ErrorMessage} from "../common/errors/ErrorMessage";
-import USER_MANAGEMENT_CLOUD_ONLY = ErrorMessage.Driver.USER_MANAGEMENT_CLOUD_ONLY;
 
 export class UserManagerImpl implements UserManager {
-    static _SYSTEM_DB = "_system";
     private readonly _driver: DriverImpl;
 
     constructor(driver: DriverImpl) {
         this._driver = driver;
     }
 
-    async all(): Promise<User[]> {
-        return this.runFailsafe(driver =>
-            driver.stub.usersAll(RequestBuilder.UserManager.allReq())
-                .then((res) => res.users.map(user => UserImpl.of(user, this._driver)))
-        );
-    }
-
     async contains(username: string): Promise<boolean> {
         return this.runFailsafe(driver =>
             driver.stub.usersContains(RequestBuilder.UserManager.containsReq(username))
-        );
-    }
-
-    async create(username: string, password: string): Promise<void> {
-        return this.runFailsafe(driver =>
-            driver.stub.usersCreate(RequestBuilder.UserManager.createReq(username, password))
-        );
-    }
-
-    async delete(username: string): Promise<void> {
-        return this.runFailsafe(driver =>
-            driver.stub.usersDelete(RequestBuilder.UserManager.deleteReq(username))
         );
     }
 
@@ -67,14 +46,25 @@ export class UserManagerImpl implements UserManager {
         return UserImpl.of(user, this._driver);
     }
 
-    async passwordSet(username: string, password: string): Promise<void> {
-        return this.runFailsafe((driver) =>
-            driver.stub.usersPasswordSet(RequestBuilder.UserManager.passwordSetReq(username, password))
+    getCurrentUsername(): string {
+        return this._driver.getCurrentUsername();
+    }
+
+    async all(): Promise<UserImpl[]> {
+        return this.runFailsafe(driver =>
+            driver.stub.usersAll(RequestBuilder.UserManager.allReq())
+                .then((res) => res.users.map(user => UserImpl.of(user, this._driver)))
+        );
+    }
+
+    async create(username: string, password: string): Promise<void> {
+        return this.runFailsafe(driver =>
+            driver.stub.usersCreate(RequestBuilder.UserManager.createReq(username, password))
         );
     }
 
     async runFailsafe<T>(task: (driver: ServerDriver) => Promise<T>): Promise<T> {
-        if (!this._driver.isCloud()) throw new TypeDBDriverError(USER_MANAGEMENT_CLOUD_ONLY);
-        return await (await TypeDBDatabaseImpl.get(UserManagerImpl._SYSTEM_DB, this._driver)).runOnPrimaryReplica(task);
+        return await task(this._driver.serverDrivers.values().next().value);
+        // return await (await TypeDBDatabaseImpl.get(UserManagerImpl._SYSTEM_DB, this._driver)).runOnPrimaryReplica(task);
     }
 }

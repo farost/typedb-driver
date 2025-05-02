@@ -24,10 +24,6 @@ export interface User {
     /** The name of this user. */
     readonly name: string;
 
-    // TODO: Not implemented
-    // /** The number of seconds remaining till this user’s current password expires. */
-    // readonly passwordExpirySeconds: number;
-
     /**
      * Updates the password for this user.
      *

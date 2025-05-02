@@ -286,4 +286,29 @@ export abstract class ConceptImpl implements Concept {
     }
 
     abstract equals(concept: Concept): boolean;
+
+    toString(): string {
+        if (this.isType()) {
+            return `${this.getCategory()}(${this.getLabel()})`;
+        } else {
+            let result = `${this.getCategory()}(${this.getLabel()}`;
+
+            const iid = this.tryGetIID();
+            const value = this.tryGetValue();
+
+            if (iid !== null) {
+                result += `: ${iid}`;
+                if (value !== null) {
+                    result += `, ${value}`;
+                }
+            } else if (value !== null) {
+                result += `: ${value}`;
+            } else {
+                // shouldn't be reachable?
+            }
+
+            result += ")";
+            return result;
+        }
+    }
 }

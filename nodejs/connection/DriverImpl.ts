@@ -122,6 +122,10 @@ export class DriverImpl implements Driver {
     closeTransaction(transaction: TypeDBTransactionImpl): void {
         delete this._transactions[transaction.id];
     }
+
+    getCurrentUsername(): string {
+        return this._credentials.username;
+    }
 }
 
 export class ServerDriver {

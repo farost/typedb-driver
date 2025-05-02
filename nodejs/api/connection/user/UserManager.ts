@@ -55,7 +55,7 @@ export interface UserManager {
      * driver.users().getCurrentUsername()
      * </pre>
      */
-    getCurrentUser(): Promise<User>;
+    getCurrentUsername(): string;
 
     /**
      * Retrieves all users which exist on the TypeDB server.

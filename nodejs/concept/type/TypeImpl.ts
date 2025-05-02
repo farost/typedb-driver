@@ -52,11 +52,6 @@ export abstract class TypeImpl extends ConceptImpl implements Type {
 
     equals(concept: Concept): boolean {
         if (!concept.isType()) return false;
-        return concept.asType().label.equals(this.label);
-    }
-
-    // TODO: ???
-    toString(): string {
-        return `${this.className}[label:${this._label}]`;
+        return concept.asType().getLabel() == this.getLabel();
     }
 }
