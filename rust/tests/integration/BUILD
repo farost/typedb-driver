@@ -17,7 +17,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("@rules_rust//rust:defs.bzl", "rust_test")
+load("@rules_rust//rust:defs.bzl", "rust_test", "rust_binary")
 load("@typedb_dependencies//tool/checkstyle:rules.bzl", "checkstyle_test")
 
 exports_files(
@@ -42,6 +42,28 @@ rust_test(
         "@crates//:uuid",
     ],
 )
+
+
+rust_binary(
+    name = "test_load",
+    crate_root = "load.rs",
+    srcs = ["load.rs"],
+    deps = [
+        "//rust:typedb_driver",
+        "@crates//:async-std",
+        "@crates//:chrono",
+        "@crates//:futures",
+        "@crates//:itertools",
+        "@crates//:regex",
+        "@crates//:serde_json",
+        "@crates//:rand",
+        "@crates//:serial_test",
+        "@crates//:smol",
+        "@crates//:tokio",
+        "@crates//:uuid",
+    ],
+)
+
 
 checkstyle_test(
     name = "checkstyle",
