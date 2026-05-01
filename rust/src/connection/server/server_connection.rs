@@ -237,10 +237,13 @@ impl ServerConnection {
         transaction_type: TransactionType,
         options: TransactionOptions,
     ) -> Result<TransactionStream> {
+        // ABLATION D3: drop the per-open LatencyTracker bookkeeping.
+        // No `current_latency()` read, no `Instant::now()` pair, no `update_latency`,
+        // no `network_latency` in the open proto (sent as zero). Server-side
+        // diagnostics that depend on it become inaccurate; tpmC isn't affected.
         let __perf_start = std::time::Instant::now();
         let __result = async {
-            let network_latency = self.latency_tracker.current_latency();
-            let open_request_start = Instant::now();
+            let network_latency = Duration::from_millis(0);
 
             match self
                 .request(Request::Transaction(TransactionRequest::Open {
@@ -255,11 +258,8 @@ impl ServerConnection {
                     open_request_id: _,
                     request_sink,
                     response_source,
-                    server_duration_millis,
+                    server_duration_millis: _,
                 } => {
-                    let open_latency =
-                        Instant::now().duration_since(open_request_start).as_millis() as u64 - server_duration_millis;
-                    self.latency_tracker.update_latency(open_latency);
                     let transmitter =
                         TransactionTransmitter::new(self.background_runtime.clone(), request_sink, response_source);
                     let transmitter_shutdown_sink = transmitter.shutdown_sink().clone();
