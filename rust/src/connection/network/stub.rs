@@ -235,15 +235,12 @@ impl<Channel: GRPCChannel> RPCStub<Channel> {
         for<'a> F: Fn(&'a mut Self) -> BoxFuture<'a, TonicResult<R>> + Send + Sync,
         R: 'static,
     {
+        // ABLATION D2: drop the per-unary-RPC `tokio::time::timeout` wrapper.
+        // Removes the timer-wheel insertion/removal per call. Trades server-side
+        // hangs for measurement; only safe in benchmark contexts.
         let __perf_start = std::time::Instant::now();
-        let timeout = self.request_timeout;
-        perf_counters::RPC_STUB_SINGLE_TIMEOUT_OVERHEAD.increment();
-        let __result = tokio::time::timeout(
-            timeout,
-            self.call_with_auto_renew_token(|this| Box::pin(call(this).map(|r| Ok(r?.into_inner())))),
-        )
-        .await
-        .map_err(|_| ConnectionError::request_timeout(timeout))?;
+        let __result =
+            self.call_with_auto_renew_token(|this| Box::pin(call(this).map(|r| Ok(r?.into_inner())))).await;
         perf_counters::RPC_STUB_SINGLE.record(__perf_start.elapsed().as_nanos() as u64);
         __result
     }
