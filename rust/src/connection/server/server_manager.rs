@@ -257,6 +257,17 @@ impl ServerManager {
         if let Some(replica) = self.read_primary_replica() {
             return Ok(replica);
         }
+        // ABLATION D1: short-circuit the single-replica/no-replication-status case
+        // BEFORE the HashSet<AvailableServer>::collect() allocation.
+        {
+            let replicas_guard = self.read_replicas();
+            if replicas_guard.len() == 1 {
+                let only = replicas_guard.iter().next().unwrap();
+                if only.replication_status().is_none() {
+                    return Ok(only.clone());
+                }
+            }
+        }
         perf_counters::GET_OR_SEEK_PRIMARY_REPLICA_HASHSET_ALLOCS.increment();
         let replicas: HashSet<_> = self.read_replicas().iter().cloned().collect();
         if replicas.len() == 1 && replicas.iter().next().unwrap().replication_status().is_none() {
