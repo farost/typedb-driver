@@ -44,6 +44,7 @@ use crate::{
     },
     error::{ConnectionError, InternalError},
     info::{DatabaseInfo, UserInfo},
+    perf_counters,
 };
 
 #[derive(Clone)]
@@ -236,36 +237,42 @@ impl ServerConnection {
         transaction_type: TransactionType,
         options: TransactionOptions,
     ) -> Result<TransactionStream> {
-        let network_latency = self.latency_tracker.current_latency();
-        let open_request_start = Instant::now();
+        let __perf_start = std::time::Instant::now();
+        let __result = async {
+            let network_latency = self.latency_tracker.current_latency();
+            let open_request_start = Instant::now();
 
-        match self
-            .request(Request::Transaction(TransactionRequest::Open {
-                database: database_name.to_owned(),
-                transaction_type,
-                options: options.clone(),
-                network_latency,
-            }))
-            .await?
-        {
-            Response::TransactionStream {
-                open_request_id: _,
-                request_sink,
-                response_source,
-                server_duration_millis,
-            } => {
-                let open_latency =
-                    Instant::now().duration_since(open_request_start).as_millis() as u64 - server_duration_millis;
-                self.latency_tracker.update_latency(open_latency);
-                let transmitter =
-                    TransactionTransmitter::new(self.background_runtime.clone(), request_sink, response_source);
-                let transmitter_shutdown_sink = transmitter.shutdown_sink().clone();
-                let transaction_stream = TransactionStream::new(transaction_type, options, transmitter);
-                self.shutdown_senders.lock().unwrap().push(transmitter_shutdown_sink);
-                Ok(transaction_stream)
+            match self
+                .request(Request::Transaction(TransactionRequest::Open {
+                    database: database_name.to_owned(),
+                    transaction_type,
+                    options: options.clone(),
+                    network_latency,
+                }))
+                .await?
+            {
+                Response::TransactionStream {
+                    open_request_id: _,
+                    request_sink,
+                    response_source,
+                    server_duration_millis,
+                } => {
+                    let open_latency =
+                        Instant::now().duration_since(open_request_start).as_millis() as u64 - server_duration_millis;
+                    self.latency_tracker.update_latency(open_latency);
+                    let transmitter =
+                        TransactionTransmitter::new(self.background_runtime.clone(), request_sink, response_source);
+                    let transmitter_shutdown_sink = transmitter.shutdown_sink().clone();
+                    let transaction_stream = TransactionStream::new(transaction_type, options, transmitter);
+                    self.shutdown_senders.lock().unwrap().push(transmitter_shutdown_sink);
+                    Ok(transaction_stream)
+                }
+                other => Err(InternalError::UnexpectedResponseType { response_type: format!("{other:?}") }.into()),
             }
-            other => Err(InternalError::UnexpectedResponseType { response_type: format!("{other:?}") }.into()),
         }
+        .await;
+        perf_counters::OPEN_TRANSACTION.record(__perf_start.elapsed().as_nanos() as u64);
+        __result
     }
 
     #[cfg_attr(feature = "sync", maybe_async::must_be_sync)]
@@ -355,6 +362,7 @@ impl LatencyTracker {
     }
 
     pub(crate) fn update_latency(&self, latency_millis: u64) {
+        perf_counters::LATENCY_TRACKER_UPDATE.increment();
         let previous_latency = self.latency_millis.load(Ordering::Relaxed);
         // TODO: this is a strange but simple averaging scheme
         //       it might actually be useful as it weights the recent measurement the same as the entire history

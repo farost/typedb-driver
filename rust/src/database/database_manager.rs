@@ -28,7 +28,7 @@ use crate::{
     connection::server::{server_manager::ServerManager, server_routing::ServerRouting},
     database::migration::{ProtoMessageIterator, try_open_import_file},
     info::DatabaseInfo,
-    resolve,
+    perf_counters, resolve,
 };
 
 /// Provides access to all database management methods.
@@ -79,6 +79,7 @@ impl DatabaseManager {
     /// ```
     #[cfg_attr(feature = "sync", maybe_async::must_be_sync)]
     pub async fn get(&self, name: impl Into<String>) -> Result<Arc<Database>> {
+        perf_counters::DATABASE_MANAGER_GET_CALLS.increment();
         let name = name.into();
         let database_info = self
             .server_manager

@@ -52,3 +52,5 @@ mod database;
 pub mod driver;
 pub mod transaction;
 mod user;
+
+pub use crate::common::perf_counters;

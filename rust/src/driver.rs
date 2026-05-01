@@ -105,6 +105,9 @@ impl TypeDBDriver {
         driver_options: DriverOptions,
         driver_lang: impl AsRef<str>,
     ) -> Result<Self> {
+        if std::env::var("TYPEDB_DRIVER_PERF_DUMP").as_deref() == Ok("1") {
+            crate::perf_counters::spawn_periodic_dump(std::time::Duration::from_secs(5));
+        }
         debug!("Initializing TypeDB driver with description: {}", driver_lang.as_ref());
         let background_runtime = Arc::new(BackgroundRuntime::new()?);
 

@@ -30,6 +30,7 @@ pub(crate) mod address;
 pub mod error;
 mod id;
 pub mod info;
+pub mod perf_counters;
 #[cfg_attr(not(feature = "sync"), path = "promise_async.rs")]
 #[cfg_attr(feature = "sync", path = "promise_sync.rs")]
 mod promise;

@@ -33,6 +33,7 @@ use super::channel::{CallCredentials, GRPCChannel};
 use crate::{
     common::{Error, Result, StdResult, error::ConnectionError},
     connection::network::proto::TryIntoProto,
+    perf_counters,
 };
 
 type TonicResult<T> = StdResult<Response<T>, Status>;
@@ -234,12 +235,16 @@ impl<Channel: GRPCChannel> RPCStub<Channel> {
         for<'a> F: Fn(&'a mut Self) -> BoxFuture<'a, TonicResult<R>> + Send + Sync,
         R: 'static,
     {
+        let __perf_start = std::time::Instant::now();
         let timeout = self.request_timeout;
-        tokio::time::timeout(
+        perf_counters::RPC_STUB_SINGLE_TIMEOUT_OVERHEAD.increment();
+        let __result = tokio::time::timeout(
             timeout,
             self.call_with_auto_renew_token(|this| Box::pin(call(this).map(|r| Ok(r?.into_inner())))),
         )
         .await
-        .map_err(|_| ConnectionError::request_timeout(timeout))?
+        .map_err(|_| ConnectionError::request_timeout(timeout))?;
+        perf_counters::RPC_STUB_SINGLE.record(__perf_start.elapsed().as_nanos() as u64);
+        __result
     }
 }

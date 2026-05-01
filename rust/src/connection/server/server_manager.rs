@@ -39,6 +39,7 @@ use crate::{
         },
     },
     error::ConnectionError,
+    perf_counters,
 };
 
 macro_rules! filter_available_replicas {
@@ -170,6 +171,7 @@ impl ServerManager {
     }
 
     fn read_replica_connections(&self) -> RwLockReadGuard<'_, HashMap<Address, ServerConnection>> {
+        perf_counters::READ_REPLICA_CONNECTIONS_CALLS.increment();
         self.replica_connections.read().expect("Expected server connections read access")
     }
 
@@ -219,34 +221,43 @@ impl ServerManager {
         F: Fn(ServerConnection) -> P,
         P: Future<Output = Result<R>>,
     {
-        let retries = self.driver_options.primary_failover_retries;
-        let mut primary = self.get_or_seek_primary_replica(retries).await?;
+        let __perf_start = std::time::Instant::now();
+        let __result = async {
+            let retries = self.driver_options.primary_failover_retries;
+            let mut primary = self.get_or_seek_primary_replica(retries).await?;
 
-        let mut connection_errors = HashMap::new();
-        for _ in 0..=retries {
-            let private_address = primary.private_address().clone();
-            match self.execute_on(primary.address(), &private_address, &task).await {
-                Ok(result) => return Ok(result),
-                Err(Error::Connection(connection_error)) => {
-                    debug!("Failed on primary {}: {connection_error:?}", primary.address());
-                    connection_errors.insert(primary.address().clone(), connection_error.clone().into());
-                    let candidates = self.failover_candidates(&private_address, &connection_error);
-                    match self.seek_primary_replica_in(candidates, retries, Some(&private_address)).await {
-                        Ok(replica) => primary = replica,
-                        Err(_) => break,
+            let mut connection_errors = HashMap::new();
+            for _ in 0..=retries {
+                perf_counters::EXECUTE_STRONGLY_CONSISTENT_RETRY_LOOP_ITERS.increment();
+                let private_address = primary.private_address().clone();
+                match self.execute_on(primary.address(), &private_address, &task).await {
+                    Ok(result) => return Ok(result),
+                    Err(Error::Connection(connection_error)) => {
+                        debug!("Failed on primary {}: {connection_error:?}", primary.address());
+                        connection_errors.insert(primary.address().clone(), connection_error.clone().into());
+                        let candidates = self.failover_candidates(&private_address, &connection_error);
+                        match self.seek_primary_replica_in(candidates, retries, Some(&private_address)).await {
+                            Ok(replica) => primary = replica,
+                            Err(_) => break,
+                        }
                     }
+                    Err(err) => return Err(err),
                 }
-                Err(err) => return Err(err),
             }
+            Err(self.server_connection_failed_err(connection_errors))
         }
-        Err(self.server_connection_failed_err(connection_errors))
+        .await;
+        perf_counters::EXECUTE_STRONGLY_CONSISTENT.record(__perf_start.elapsed().as_nanos() as u64);
+        __result
     }
 
     #[cfg_attr(feature = "sync", maybe_async::must_be_sync)]
     async fn get_or_seek_primary_replica(&self, retries: usize) -> Result<AvailableServer> {
+        perf_counters::GET_OR_SEEK_PRIMARY_REPLICA_CALLS.increment();
         if let Some(replica) = self.read_primary_replica() {
             return Ok(replica);
         }
+        perf_counters::GET_OR_SEEK_PRIMARY_REPLICA_HASHSET_ALLOCS.increment();
         let replicas: HashSet<_> = self.read_replicas().iter().cloned().collect();
         if replicas.len() == 1 && replicas.iter().next().unwrap().replication_status().is_none() {
             // Only replica without status => not Cluster
@@ -352,6 +363,7 @@ impl ServerManager {
 
     #[cfg_attr(feature = "sync", maybe_async::must_be_sync)]
     async fn seek_primary_replica(&self, replica_connection: ServerConnection) -> Result<AvailableServer> {
+        perf_counters::SEEK_PRIMARY_REPLICA_CALLS.increment();
         let address_translation = self.read_address_translation().clone();
         let replicas = Self::fetch_servers_from_connection(&replica_connection, &address_translation).await?;
         *self.replicas.write().expect("Expected replicas write lock") = filter_available_replicas!(replicas).collect();
