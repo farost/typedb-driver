@@ -15,39 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
-package(default_visibility = ["//visibility:public"])
-
-load("@typedb_dependencies//tool/checkstyle:rules.bzl", "checkstyle_test")
-
-java_library(
-    name = "common",
-    srcs = glob(
-        [
-            "*.java",
-            "*/*.java",
-        ],
-        exclude = ["test/**"],
-    ),
-    deps = [
-        "//java:typedb_driver_jni",
-
-        # External dependencies from Maven
-        "@typedb_maven//:com_google_code_findbugs_jsr305",
-    ],
-)
-
-filegroup(
-    name = "docs_source_files",
-    srcs = ["Duration.java", "Promise.java", "exception/TypeDBDriverException.java"],
-    visibility = ["//java:__pkg__"],
-)
-
-checkstyle_test(
-    name = "checkstyle",
-    size = "small",
-    include = glob([
-        "*",
-        "*/*",
-    ]),
-    license_type = "apache-header",
-)
+maven = use_extension("@typedb_dependencies//library/maven:maven_extension.bzl", "maven")
+maven.namespace(name = "typedb_maven", artifacts = [
+    "info.picocli:picocli",  # //tool/docs/java, //tool/docs/nodejs, //tool/docs/python, //tool/docs/rust, //tool/docs/cpp, //tool/docs/csharp, //tool/docs/c, //tool/docs/httpts, //tool/docs/examples
+    "org.jsoup:jsoup",       # //tool/docs/java, //tool/docs/nodejs, //tool/docs/python, //tool/docs/rust, //tool/docs/cpp, //tool/docs/csharp, //tool/docs/c, //tool/docs/httpts
+])

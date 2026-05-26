@@ -56,8 +56,8 @@ build:
         bazel build --config=ci //python/...
         bazel build --config=ci //http-ts/...
         # CSharp subpackage parallel builds break due to mutexes somewhere in csharp??
-        bazel build --config=ci //csharp/... --jobs=1  
-        
+        bazel build --config=ci //csharp/... --jobs=1
+
         bazel run --config=ci @typedb_dependencies//tool/checkstyle:test-coverage
         bazel test --config=ci $(bazel query 'kind(checkstyle_test, //...)') --test_output=errors
         bazel test --config=ci $(bazel query 'kind(rustfmt_test, //...)') --@rules_rust//:rustfmt.toml=//rust:rustfmt_config --test_output=errors
@@ -104,13 +104,13 @@ build:
         bazel run --config=ci @typedb_dependencies//distribution/artifact:create-netrc
 
         bazel test --config=ci //rust:typedb_driver_unit_tests --test_output=streamed || exit 1
-        
+
         tool/test/start-core-server.sh &&
           bazel test --config=ci //rust/tests/integration:all --test_output=streamed --test_arg=--nocapture &&
           export CORE_FAILED= || export CORE_FAILED=1
         tool/test/stop-core-server.sh
         if [[ -n "$CORE_FAILED" ]]; then exit 1; fi
-        
+
         source tool/test/start-cluster-servers.sh 3 &&
           bazel test --config=ci //rust/tests/integration/cluster:test_failover --test_env=CLUSTER_SERVER_SCRIPT=$CLUSTER_SERVER_SCRIPT --test_env=ROOT_CA=$ROOT_CA --test_env=CLUSTER_DIR=$CLUSTER_DIR --test_output=streamed --test_arg=--nocapture &&
           export CLUSTER_FAILED= || export CLUSTER_FAILED=1
@@ -124,7 +124,7 @@ build:
         export ARTIFACT_PASSWORD=$REPO_TYPEDB_PASSWORD
         bazel run --config=ci @typedb_dependencies//tool/bazelinstall:remote_cache_setup.sh
         bazel run --config=ci @typedb_dependencies//distribution/artifact:create-netrc
-        
+
         tool/test/start-core-server.sh &&
           bazel test --config=ci //rust/tests/behaviour/... --test_output=streamed --jobs=1 &&
           export TEST_SUCCESS=0 || export TEST_SUCCESS=1
@@ -138,7 +138,7 @@ build:
         export ARTIFACT_PASSWORD=$REPO_TYPEDB_PASSWORD
         bazel run --config=ci @typedb_dependencies//tool/bazelinstall:remote_cache_setup.sh
         bazel run --config=ci @typedb_dependencies//distribution/artifact:create-netrc
- 
+
         # TODO: run `bazel test --config=ci //rust/tests/behaviour/...` instead of multiple tests (cannot do Clustered migration now)
         source tool/test/start-cluster-servers.sh 3 &&
           bazel test --config=ci //rust/tests/behaviour/connection/... --test_env=ROOT_CA=$ROOT_CA --//rust/tests/behaviour/config:mode=cluster --test_output=streamed --jobs=1 &&
