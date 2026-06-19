@@ -23,7 +23,7 @@ use typedb_protocol::{analyze::res::analyzed_query as analyze_proto, analyzed_co
 
 use crate::{
     analyze::{
-        AnalyzedQuery, Fetch, FetchLeaf, Function, ReturnOperation, TypeAnnotations, VariableAnnotations,
+        AnalyzedQuery, Fetch, FetchLeaf, Function, Given, ReturnOperation, TypeAnnotations, VariableAnnotations,
         conjunction::{
             Comparator, Conjunction, ConjunctionID, Constraint, ConstraintExactness, ConstraintSpan, ConstraintVertex,
             ConstraintWithSpan, NamedRole, Variable,
@@ -74,11 +74,12 @@ impl TryFromProto<typedb_protocol::analyze::res::Result> for AnalyzeResponse {
 
 impl TryFromProto<typedb_protocol::analyze::res::AnalyzedQuery> for AnalyzedQuery {
     fn try_from_proto(value: typedb_protocol::analyze::res::AnalyzedQuery) -> Result<Self> {
-        let typedb_protocol::analyze::res::AnalyzedQuery { source, query, preamble, fetch } = value;
+        let typedb_protocol::analyze::res::AnalyzedQuery { source, preamble, given, query, fetch } = value;
         Ok(Self {
             source,
-            query: expect_try_from_proto(query, "AnalyzedQuery.query")?,
             preamble: vec_from_proto(preamble)?,
+            given: given.map(Given::try_from_proto).transpose()?,
+            query: expect_try_from_proto(query, "AnalyzedQuery.query")?,
             fetch: fetch.map(Fetch::try_from_proto).transpose()?,
         })
     }
@@ -427,6 +428,17 @@ impl TryFromProto<conjunction_proto::variable_annotations::Annotations> for Type
     }
 }
 
+impl TryFromProto<analyze_proto::AnalyzedGiven> for Given {
+    fn try_from_proto(proto: analyze_proto::AnalyzedGiven) -> Result<Self> {
+        let variables = vec_from_proto(proto.variables)?;
+        let variable_annotations = proto
+            .variable_annotations
+            .into_iter()
+            .map(|(id, annotations_proto)| Ok((Variable(id), VariableAnnotations::try_from_proto(annotations_proto)?)))
+            .collect::<Result<HashMap<_, _>>>()?;
+        Ok(Self { variables, variable_annotations })
+    }
+}
 impl TryFromProto<analyze_proto::Fetch> for Fetch {
     fn try_from_proto(proto: analyze_proto::Fetch) -> Result<Self> {
         use analyze_proto::fetch::Node as NodeProto;

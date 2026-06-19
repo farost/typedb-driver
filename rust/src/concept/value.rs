@@ -27,7 +27,7 @@ use std::{
 use chrono::{DateTime, FixedOffset, MappedLocalTime, NaiveDate, NaiveDateTime};
 use chrono_tz::Tz;
 
-use crate::Error;
+use crate::{Error, error::ConceptError};
 
 /// Represents the type of primitive value is held by a Value or Attribute.
 #[derive(Clone, PartialEq, Eq)]
@@ -222,6 +222,66 @@ impl fmt::Debug for Value {
     }
 }
 
+impl From<bool> for Value {
+    fn from(value: bool) -> Self {
+        Self::Boolean(value)
+    }
+}
+
+impl From<i64> for Value {
+    fn from(value: i64) -> Self {
+        Self::Integer(value)
+    }
+}
+
+impl From<f64> for Value {
+    fn from(value: f64) -> Self {
+        Self::Double(value)
+    }
+}
+
+impl From<Decimal> for Value {
+    fn from(value: Decimal) -> Self {
+        Self::Decimal(value)
+    }
+}
+
+impl From<String> for Value {
+    fn from(value: String) -> Self {
+        Self::String(value)
+    }
+}
+
+impl From<&str> for Value {
+    fn from(value: &str) -> Self {
+        Self::String(value.to_owned())
+    }
+}
+
+impl From<NaiveDate> for Value {
+    fn from(value: NaiveDate) -> Self {
+        Self::Date(value)
+    }
+}
+
+impl From<NaiveDateTime> for Value {
+    fn from(value: NaiveDateTime) -> Self {
+        Self::Datetime(value)
+    }
+}
+
+impl From<DateTime<TimeZone>> for Value {
+    fn from(value: DateTime<TimeZone>) -> Self {
+        Self::DatetimeTZ(value)
+    }
+}
+
+impl From<Duration> for Value {
+    fn from(value: Duration) -> Self {
+        Self::Duration(value)
+    }
+}
+
 /// A fixed-point decimal number.
 /// Holds exactly 19 digits after the decimal point and a 64-bit value before the decimal point.
 #[repr(C)]
@@ -237,10 +297,13 @@ pub struct Decimal {
 impl Decimal {
     const FRACTIONAL_PART_DENOMINATOR_LOG10: u32 = 19;
     pub const FRACTIONAL_PART_DENOMINATOR: u64 = 10u64.pow(Decimal::FRACTIONAL_PART_DENOMINATOR_LOG10);
-    pub const MIN: Self = Self::new(i64::MIN, 0);
-    pub const MAX: Self = Self::new(i64::MAX, Decimal::FRACTIONAL_PART_DENOMINATOR - 1);
+    pub const MIN: Self = Self::from_parts(i64::MIN, 0);
+    pub const MAX: Self = Self::from_parts(i64::MAX, Decimal::FRACTIONAL_PART_DENOMINATOR - 1);
 
-    pub const fn new(integer: i64, fractional: u64) -> Self {
+    /// Creates a new Decimal value from the raw integer and fractional parts.
+    /// The fractional part is specified in multiples of 10^-19 (Decimal::FRACTIONAL_PART_DENOMINATOR).
+    /// For an easier interface, use from_str.
+    pub const fn from_parts(integer: i64, fractional: u64) -> Self {
         assert!(fractional < Decimal::FRACTIONAL_PART_DENOMINATOR);
         Self { integer, fractional }
     }
@@ -269,7 +332,7 @@ impl Add for Decimal {
         };
         let integer = lhs.integer + rhs.integer + carry;
 
-        Self::new(integer, fractional)
+        Self::from_parts(integer, fractional)
     }
 }
 
@@ -284,7 +347,42 @@ impl Sub for Decimal {
         };
         let integer = lhs.integer - rhs.integer - carry;
 
-        Self::new(integer, fractional)
+        Self::from_parts(integer, fractional)
+    }
+}
+
+impl FromStr for Decimal {
+    type Err = Error;
+
+    fn from_str(mut str: &str) -> Result<Self, Self::Err> {
+        if str.ends_with("dec") {
+            str = str.trim_end_matches("dec");
+        }
+        let (str, is_negative) = if str.starts_with("-") {
+            (&str[1..], true)
+        } else if str.starts_with("+") {
+            (&str[1..], false)
+        } else {
+            (str, false)
+        };
+
+        let (integer_part, fractional_part) = str.split_once(".").unwrap_or((str, "0"));
+        let integer = integer_part.parse().map_err(|source| {
+            let reason = format!("Error parsing integer part: {source}");
+            Error::Concept(ConceptError::ErrorParsingDecimal { unparsed: str.to_owned(), reason })
+        })?;
+        let parsed_fractional = fractional_part.parse::<u64>().map_err(|source| {
+            let reason = format!("Error parsing integer part: {source}");
+            Error::Concept(ConceptError::ErrorParsingDecimal { unparsed: str.to_owned(), reason })
+        })?;
+        let num_fractional_digits = fractional_part.len() as u32;
+        if num_fractional_digits > Self::FRACTIONAL_PART_DENOMINATOR_LOG10 {
+            let reason = "The value cannot be parsed without a loss of precision".to_owned();
+            return Err(Error::Concept(ConceptError::ErrorParsingDecimal { unparsed: str.to_owned(), reason }));
+        }
+        let fractional = parsed_fractional * 10u64.pow(Self::FRACTIONAL_PART_DENOMINATOR_LOG10 - num_fractional_digits);
+
+        if is_negative { Ok(-Self::from_parts(integer, fractional)) } else { Ok(Self::from_parts(integer, fractional)) }
     }
 }
 

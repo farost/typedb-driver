@@ -34,6 +34,7 @@ use crate::{
     },
     connection::message::{AnalyzeResponse, QueryRequest, QueryResponse, TransactionRequest, TransactionResponse},
     error::{ConnectionError, InternalError},
+    given::GivenRows,
     promisify, resolve,
 };
 
@@ -142,8 +143,9 @@ impl TransactionStream {
         &self,
         query: &str,
         options: QueryOptions,
+        rows: Option<GivenRows>,
     ) -> impl Promise<'static, Result<QueryAnswer>> + use<> {
-        let stream = self.query_stream(QueryRequest::Query { query: query.to_owned(), options });
+        let stream = self.query_stream(QueryRequest::Query { query: query.to_owned(), options, rows });
         promisify! {
             let mut stream = stream?;
 

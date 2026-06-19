@@ -25,6 +25,7 @@ using NUnit.Framework;
 
 using TypeDB.Driver;
 using TypeDB.Driver.Api;
+using TypeDB.Driver.Api.Answer;
 using TypeDB.Driver.Common;
 
 namespace TypeDB.Driver.Test.Integration
@@ -617,6 +618,121 @@ namespace TypeDB.Driver.Test.Integration
                 Assert.IsTrue(datetimeTz.IsFixedOffset);
                 Assert.AreEqual(TimeSpan.FromHours(5) + TimeSpan.FromMinutes(45), datetimeTz.DateTimeOffset.Offset);
             }
+        }
+
+        [Test]
+        public void TestRoundTrips()
+        {
+            using var driver = TypeDB.Driver(ServerAddress, new Credentials("admin", "password"), new DriverOptions(DriverTlsConfig.Disabled()));
+            driver.Databases.Create(DatabaseName);
+
+            var belfastDtz = DatetimeTZ.Parse("2024-09-20T16:40:05 Europe/Belfast");
+            var offsetDtz = DatetimeTZ.Parse("2024-09-20T16:40:05.028129323+0545");
+
+            var examples = new (string ValueType, IValue NativeValue, string TypeqlLiteral)[]
+            {
+                ("boolean",     TypeDB.Concept.NewBoolean(true),                                              "true"),
+                ("boolean",     TypeDB.Concept.NewBoolean(false),                                             "false"),
+                ("integer",     TypeDB.Concept.NewInteger(25),                                                "25"),
+                ("double",      TypeDB.Concept.NewDouble(54.321),                                             "54.321"),
+                ("decimal",     TypeDB.Concept.NewDecimal(1234567890.0001234567890m),                         "1234567890.0001234567890dec"),
+                ("decimal",     TypeDB.Concept.NewDecimal(-1234567890.0001234567890m),                        "-1234567890.0001234567890dec"),
+                ("string",      TypeDB.Concept.NewString("John"),                                             "\"John\""),
+                ("date",        TypeDB.Concept.NewDate(new DateOnly(2024, 9, 20)),                            "2024-09-20"),
+                ("datetime",    TypeDB.Concept.NewDatetime(Datetime.Parse("1999-02-26T12:15:05")),            "1999-02-26T12:15:05"),
+                ("datetime-tz", TypeDB.Concept.NewDatetimeTz(belfastDtz),                                    "2024-09-20T16:40:05 Europe/Belfast"),
+                ("datetime-tz", TypeDB.Concept.NewDatetimeTz(offsetDtz),                                     "2024-09-20T16:40:05.028129323+0545"),
+                ("duration",    TypeDB.Concept.NewDuration(Duration.Parse("P1Y10M7DT15H44M5.00394892S")),     "P1Y10M7DT15H44M5.00394892S"),
+            };
+
+            using var tx = driver.Transaction(DatabaseName, TransactionType.Read);
+            foreach (var (valueType, nativeValue, typeqlLiteral) in examples)
+            {
+                try
+                {
+                    var row = RunRoundtripTest(tx, valueType, nativeValue, typeqlLiteral);
+                    var given = row.Get("native")!.AsValue();
+                    var parsed = row.Get("parsed")!.AsValue();
+                    Assert.AreEqual(nativeValue, given);
+                    Assert.AreEqual(given, parsed);
+                }
+                catch (AssertionException)
+                {
+                    throw;
+                }
+                catch (Exception e)
+                {
+                    throw new AssertionException($"Roundtrip failed for {valueType} '{typeqlLiteral}'", e);
+                }
+            }
+        }
+
+        [Test]
+        public void TestRoundTripsWithRawValue()
+        {
+            using var driver = TypeDB.Driver(ServerAddress, new Credentials("admin", "password"), new DriverOptions(DriverTlsConfig.Disabled()));
+            driver.Databases.Create(DatabaseName);
+
+            var belfastDtz = DatetimeTZ.Parse("2024-09-20T16:40:05 Europe/Belfast");
+            var offsetDtz = DatetimeTZ.Parse("2024-09-20T16:40:05.028129323+0545");
+
+            var examples = new (string ValueType, Func<IValue, object?> Extractor, object RawValue, string TypeqlLiteral)[]
+            {
+                ("boolean",     v => v.TryGetBoolean(),    (object)true,                                          "true"),
+                ("boolean",     v => v.TryGetBoolean(),    (object)false,                                         "false"),
+                ("integer",     v => v.TryGetInteger(),    (object)25L,                                           "25"),
+                ("double",      v => v.TryGetDouble(),     (object)54.321,                                        "54.321"),
+                ("decimal",     v => v.TryGetDecimal(),    (object)1234567890.0001234567890m,                     "1234567890.0001234567890dec"),
+                ("decimal",     v => v.TryGetDecimal(),    (object)(-1234567890.0001234567890m),                  "-1234567890.0001234567890dec"),
+                ("string",      v => v.TryGetString(),     (object)"John",                                        "\"John\""),
+                ("date",        v => v.TryGetDate(),       (object)new DateOnly(2024, 9, 20),                     "2024-09-20"),
+                ("datetime",    v => v.TryGetDatetime(),   (object)Datetime.Parse("1999-02-26T12:15:05"),         "1999-02-26T12:15:05"),
+                ("datetime-tz", v => v.TryGetDatetimeTZ(), (object)belfastDtz,                                    "2024-09-20T16:40:05 Europe/Belfast"),
+                ("datetime-tz", v => v.TryGetDatetimeTZ(), (object)offsetDtz,                                     "2024-09-20T16:40:05.028129323+0545"),
+                ("duration",    v => v.TryGetDuration(),   (object)Duration.Parse("P1Y10M7DT15H44M5.00394892S"),  "P1Y10M7DT15H44M5.00394892S"),
+            };
+
+            using var tx = driver.Transaction(DatabaseName, TransactionType.Read);
+            foreach (var (valueType, extractor, rawValue, typeqlLiteral) in examples)
+            {
+                try
+                {
+                    var row = RunRoundtripTestWithRawValue(tx, valueType, rawValue, typeqlLiteral);
+                    var given = row.Get("native")!.AsValue();
+                    var parsed = row.Get("parsed")!.AsValue();
+                    Assert.AreEqual(rawValue, extractor(given));
+                    Assert.AreEqual(rawValue, extractor(parsed));
+                }
+                catch (AssertionException)
+                {
+                    throw;
+                }
+                catch (Exception e)
+                {
+                    throw new AssertionException($"Roundtrip with raw value failed for {valueType} '{typeqlLiteral}'", e);
+                }
+            }
+        }
+
+        private static IConceptRow RunRoundtripTest(ITransaction tx, string valueType, IValue nativeValue, string typeqlLiteral)
+        {
+            string query = $"given $native: {valueType}; match let $parsed = {typeqlLiteral};";
+            var givenRows = TypeDB.Concept.GivenRows(
+                new List<string> { "native" },
+                new List<List<IConcept?>> { new List<IConcept?> { nativeValue } });
+            var rows = tx.Query(query, new QueryOptions(), givenRows).Resolve()!.AsConceptRows().ToList();
+            Assert.AreEqual(1, rows.Count);
+            return rows[0];
+        }
+
+        private static IConceptRow RunRoundtripTestWithRawValue(ITransaction tx, string valueType, object rawValue, string typeqlLiteral)
+        {
+            string query = $"given $native: {valueType}; match let $parsed = {typeqlLiteral};";
+            var givenRows = TypeDB.Concept.GivenRowsFromObjects(
+                new List<Dictionary<string, object?>> { new Dictionary<string, object?> { { "native", rawValue } } });
+            var rows = tx.Query(query, new QueryOptions(), givenRows).Resolve()!.AsConceptRows().ToList();
+            Assert.AreEqual(1, rows.Count);
+            return rows[0];
         }
 
         [Test]

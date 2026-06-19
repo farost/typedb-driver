@@ -51,6 +51,7 @@ dir_mapping = {
     "FunctionSingleReturnSelector.adoc": "analyze",
     "FunctionReturnStructure.adoc": "analyze",
     "FetchAnnotationFieldEntry.adoc": "analyze",
+    "Given.adoc": "analyze",
     "PipelineStage.adoc": "analyze",
     "Reducer.adoc": "analyze",
     "ConjunctionAnnotations.adoc": "analyze",
@@ -108,6 +109,8 @@ dir_mapping = {
 
     "QueryOptions.adoc": "response",
     "QueryResponseBase.adoc": "response",
+    "GivenRowEntry.adoc": "response",
+    "GivenRows.adoc": "response",
     "ConstraintVertexAny.adoc": "analyze",
     "ConstraintVertexLabel.adoc": "analyze",
     "ConstraintVertexNamedRole.adoc": "analyze",

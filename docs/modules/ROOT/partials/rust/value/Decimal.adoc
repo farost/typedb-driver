@@ -13,6 +13,9 @@
 * `Default`
 * `Display`
 * `Eq`
+* `From<Decimal>`
+* `From<Decimal>`
+* `FromStr`
 * `Hash`
 * `Neg`
 * `Ord`
@@ -34,4 +37,24 @@ a| `fractional` a| `u64` a| The fractional part of the decimal, in multiples of 
 a| `integer` a| `i64` a| The integer part of the decimal as normal signed 64 bit number
 |===
 // end::properties[]
+
+// tag::methods[]
+[#_struct_Decimal_from_parts_]
+==== from_parts
+
+[source,rust]
+----
+pub const fn from_parts(integer: i64, fractional: u64) -> Self
+----
+
+Creates a new Decimal value from the raw integer and fractional parts. The fractional part is specified in multiples of 10^-19 (Decimal::FRACTIONAL_PART_DENOMINATOR). For an easier interface, use from_str.
+
+[caption=""]
+.Returns
+[source,rust]
+----
+Self
+----
+
+// end::methods[]
 

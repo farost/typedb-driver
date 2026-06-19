@@ -17,7 +17,7 @@
  * under the License.
  */
 
-use std::{error::Error as StdError, fmt, time::Duration};
+use std::{error::Error as StdError, fmt, num::ParseIntError, time::Duration};
 
 use tonic::{Code, Status};
 use tonic_types::{ErrorInfo, StatusExt};
@@ -233,6 +233,8 @@ error_messages! { ConceptError
         1: "Cannot get concept from a concept row by variable '{variable}'.",
     UnavailableRowIndex { index: usize } =
         2: "Cannot get concept from a concept row by index '{index}'.",
+    ErrorParsingDecimal { unparsed: String, reason: String } =
+        3: "Could not parse the value '{unparsed}' as decimal: {reason}.",
 }
 
 error_messages! { MigrationError
@@ -263,6 +265,20 @@ error_messages! { InternalError
         4: "Unexpected response type for remote procedure call: {response_type}. This is either a version compatibility issue or a bug.",
     Unimplemented { details: String } =
         5: "Unimplemented feature: {details}.",
+}
+
+error_messages! { QueryError
+    code: "QRY", type: "Internal Error",
+    GivenRowIndexOutOfBounds { index: usize, width: usize } =
+        1: "Attempted to set a row entry at index: {index}. Row width is {width}.",
+    GivenRowUnknownVariable { variable: String } =
+        2: "Attempted to set a row entry for a variable {variable} which was not in the header.",
+    GivenRowsSizeMismatch { actual: usize, expected: usize } =
+        3: "Cannot push a row of width: {actual} . Expected width: {expected}",
+    GivenRowsReceivedType { variable_or_index: String } =
+        4: "A type was passed as given row entry for '{variable_or_index}'. Only instances and values are allowed.",
+    InvalidTypeToGivenRow =
+        5: "Types cannot be converted to GivenRowEntry. Only instances and values can.",
 }
 
 #[derive(Clone, PartialEq, Eq)]
@@ -311,8 +327,10 @@ pub enum Error {
     Concept(ConceptError),
     Migration(MigrationError),
     Internal(InternalError),
+    Query(QueryError),
     Server(ServerError),
     Other(String),
+    FFI(String),
 }
 
 impl Error {
@@ -323,7 +341,9 @@ impl Error {
             Self::Concept(error) => error.format_code(),
             Self::Migration(error) => error.format_code(),
             Self::Internal(error) => error.format_code(),
+            Self::Query(error) => error.format_code(),
             Self::Server(error) => error.format_code().to_owned(),
+            Self::FFI(_error) => String::new(),
             Self::Other(_error) => String::new(),
         }
     }
@@ -335,7 +355,9 @@ impl Error {
             Self::Concept(error) => error.message(),
             Self::Migration(error) => error.message(),
             Self::Internal(error) => error.message(),
+            Self::Query(error) => error.message(),
             Self::Server(error) => error.message(),
+            Self::FFI(error) => error.clone(),
             Self::Other(error) => error.clone(),
         }
     }
@@ -385,7 +407,9 @@ impl fmt::Display for Error {
             Self::Concept(error) => write!(f, "{error}"),
             Self::Migration(error) => write!(f, "{error}"),
             Self::Internal(error) => write!(f, "{error}"),
+            Self::Query(error) => write!(f, "{error}"),
             Self::Server(error) => write!(f, "{error}"),
+            Self::FFI(message) => write!(f, "{message}"),
             Self::Other(message) => write!(f, "{message}"),
         }
     }
@@ -399,7 +423,9 @@ impl StdError for Error {
             Self::Concept(error) => Some(error),
             Self::Migration(error) => Some(error),
             Self::Internal(error) => Some(error),
+            Self::Query(_) => None,
             Self::Server(_) => None,
+            Self::FFI(_) => None,
             Self::Other(_) => None,
         }
     }

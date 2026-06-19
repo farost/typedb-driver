@@ -19,7 +19,6 @@
 
 using System;
 using System.Collections.Generic;
-
 using TypeDB.Driver;
 using TypeDB.Driver.Analyze;
 using TypeDB.Driver.Answer;
@@ -27,6 +26,7 @@ using TypeDB.Driver.Api;
 using TypeDB.Driver.Api.Analyze;
 using TypeDB.Driver.Api.Answer;
 using TypeDB.Driver.Common;
+using TypeDB.Driver.Concept;
 using TypeDB.Driver.Common.Validation;
 
 using DriverError = TypeDB.Driver.Common.Error.Driver;
@@ -142,6 +142,56 @@ namespace TypeDB.Driver.Connection
             try
             {
                 var promise = Pinvoke.typedb_driver.transaction_query(NativeObject, query, options.NativeObject);
+                return Promise<IQueryAnswer>.Map<Pinvoke.QueryAnswer, IQueryAnswer>(
+                    () => promise.Resolve(),
+                    QueryAnswer.Of);
+            }
+            catch (Pinvoke.Error e)
+            {
+                throw new TypeDBDriverException(e);
+            }
+        }
+
+        /// <inheritdoc/>
+        public Promise<IQueryAnswer> Query(string query, IGivenRows givenRows)
+        {
+            return Query(query, new QueryOptions(), givenRows);
+        }
+
+        /// <inheritdoc/>
+        public Promise<IQueryAnswer> Query(string query, List<Dictionary<string, object?>> givenRows)
+        {
+            return Query(query, new QueryOptions(), GivenRows.OfObjects(givenRows));
+        }
+
+        /// <inheritdoc/>
+        public Promise<IQueryAnswer> Query(string query, List<string> givenVariables, List<List<object?>> givenRows)
+        {
+            return Query(query, new QueryOptions(), GivenRows.OfObjects(givenVariables, givenRows));
+        }
+
+        /// <inheritdoc/>
+        public Promise<IQueryAnswer> Query(string query, QueryOptions options, List<Dictionary<string, object?>> givenRows)
+        {
+            return Query(query, options, GivenRows.OfObjects(givenRows));
+        }
+
+        /// <inheritdoc/>
+        public Promise<IQueryAnswer> Query(string query, QueryOptions options, List<string> givenVariables, List<List<object?>> givenRows)
+        {
+            return Query(query, options, GivenRows.OfObjects(givenVariables, givenRows));
+        }
+
+        /// <inheritdoc/>
+        public Promise<IQueryAnswer> Query(string query, QueryOptions options, IGivenRows givenRows)
+        {
+            Validator.NonNull(query, DriverError.NON_NULL_VALUE_REQUIRED, "query");
+            Validator.ThrowIfFalse(NativeObject.IsOwned, DriverError.TRANSACTION_CLOSED);
+
+            try
+            {
+                var promise = Pinvoke.typedb_driver.transaction_query_given_rows(
+                    NativeObject, query, options.NativeObject, ((GivenRows)givenRows).NativeObject.Released());
                 return Promise<IQueryAnswer>.Map<Pinvoke.QueryAnswer, IQueryAnswer>(
                     () => promise.Resolve(),
                     QueryAnswer.Of);

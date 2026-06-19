@@ -29,6 +29,7 @@ dir_mapping = {
     "Fetch.adoc": "analyze",
     "FetchLeaf.adoc": "analyze",
     "Function.adoc": "analyze",
+    "Given.adoc": "analyze",
     "NamedRole.adoc": "analyze",
     "Pipeline.adoc": "analyze",
     "PipelineStage.adoc": "analyze",
@@ -83,6 +84,10 @@ dir_mapping = {
     "Entity.adoc": "data",
     "Relation.adoc": "data",
     "Value.adoc": "data",
+    "GivenRow.adoc": "data",
+    "GivenRowEntry.adoc": "data",
+    "GivenRows.adoc": "data",
+    "GivenRowsHeader.adoc": "data",
 
     # Errors
     "AnalyzeError.adoc": "errors",
@@ -92,6 +97,7 @@ dir_mapping = {
     "Error.adoc": "errors",
     "InternalError.adoc": "errors",
     "MigrationError.adoc": "errors",
+    "QueryError.adoc": "errors",
     "ServerError.adoc": "errors",
 
     # Schema

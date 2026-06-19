@@ -31,9 +31,13 @@ import com.typedb.driver.common.Promise;
 import com.typedb.driver.common.Validator;
 import com.typedb.driver.common.exception.TypeDBDriverException;
 import com.typedb.driver.answer.QueryAnswerImpl;
+import com.typedb.driver.api.concept.GivenRows;
+import com.typedb.driver.concept.GivenRowsImpl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import java.util.function.Consumer;
 
 import static com.typedb.driver.common.exception.ErrorMessage.Driver.TRANSACTION_CLOSED;
@@ -44,6 +48,7 @@ import static com.typedb.driver.jni.typedb_driver.transaction_is_open;
 import static com.typedb.driver.jni.typedb_driver.transaction_new;
 import static com.typedb.driver.jni.typedb_driver.transaction_on_close;
 import static com.typedb.driver.jni.typedb_driver.transaction_query;
+import static com.typedb.driver.jni.typedb_driver.transaction_query_given_rows;
 import static com.typedb.driver.jni.typedb_driver.transaction_rollback;
 
 public class TransactionImpl extends NativeObject<com.typedb.driver.jni.Transaction> implements Transaction {
@@ -94,6 +99,41 @@ public class TransactionImpl extends NativeObject<com.typedb.driver.jni.Transact
         Validator.requireNonNull(query, "query");
         try {
             return Promise.map(transaction_query(nativeObject, query, options.nativeObject), QueryAnswerImpl::of);
+        } catch (com.typedb.driver.jni.Error e) {
+            throw new TypeDBDriverException(e);
+        }
+    }
+
+    @Override
+    public Promise<? extends QueryAnswer> query(String query, GivenRows givenRows) throws TypeDBDriverException {
+        return query(query, new QueryOptions(), givenRows);
+    }
+
+    @Override
+    public Promise<? extends QueryAnswer> query(String query, List<? extends Map<String, Object>> givenRows) throws TypeDBDriverException {
+        return query(query, GivenRowsImpl.ofObjects(givenRows));
+    }
+
+    @Override
+    public Promise<? extends QueryAnswer> query(String query, List<String> givenVariables, List<? extends List<Object>> givenRows) throws TypeDBDriverException {
+        return query(query, GivenRowsImpl.ofObjects(givenVariables, givenRows));
+    }
+
+    @Override
+    public Promise<? extends QueryAnswer> query(String query, QueryOptions options, List<? extends Map<String, Object>> givenRows) throws TypeDBDriverException {
+        return query(query, options, GivenRowsImpl.ofObjects(givenRows));
+    }
+
+    @Override
+    public Promise<? extends QueryAnswer> query(String query, QueryOptions options, List<String> givenVariables, List<? extends List<Object>> givenRows) throws TypeDBDriverException {
+        return query(query, options, GivenRowsImpl.ofObjects(givenVariables, givenRows));
+    }
+
+    @Override
+    public Promise<? extends QueryAnswer> query(String query, QueryOptions options, GivenRows givenRows) throws TypeDBDriverException {
+        Validator.requireNonNull(query, "query");
+        try {
+            return Promise.map(transaction_query_given_rows(nativeObject, query, options.nativeObject, ((GivenRowsImpl)givenRows).nativeObject.released()), QueryAnswerImpl::of);
         } catch (com.typedb.driver.jni.Error e) {
             throw new TypeDBDriverException(e);
         }

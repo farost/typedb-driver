@@ -26,6 +26,7 @@ mod database;
 mod driver;
 mod driver_options;
 mod driver_tls_config;
+mod given_rows;
 mod query_options;
 mod server;
 mod transaction;

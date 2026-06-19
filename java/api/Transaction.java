@@ -21,9 +21,13 @@ package com.typedb.driver.api;
 
 import com.typedb.driver.api.analyze.AnalyzedQuery;
 import com.typedb.driver.api.answer.QueryAnswer;
+import com.typedb.driver.api.concept.Concept;
+import com.typedb.driver.api.concept.GivenRows;
 import com.typedb.driver.common.Promise;
 
 import javax.annotation.CheckReturnValue;
+import java.util.Map;
+import java.util.List;
 import java.util.function.Consumer;
 
 public interface Transaction extends AutoCloseable {
@@ -81,6 +85,83 @@ public interface Transaction extends AutoCloseable {
      */
     @CheckReturnValue
     Promise<? extends QueryAnswer> query(String query, QueryOptions options) throws com.typedb.driver.common.exception.TypeDBDriverException;
+
+    /**
+     * Execute a TypeQL query with input rows in this transaction.
+     *
+     * <h3>Examples</h3>
+     * <pre>
+     * String query = "given $n: string, $a: integer; insert $p isa person, has name == $n, has age == $a;";
+     * GivenRows rows = TypeDB.Concept.givenRows(
+     *      List.of("n", "a"),
+     *      List.of(
+     *          List.of(TypeDB.Concept.newString("Alice"), TypeDB.Concept.newInteger(28)), // First row
+     *          List.of(TypeDB.Concept.newString("Bob"), TypeDB.Concept.newInteger(26))    // Second row
+     *      )
+     *  );
+     * transaction.query(query, rows);
+     * </pre>
+     * @param query     The query to execute.
+     * @param givenRows GivenRows to be used as input to the query.
+     */
+    @CheckReturnValue
+    Promise<? extends QueryAnswer> query(String query, GivenRows givenRows) throws com.typedb.driver.common.exception.TypeDBDriverException;
+
+    /**
+     * Execute a TypeQL query with input rows in this transaction.
+     * @see #query(String, GivenRows)
+     *
+     * @param query     The query to execute.
+     * @param givenRows Used to construct the GivenRows which will be used as input to the query.
+     *                  Values must be Concept or a primitive supported by TypeDB.tryConvertToValue
+     */
+    @CheckReturnValue
+    Promise<? extends QueryAnswer> query(String query, List<? extends Map<String, Object>> givenRows) throws com.typedb.driver.common.exception.TypeDBDriverException;
+
+    /**
+     * Execute a TypeQL query with input rows in this transaction.
+     * @see #query(String, GivenRows)
+     *
+     * @param query     The query to execute.
+     * @param givenVariables The variables used to construct the GivenRows which will be used as input to the query.
+     * @param givenRows The rows used to construct the GivenRows which will be used as input to the query.
+     *                  Values must be Concept or a primitive supported by TypeDB.tryConvertToValue
+     */
+    @CheckReturnValue
+    Promise<? extends QueryAnswer> query(String query, List<String> givenVariables, List<? extends List<Object>> givenRows) throws com.typedb.driver.common.exception.TypeDBDriverException;
+
+    /**
+     * Execute a TypeQL query in this transaction.
+     *
+     * @param query     The query to execute.
+     * @param options   The <code>QueryOptions</code> to execute the query with.
+     * @param givenRows GivenRows to be used as input to the query.
+     */
+    @CheckReturnValue
+    Promise<? extends QueryAnswer> query(String query, QueryOptions options, GivenRows givenRows) throws com.typedb.driver.common.exception.TypeDBDriverException;
+
+    /**
+     * Execute a TypeQL query in this transaction.
+     *
+     * @param query     The query to execute.
+     * @param options   The <code>QueryOptions</code> to execute the query with.
+     * @param givenRows Used to construct the GivenRows which will be used as input to the query.
+     *                  Values must be Concept or a primitive supported by TypeDB.tryConvertToValue
+     */
+    @CheckReturnValue
+    Promise<? extends QueryAnswer> query(String query, QueryOptions options, List<? extends Map<String, Object>> givenRows) throws com.typedb.driver.common.exception.TypeDBDriverException;
+
+    /**
+     * Execute a TypeQL query in this transaction.
+     *
+     * @param query     The query to execute.
+     * @param options   The <code>QueryOptions</code> to execute the query with.
+     * @param givenVariables The variables used to construct the GivenRows which will be used as input to the query.
+     * @param givenRows The rows used to construct the GivenRows which will be used as input to the query.
+     *                  Values must be Concept or a primitive supported by TypeDB.tryConvertToValue
+     */
+    @CheckReturnValue
+    Promise<? extends QueryAnswer> query(String query, QueryOptions options, List<String> givenVariables, List<? extends List<Object>> givenRows) throws com.typedb.driver.common.exception.TypeDBDriverException;
 
     /**
      * Analayze a TypeQL query in this transaction.

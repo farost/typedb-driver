@@ -4,7 +4,7 @@
 
 `class`
 
-*Package*: `typedb.api.connection.server_routing.ServerRouting`
+*Package*: `typedb.api.connection.server_routing`
 
 *Supertypes:*
 

@@ -22,9 +22,19 @@ package com.typedb.driver;
 import com.typedb.driver.api.Credentials;
 import com.typedb.driver.api.Driver;
 import com.typedb.driver.api.DriverOptions;
+import com.typedb.driver.api.concept.GivenRows;
+import com.typedb.driver.api.concept.value.Value;
+import com.typedb.driver.common.Duration;
 import com.typedb.driver.common.exception.TypeDBDriverException;
+import com.typedb.driver.concept.GivenRowsImpl;
+import com.typedb.driver.concept.value.ValueImpl;
 import com.typedb.driver.connection.DriverImpl;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -77,5 +87,82 @@ public class TypeDB {
      */
     public static Driver driver(Map<String, String> addressTranslation, Credentials credentials, DriverOptions driverOptions) throws TypeDBDriverException {
         return new DriverImpl(addressTranslation, credentials, driverOptions);
+    }
+
+    /**
+     * Factory class to instantiate new <code>Value</code> concepts from raw values.
+     * These can then be used in the <code>GivenRows</code> of a query.
+     */
+    public static class Concept {
+
+        /**
+         * Constructs a <code>GivenRows</code> instance for use as inputs to queries.
+         *
+         * @param variables The variables describing the content of the givenRows.
+         * @param rows Input rows for the query; each inner iterable is one row, {@code Optional.empty()} entries represent empty variables.
+         */
+        public static GivenRows givenRows(List<String> variables, List<? extends List<? extends com.typedb.driver.api.concept.Concept>> rows) throws TypeDBDriverException {
+            return GivenRowsImpl.of(variables, rows);
+        }
+
+        /**
+         * Constructs a <code>GivenRows</code> instance from the dictionary for use as inputs to queries.
+         *
+         * @param givenRows A list of input rows for the query. Each row is a dictionary mapping a variable to its value.
+         */
+        public static GivenRows givenRows(List<? extends Map<String, ? extends com.typedb.driver.api.concept.Concept>> givenRows) throws TypeDBDriverException {
+            return GivenRowsImpl.of(givenRows);
+        }
+
+        /**
+         * Constructs a <code>GivenRows</code> instance from a list of rows given as plain Java objects.
+         * Each map entry value may be a {@link com.typedb.driver.api.concept.Concept} (used directly) or a raw host-language value
+         * which is converted via {@link #tryConvertToValue}.
+         *
+         * @param givenRows A list of input rows; each row maps variable names to concepts or raw values.
+         */
+        public static GivenRows givenRowsFromObjects(List<? extends Map<String, Object>> givenRows) throws TypeDBDriverException {
+            return GivenRowsImpl.ofObjects(givenRows);
+        }
+
+        /**
+         * Converts a raw host-language object to a {@link Value} concept.
+         * Accepted types: {@code Boolean}, {@code Long}, {@code Integer}, {@code Double}, {@code Float},
+         * {@code BigDecimal}, {@code String}, {@code LocalDate}, {@code LocalDateTime}, {@code ZonedDateTime}, {@code Duration}.
+         *
+         * @throws TypeDBDriverException if the object's type is not supported
+         */
+        public static Value tryConvertToValue(Object value) {
+            return ValueImpl.tryConvertToValue(value);
+        }
+
+        /** Creates a new {@code Value} wrapping the specified {@code boolean} value. */
+        public static Value newBoolean(boolean value) {
+            return ValueImpl.newBoolean(value);
+        }
+
+        /** Creates a new {@code Value} wrapping the specified {@code long} value. */
+        public static Value newInteger(long value) { return ValueImpl.newInteger(value); }
+
+        /** Creates a new {@code Value} wrapping the specified {@code double} value. */
+        public static Value newDouble(double value) { return ValueImpl.newDouble(value); }
+
+        /** Creates a new {@code Value} wrapping the specified {@code BigDecimal} value. */
+        public static Value newDecimal(BigDecimal value) { return ValueImpl.newDecimal(value); }
+
+        /** Creates a new {@code Value} wrapping the specified {@code String} value. */
+        public static Value newString(String value) { return ValueImpl.newString(value); }
+
+        /** Creates a new {@code Value} wrapping the specified {@code LocalDate} value. */
+        public static Value newDate(LocalDate value) { return ValueImpl.newDate(value); }
+
+        /** Creates a new {@code Value} wrapping the specified {@code LocalDateTime} value. */
+        public static Value newDatetime(LocalDateTime value) { return ValueImpl.newDatetime(value); }
+
+        /** Creates a new {@code Value} wrapping the specified {@code ZonedDateTime} value. */
+        public static Value newDatetimeTz(ZonedDateTime value) { return ValueImpl.newDatetimeTz(value); }
+
+        /** Creates a new {@code Value} wrapping the specified {@code Duration} value. */
+        public static Value newDuration(Duration value) { return ValueImpl.newDuration(value); }
     }
 }

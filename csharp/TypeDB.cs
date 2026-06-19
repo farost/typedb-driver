@@ -17,10 +17,13 @@
  * under the License.
  */
 
+using System;
 using System.Collections.Generic;
-
 using TypeDB.Driver.Api;
+using TypeDB.Driver.Common;
 using TypeDB.Driver.Connection;
+using ConceptGivenRows = TypeDB.Driver.Concept.GivenRows;
+using ConceptValue = TypeDB.Driver.Concept.Value;
 
 namespace TypeDB.Driver
 {
@@ -77,6 +80,59 @@ namespace TypeDB.Driver
         public static IDriver Driver(IDictionary<string, string> addressTranslation, Credentials credentials, DriverOptions driverOptions)
         {
             return new TypeDBDriver(addressTranslation, credentials, driverOptions);
+        }
+
+        /// <summary>
+        /// Factory class to instantiate new <c>IValue</c> concepts and build <c>IGivenRows</c> for use as query inputs.
+        /// </summary>
+        public static class Concept
+        {
+            /// <summary>Constructs an <c>IGivenRows</c> instance for use as inputs to queries (index-based).</summary>
+            public static IGivenRows GivenRows(List<string> givenVariables, List<List<IConcept?>> givenRows)
+                => ConceptGivenRows.Of(givenVariables, givenRows);
+
+            /// <summary>Constructs an <c>IGivenRows</c> instance from dict-based rows for use as inputs to queries.</summary>
+            public static IGivenRows GivenRows(List<Dictionary<string, IConcept?>> givenRows)
+                => ConceptGivenRows.Of(givenRows);
+
+            /// <summary>Constructs an <c>IGivenRows</c> instance from rows containing raw .NET values or concepts.</summary>
+            public static IGivenRows GivenRowsFromObjects(List<Dictionary<string, object?>> givenRows)
+                => ConceptGivenRows.OfObjects(givenRows);
+
+            /// <summary>
+            /// Converts a raw host-language object to an <c>IValue</c> concept.
+            /// Accepted types: <c>bool</c>, <c>long</c>, <c>int</c>, <c>double</c>, <c>float</c>,
+            /// <c>decimal</c>, <c>string</c>, <c>DateOnly</c>, <c>Datetime</c>, <c>DatetimeTZ</c>, <c>Duration</c>.
+            /// </summary>
+            /// <exception cref="TypeDBDriverException">if the object's type is not supported.</exception>
+            public static IValue TryConvertToValue(object value) => ConceptValue.TryConvertToValue(value);
+
+            /// <summary>Creates a new <c>IValue</c> wrapping the specified <c>bool</c> value.</summary>
+            public static IValue NewBoolean(bool value) => ConceptValue.NewBoolean(value);
+
+            /// <summary>Creates a new <c>IValue</c> wrapping the specified <c>long</c> value.</summary>
+            public static IValue NewInteger(long value) => ConceptValue.NewInteger(value);
+
+            /// <summary>Creates a new <c>IValue</c> wrapping the specified <c>double</c> value.</summary>
+            public static IValue NewDouble(double value) => ConceptValue.NewDouble(value);
+
+            /// <summary>Creates a new <c>IValue</c> wrapping the specified <c>decimal</c> value.</summary>
+            public static IValue NewDecimal(decimal value) => ConceptValue.NewDecimal(value);
+
+            /// <summary>Creates a new <c>IValue</c> wrapping the specified <c>string</c> value.</summary>
+            public static IValue NewString(string value) => ConceptValue.NewString(value);
+
+            /// <summary>Creates a new <c>IValue</c> wrapping the specified <c>DateOnly</c> value.</summary>
+            public static IValue NewDate(DateOnly value) => ConceptValue.NewDate(value);
+
+            /// <summary>Creates a new <c>IValue</c> wrapping the specified <c>Datetime</c> value.</summary>
+            public static IValue NewDatetime(Datetime value) => ConceptValue.NewDatetime(value);
+
+            /// <summary>Creates a new <c>IValue</c> wrapping the specified <c>DatetimeTZ</c> value.</summary>
+            public static IValue NewDatetimeTz(DatetimeTZ value) => ConceptValue.NewDatetimeTz(value);
+
+            /// <summary>Creates a new <c>IValue</c> wrapping the specified <c>Duration</c> value.</summary>
+            public static IValue NewDuration(Duration value) => ConceptValue.NewDuration(value);
         }
     }
 }

@@ -24,10 +24,12 @@ import com.typedb.driver.api.Credentials;
 import com.typedb.driver.api.Driver;
 import com.typedb.driver.api.DriverOptions;
 import com.typedb.driver.api.DriverTlsConfig;
+import com.typedb.driver.api.concept.Concept;
+import com.typedb.driver.api.concept.GivenRows;
+import com.typedb.driver.api.QueryOptions;
 import com.typedb.driver.api.Transaction;
 import com.typedb.driver.api.answer.ConceptRow;
 import com.typedb.driver.api.answer.QueryAnswer;
-import com.typedb.driver.api.concept.Concept;
 import com.typedb.driver.api.concept.instance.Attribute;
 import com.typedb.driver.api.concept.type.AttributeType;
 import com.typedb.driver.api.concept.value.Value;
@@ -48,8 +50,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
@@ -458,6 +462,119 @@ public class ValueTest {
             BigDecimal expected = new BigDecimal("-99999.99999").setScale(value.getDecimal().scale(), RoundingMode.UNNECESSARY);
             assertEquals(expected, value.getDecimal());
         }, Transaction.Type.WRITE);
+    }
+
+    @Test
+    public void testRoundTrips() {
+        Database db = typedbDriver.databases().get(DB_NAME);
+        db.delete();
+        typedbDriver.databases().create(DB_NAME);
+
+        DateTimeFormatter offsetFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSZ");
+        ZonedDateTime belfastDT = LocalDateTime.parse("2024-09-20T16:40:05").atZone(ZoneId.of("Europe/Belfast"));
+        ZonedDateTime offsetDT = OffsetDateTime.parse("2024-09-20T16:40:05.028129323+0545", offsetFormatter).toZonedDateTime();
+
+        Object[][] examples = {
+                {"boolean",     TypeDB.Concept.newBoolean(true),                                              "true"},
+                {"boolean",     TypeDB.Concept.newBoolean(false),                                             "false"},
+                {"integer",     TypeDB.Concept.newInteger(25),                                                "25"},
+                {"double",      TypeDB.Concept.newDouble(54.321),                                             "54.321"},
+                {"decimal",     TypeDB.Concept.newDecimal(new BigDecimal("1234567890.0001234567890")),        "1234567890.0001234567890dec"},
+                {"decimal",     TypeDB.Concept.newDecimal(new BigDecimal("-1234567890.0001234567890")),        "-1234567890.0001234567890dec"},
+                {"string",      TypeDB.Concept.newString("John"),                                             "\"John\""},
+                {"date",        TypeDB.Concept.newDate(LocalDate.of(2024, 9, 20)),                            "2024-09-20"},
+                {"datetime",    TypeDB.Concept.newDatetime(LocalDateTime.parse("1999-02-26T12:15:05")),       "1999-02-26T12:15:05"},
+                {"datetime-tz", TypeDB.Concept.newDatetimeTz(belfastDT),                                     "2024-09-20T16:40:05 Europe/Belfast"},
+                {"datetime-tz", TypeDB.Concept.newDatetimeTz(offsetDT),                                      "2024-09-20T16:40:05.028129323+0545"},
+                {"duration",    TypeDB.Concept.newDuration(Duration.parse("P1Y10M7DT15H44M5.00394892S")),     "P1Y10M7DT15H44M5.00394892S"},
+        };
+
+        localhostTypeDBTX(tx -> {
+            for (Object[] example : examples) {
+                String valueType = (String) example[0];
+                Value nativeValue = (Value) example[1];
+                String typeqlLiteral = (String) example[2];
+                try {
+                    ConceptRow row = runRoundtripTest(tx, valueType, nativeValue, typeqlLiteral);
+                    Value given = row.get("native").get().asValue();
+                    Value parsed = row.get("parsed").get().asValue();
+                    assertEquals(nativeValue, given);
+                    assertEquals(given, parsed);
+                } catch (Exception e) {
+                    throw new AssertionError("Roundtrip failed for " + valueType + " '" + typeqlLiteral + "'", e);
+                }
+            }
+        }, Transaction.Type.READ);
+    }
+
+    @Test
+    public void testRoundTripsWithRawValue() {
+        Database db = typedbDriver.databases().get(DB_NAME);
+        db.delete();
+        typedbDriver.databases().create(DB_NAME);
+
+        DateTimeFormatter offsetFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSZ");
+        ZonedDateTime belfastDT = LocalDateTime.parse("2024-09-20T16:40:05").atZone(ZoneId.of("Europe/Belfast"));
+        ZonedDateTime offsetDT = OffsetDateTime.parse("2024-09-20T16:40:05.028129323+0545", offsetFormatter).toZonedDateTime();
+
+        Object[][] examples = {
+                {"boolean",     (Function<Value, Object>) Value::getBoolean,    true,                                              "true"},
+                {"boolean",     (Function<Value, Object>) Value::getBoolean,    false,                                             "false"},
+                {"integer",     (Function<Value, Object>) Value::getInteger,    25L,                                               "25"},
+                {"double",      (Function<Value, Object>) Value::getDouble,     54.321,                                            "54.321"},
+                {"decimal",     (Function<Value, Object>) Value::getDecimal,    new BigDecimal("1234567890.0001234567890"),         "1234567890.0001234567890dec"},
+                {"decimal",     (Function<Value, Object>) Value::getDecimal,    new BigDecimal("-1234567890.0001234567890"),        "-1234567890.0001234567890dec"},
+                {"string",      (Function<Value, Object>) Value::getString,     "John",                                            "\"John\""},
+                {"date",        (Function<Value, Object>) Value::getDate,       LocalDate.of(2024, 9, 20),                         "2024-09-20"},
+                {"datetime",    (Function<Value, Object>) Value::getDatetime,   LocalDateTime.parse("1999-02-26T12:15:05"),        "1999-02-26T12:15:05"},
+                {"datetime-tz", (Function<Value, Object>) Value::getDatetimeTZ, belfastDT,                                         "2024-09-20T16:40:05 Europe/Belfast"},
+                {"datetime-tz", (Function<Value, Object>) Value::getDatetimeTZ, offsetDT,                                          "2024-09-20T16:40:05.028129323+0545"},
+                {"duration",    (Function<Value, Object>) Value::getDuration,   Duration.parse("P1Y10M7DT15H44M5.00394892S"),      "P1Y10M7DT15H44M5.00394892S"},
+        };
+
+        localhostTypeDBTX(tx -> {
+            for (Object[] example : examples) {
+                String valueType = (String) example[0];
+                @SuppressWarnings("unchecked")
+                Function<Value, Object> extractor = (Function<Value, Object>) example[1];
+                Object rawValue = example[2];
+                String typeqlLiteral = (String) example[3];
+                try {
+                    ConceptRow row = runRoundtripTestWithRawValue(tx, valueType, rawValue, typeqlLiteral);
+                    Value given = row.get("native").get().asValue();
+                    Value parsed = row.get("parsed").get().asValue();
+                    assertRawValueEquals(rawValue, extractor.apply(given));
+                    assertRawValueEquals(rawValue, extractor.apply(parsed));
+                } catch (Exception e) {
+                    throw new AssertionError("Roundtrip with raw value failed for " + valueType + " '" + typeqlLiteral + "'", e);
+                }
+            }
+        }, Transaction.Type.READ);
+    }
+
+    private static void assertRawValueEquals(Object expected, Object actual) {
+        if (expected instanceof BigDecimal && actual instanceof BigDecimal) {
+            assertEquals(0, ((BigDecimal) expected).compareTo((BigDecimal) actual));
+        } else {
+            assertEquals(expected, actual);
+        }
+    }
+
+    private ConceptRow runRoundtripTest(Transaction tx, String valueType, Value nativeValue, String typeqlLiteral) {
+        String query = String.format("given $native: %s; match let $parsed = %s;", valueType, typeqlLiteral);
+        GivenRows givenRows = TypeDB.Concept.givenRows(List.of("native"), List.of(List.of(nativeValue)));
+        List<ConceptRow> rows = tx.query(query, new QueryOptions(), givenRows).resolve()
+                .asConceptRows().stream().collect(Collectors.toList());
+        assertEquals(1, rows.size());
+        return rows.get(0);
+    }
+
+    private ConceptRow runRoundtripTestWithRawValue(Transaction tx, String valueType, Object rawValue, String typeqlLiteral) {
+        String query = String.format("given $native: %s; match let $parsed = %s;", valueType, typeqlLiteral);
+        List<ConceptRow> rows = tx.query(query, new QueryOptions(), TypeDB.Concept.givenRowsFromObjects(List.of(Map.of("native", rawValue)))).resolve()
+                .asConceptRows().stream().collect(Collectors.toList());
+        assertEquals(1, rows.size());
+        return rows.get(0);
     }
 
     private void localhostTypeDBTX(Consumer<Transaction> fn, Transaction.Type type/*, Options options*/) {

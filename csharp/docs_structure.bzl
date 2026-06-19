@@ -33,6 +33,7 @@ dir_mapping = {
     "IFetchObject.adoc": "analyze",
     "IFunction.adoc": "analyze",
     "IFunctionCall.adoc": "analyze",
+    "IGiven.adoc": "analyze",
     "IHas.adoc": "analyze",
     "IIid.adoc": "analyze",
     "IInsertStage.adoc": "analyze",
@@ -112,6 +113,8 @@ dir_mapping = {
     "IInstance.adoc": "data",
     "IRelation.adoc": "data",
     "IValue.adoc": "data",
+    "IGivenRows.adoc": "data",
+    "TypeDB.Concept.adoc": "data",
 
     # Errors
     "TypeDBDriverException.adoc": "errors",

@@ -26,7 +26,6 @@ import com.typedb.driver.api.user.UserManager;
 import com.typedb.driver.common.exception.TypeDBDriverException;
 
 import javax.annotation.CheckReturnValue;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 

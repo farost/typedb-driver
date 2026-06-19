@@ -51,6 +51,7 @@ dir_mapping = {
     "Function.ReturnOperation.Reduce.ReduceAssignment.adoc": "analyze",
     "Function.ReturnOperation.Single.adoc": "analyze",
     "Function.ReturnOperation.Stream.adoc": "analyze",
+    "Given.adoc" : "analyze",
     "NamedRole.adoc": "analyze",
     "Pipeline.adoc": "analyze",
     "PipelineStage.adoc": "analyze",
@@ -110,6 +111,8 @@ dir_mapping = {
     "Instance.adoc": "data",
     "Relation.adoc": "data",
     "Value.adoc": "data",
+    "TypeDB.Concept.adoc": "data",
+    "GivenRows.adoc": "data",
 
     # Errors
     "TypeDBDriverException.adoc": "errors",

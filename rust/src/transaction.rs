@@ -27,6 +27,7 @@ use crate::{
     answer::QueryAnswer,
     common::{Promise, Result, TransactionType},
     connection::TransactionStream,
+    given::GivenRows,
 };
 
 /// A transaction with a TypeDB database.
@@ -68,7 +69,7 @@ impl Transaction {
     /// transaction.query(query)
     /// ```
     pub fn query(&self, query: impl AsRef<str>) -> impl Promise<'static, Result<QueryAnswer>> {
-        self.query_with_options(query, QueryOptions::new())
+        self.query_with_options_and_rows(query, QueryOptions::new(), None)
     }
 
     /// Performs a TypeQL query in this transaction.
@@ -88,9 +89,51 @@ impl Transaction {
         query: impl AsRef<str>,
         options: QueryOptions,
     ) -> impl Promise<'static, Result<QueryAnswer>> {
+        self.query_with_options_and_rows(query, options, None)
+    }
+
+    /// Performs a TypeQL query in this transaction.
+    ///
+    /// # Arguments
+    ///
+    /// * `query` — The TypeQL query to be executed
+    /// * `rows` — The GivenRows to pass as input to the query.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// transaction.query_with_options(query, options, rows)
+    /// ```
+    pub fn query_with_rows(
+        &self,
+        query: impl AsRef<str>,
+        rows: GivenRows,
+    ) -> impl Promise<'static, Result<QueryAnswer>> {
+        self.query_with_options_and_rows(query, QueryOptions::new(), Some(rows))
+    }
+
+    /// Performs a TypeQL query in this transaction.
+    ///
+    /// # Arguments
+    ///
+    /// * `query` — The TypeQL query to be executed
+    /// * `options` — The QueryOptions to execute the query with
+    /// * `rows` — The GivenRows to pass as input to the query.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// transaction.query_with_options(query, options, rows)
+    /// ```
+    pub fn query_with_options_and_rows(
+        &self,
+        query: impl AsRef<str>,
+        options: QueryOptions,
+        rows: Option<GivenRows>,
+    ) -> impl Promise<'static, Result<QueryAnswer>> {
         let query = query.as_ref();
         debug!("Transaction submitting query: {}", query);
-        self.transaction_stream.query(query, options)
+        self.transaction_stream.query(query, options, rows)
     }
 
     /// Analyzes a TypeQL query in this transaction,

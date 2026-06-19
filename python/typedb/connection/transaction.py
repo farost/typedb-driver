@@ -29,8 +29,9 @@ from typedb.common.native_wrapper import NativeWrapper
 from typedb.common.promise import Promise
 from typedb.common.validation import require_non_null
 from typedb.concept.answer.query_answer_factory import wrap_query_answer
+from typedb.api.concept.given_rows import GivenRows
 from typedb.native_driver_wrapper import error_code, error_message, transaction_new, \
-    transaction_analyze, transaction_query, \
+    transaction_analyze, transaction_query, transaction_query_given_rows, \
     transaction_commit, transaction_rollback, transaction_is_open, transaction_on_close, transaction_close, \
     query_answer_promise_resolve, analyzed_query_promise_resolve, \
     Transaction as NativeTransaction, TransactionCallbackDirector, TypeDBDriverExceptionNative, void_promise_resolve
@@ -72,11 +73,20 @@ class _Transaction(Transaction, NativeWrapper[NativeTransaction]):
         promise = transaction_analyze(self.native_object, query)
         return Promise.map(_AnalyzedQuery, lambda: analyzed_query_promise_resolve(promise))
 
-    def query(self, query: str, options: Optional[QueryOptions] = None) -> Promise[QueryAnswer]:
+    def query(self, query: str, options: Optional[QueryOptions] = None, given_rows=None) -> Promise[QueryAnswer]:
         require_non_null(query, "query")
         if not options:
             options = QueryOptions()
-        promise = transaction_query(self.native_object, query, options.native_object)
+        if given_rows is None:
+            promise = transaction_query(self.native_object, query, options.native_object)
+        else:
+            from typedb.concept.given_rows import _GivenRows
+            if isinstance(given_rows, list):
+                given_rows = _GivenRows.of_map(given_rows)
+            elif isinstance(given_rows, tuple):
+                given_rows = _GivenRows.of(given_rows[0], given_rows[1])
+            given_rows._native.thisown = 0
+            promise = transaction_query_given_rows(self.native_object, query, options.native_object, given_rows._native)
         return Promise.map(wrap_query_answer, lambda: query_answer_promise_resolve(promise))
 
     def is_open(self) -> bool:

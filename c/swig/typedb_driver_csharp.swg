@@ -306,6 +306,7 @@
 %noexception analyzed_query_pipeline;
 %noexception analyzed_preamble;
 %noexception analyzed_fetch;
+%noexception analyzed_given;
 %noexception comparator_get_name;
 
 %noexception conjunction_id_as_u32;
@@ -385,6 +386,9 @@
 %noexception function_argument_annotations;
 %noexception function_return_annotations;
 
+%noexception given_variables;
+%noexception given_variable_annotations;
+
 %noexception pipeline_get_conjunction;
 %noexception pipeline_stages;
 %noexception pipeline_stage_variant;
@@ -454,6 +458,10 @@
 %noexception ~Duration;
 %noexception ~StringAndOptValue;
 %noexception ~Value;
+%noexception ~GivenRowsHeaderBuilder;
+%noexception ~GivenRowsHeader;
+%noexception ~GivenRowsBuilder;
+%noexception ~GivenRows;
 %noexception ~ValueType;
 %noexception ~BoolPromise;
 %noexception ~VoidPromise;
@@ -488,6 +496,12 @@
 %noexception ~VariableAnnotationsIterator;
 %noexception ~Variable;
 %noexception ~VariableIterator;
+
+%noexception given_rows_header_builder_new;
+%noexception given_rows_header_builder_push;
+%noexception given_rows_header_builder_finish;
+%noexception given_rows_builder_new;
+%noexception given_rows_builder_start_new_row;
 
 /* Commit and rollback are non-throwing operations on construction */
 %noexception transaction_commit;

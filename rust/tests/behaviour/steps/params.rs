@@ -21,6 +21,7 @@ use std::{convert::Infallible, fmt, str::FromStr};
 
 use chrono::{FixedOffset, NaiveDate, NaiveDateTime, NaiveTime};
 use cucumber::Parameter;
+use futures::StreamExt;
 use typedb_driver::{
     Address, ServerRouting as TypeDBServerRouting, TransactionType as TypeDBTransactionType,
     answer::QueryType as TypeDBQueryType,
@@ -67,8 +68,8 @@ impl Value {
                 let fractional_parsed = Self::parse_decimal_fraction_part(fractional);
 
                 TypeDBValue::Decimal(match integer.starts_with('-') {
-                    false => Decimal::new(integer_parsed_abs, fractional_parsed),
-                    true => -Decimal::new(integer_parsed_abs, fractional_parsed),
+                    false => Decimal::from_parts(integer_parsed_abs, fractional_parsed),
+                    true => -Decimal::from_parts(integer_parsed_abs, fractional_parsed),
                 })
             }
             TypeDBValueType::Date => {
@@ -619,5 +620,34 @@ impl fmt::Display for ConceptKind {
             Self::Attribute => write!(f, "Attribute"),
             Self::Value => write!(f, "Value"),
         }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Parameter)]
+#[param(name = "variable_list", regex = r"(\$[a-zA-Z0-9\-_]+(, \$[a-zA-Z0-9\-_]+)*)")]
+pub struct VariableList(pub Vec<String>);
+
+impl FromStr for VariableList {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self(s.split(",").map(|s| s.replace("$", "").replace(" ", "")).collect()))
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Parameter)]
+#[param(name = "with_given", regex = "(| with given rows)")]
+pub enum WithGiven {
+    False,
+    True,
+}
+
+impl FromStr for WithGiven {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s {
+            " with given rows" => Self::True,
+            "" => Self::False,
+            invalid => return Err(format!("Invalid `WithGiven`: {invalid}")),
+        })
     }
 }

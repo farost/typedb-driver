@@ -23,7 +23,10 @@ import {
     answers,
     concurrentAnswers,
     makeQuery,
+    makeQueryWithGiven,
     setAnswers,
+    setGivenRows,
+    takeGivenRows,
     setConcurrentAnswers, setQueryAnswerCountLimit,
     setQueryIncludeInstanceTypes, setQueryIncludeQueryStructure,
 } from "./context";
@@ -34,7 +37,7 @@ import {
     EXPECT_ERROR_CONTAINING,
     MayError, parseValue
 } from "./params";
-import { Concept, ConceptDocument, QueryType, ValueType } from "../../../dist/index.cjs";
+import { Concept, ConceptDocument, GivenRowEntry, GivenRows, QueryType, ValueType } from "../../../dist/index.cjs";
 import assert from "assert";
 import {encodePipeline, FunctorEncoder, normalizeFunctorForCompare} from "./analyze";
 
@@ -74,7 +77,33 @@ function checkConceptKind(concept: Concept, kind: ConceptKind) {
     else return concept.kind === kind;
 }
 
+const setGivenRowsFromAnswer = async (varList: string[], query: string) => {
+    const results = await makeQuery(query).then(assertNotError);
+    if (results.ok.answerType === "ok" || results.ok.answerType === "conceptDocuments") assert.fail("Expected concept rows");
+    const rows = results.ok.answers.map(row => Object.fromEntries(varList.map(v => [v, row.data[v] as GivenRowEntry])));
+    setGivenRows(rows);
+};
+
+When('set answers of typeql read query as given rows with order: {variable_list}', setGivenRowsFromAnswer);
+When('set answers of typeql read query as given rows dictionary with variables: {variable_list}', setGivenRowsFromAnswer);
+
+const runQueryWithGiven = async (mayError: MayError, query: string) => {
+    const given = takeGivenRows();
+    await makeQueryWithGiven(query, given).then(checkMayError(mayError));
+};
+When("typeql schema query with given rows{may_error}", runQueryWithGiven);
+When("typeql write query with given rows{may_error}", runQueryWithGiven);
+When("typeql read query with given rows{may_error}", runQueryWithGiven);
+When(`typeql schema query with given rows${EXPECT_ERROR_CONTAINING}`, runQueryWithGiven);
+When(`typeql write query with given rows${EXPECT_ERROR_CONTAINING}`, runQueryWithGiven);
+When(`typeql read query with given rows${EXPECT_ERROR_CONTAINING}`, runQueryWithGiven);
+
 When('get answers of typeql {query_type} query', async (_: QueryType, query: string) => await getAnswers(query));
+When('get answers of typeql {query_type} query with given rows', async (_: QueryType, query: string) => {
+    const given = takeGivenRows();
+    const results = await makeQueryWithGiven(query, given).then(assertNotError);
+    setAnswers(results.ok);
+});
 When('concurrently get answers of typeql {query_type} query {int} times', async (_: QueryType, times: number, query: string) => {
     const queries = [];
     for (let i = 0; i < times; i++) {
@@ -149,8 +178,8 @@ Then(`answer get row\\({int}\\) get variable{is_by_var_index}\\({var}\\)${EXPECT
 Then('answer get row\\({int}\\) get variable{is_by_var_index}\\({var}\\) {is_or_not} empty', (rowIdx: number, indexed: boolean, variable: string, is: boolean) => {
     if (indexed) return; // http does not have indices
     if (answers.answerType === "ok" || answers.answerType === "conceptDocuments") assert.fail("Expected conceptRow answers");
-    if (is) assert.equal(answers.answers[rowIdx].data[variable], "");
-    else assert.notEqual(answers.answers[rowIdx].data[variable], "");
+    if (is) assert.equal(answers.answers[rowIdx].data[variable], null);
+    else assert.notEqual(answers.answers[rowIdx].data[variable], null);
 });
 
 Then('answer get row\\({int}\\) get variable by index\\({int}\\){may_error}', (rowIdx: number, idx: number, mayError: boolean) => {});

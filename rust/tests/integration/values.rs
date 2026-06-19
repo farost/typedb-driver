@@ -19,7 +19,8 @@
 
 use std::{collections::HashMap, str::FromStr};
 
-use chrono::{Datelike, NaiveDate, NaiveDateTime, Timelike};
+use chrono::{Datelike, FixedOffset, NaiveDate, NaiveDateTime, TimeZone as ChronoTimeZone, Timelike};
+use chrono_tz::Tz;
 use futures::TryStreamExt;
 use serial_test::serial;
 use typedb_driver::{
@@ -28,6 +29,7 @@ use typedb_driver::{
         Value,
         value::{Decimal, Duration, TimeZone},
     },
+    given::{GivenRowEntry, GivenRows},
 };
 
 const DATABASE_NAME: &str = "typedb";
@@ -212,27 +214,27 @@ fn duration_debug() {
 
 #[test]
 fn decimal_new() {
-    let decimal = Decimal::new(123, 456);
+    let decimal = Decimal::from_parts(123, 456);
     assert_eq!(decimal.integer, 123);
     assert_eq!(decimal.fractional, 456);
 }
 
 #[test]
 fn decimal_display_whole() {
-    let decimal = Decimal::new(123, 0);
+    let decimal = Decimal::from_parts(123, 0);
     assert_eq!(format!("{}", decimal), "123.0");
 }
 
 #[test]
 fn decimal_display_fractional() {
-    let decimal = Decimal::new(1234567890, 1_234_567_890_000_000_000);
+    let decimal = Decimal::from_parts(1234567890, 1_234_567_890_000_000_000);
     assert_eq!(format!("{}", decimal), "1234567890.123456789dec");
 }
 
 #[test]
 fn decimal_addition() {
-    let a = Decimal::new(1, 5_000_000_000_000_000_000);
-    let b = Decimal::new(2, 7_000_000_000_000_000_000);
+    let a = Decimal::from_parts(1, 5_000_000_000_000_000_000);
+    let b = Decimal::from_parts(2, 7_000_000_000_000_000_000);
     let c = a + b;
     assert_eq!(c.integer, 4);
     assert_eq!(c.fractional, 2_000_000_000_000_000_000);
@@ -240,8 +242,8 @@ fn decimal_addition() {
 
 #[test]
 fn decimal_subtraction() {
-    let a = Decimal::new(5, 3_000_000_000_000_000_000);
-    let b = Decimal::new(2, 7_000_000_000_000_000_000);
+    let a = Decimal::from_parts(5, 3_000_000_000_000_000_000);
+    let b = Decimal::from_parts(2, 7_000_000_000_000_000_000);
     let c = a - b;
     assert_eq!(c.integer, 2);
     assert_eq!(c.fractional, 6_000_000_000_000_000_000);
@@ -249,7 +251,7 @@ fn decimal_subtraction() {
 
 #[test]
 fn decimal_negation() {
-    let a = Decimal::new(5, 3_000_000_000_000_000_000);
+    let a = Decimal::from_parts(5, 3_000_000_000_000_000_000);
     let neg_a = -a;
     assert_eq!(neg_a.integer, -6);
     assert_eq!(neg_a.fractional, 7_000_000_000_000_000_000);
@@ -257,18 +259,18 @@ fn decimal_negation() {
 
 #[test]
 fn decimal_equality() {
-    let a = Decimal::new(123, 456);
-    let b = Decimal::new(123, 456);
-    let c = Decimal::new(123, 457);
+    let a = Decimal::from_parts(123, 456);
+    let b = Decimal::from_parts(123, 456);
+    let c = Decimal::from_parts(123, 457);
     assert_eq!(a, b);
     assert_ne!(a, c);
 }
 
 #[test]
 fn decimal_ordering() {
-    let a = Decimal::new(1, 0);
-    let b = Decimal::new(2, 0);
-    let c = Decimal::new(1, 1);
+    let a = Decimal::from_parts(1, 0);
+    let b = Decimal::from_parts(2, 0);
+    let c = Decimal::from_parts(1, 1);
     assert!(a < b);
     assert!(a < c);
     assert!(c < b);
@@ -824,6 +826,80 @@ fn test_decimal_via_database() {
             assert_eq!(decimal.integer, -124);
             // fractional should be FRACTIONAL_PART_DENOMINATOR - 0.456 * FRACTIONAL_PART_DENOMINATOR
         }
+
+        cleanup().await;
+    });
+}
+
+#[test]
+#[serial]
+fn test_round_trips() {
+    async_std::task::block_on(async {
+        let driver = setup().await;
+        let database = driver.databases().get(DATABASE_NAME).await.unwrap();
+
+        // from_local_datetime can fail since it's not continuous, but using from_utc_datetime here is overkill.
+        let belfast_naive_local = NaiveDate::from_ymd_opt(2024, 9, 20).unwrap().and_hms_opt(16, 40, 5).unwrap();
+        let belfast_dt = Value::DatetimeTZ(
+            TimeZone::IANA(Tz::from_str("Europe/Belfast").unwrap()).from_local_datetime(&belfast_naive_local).unwrap(),
+        );
+
+        let offset_naive_utc =
+            NaiveDate::from_ymd_opt(2024, 9, 20).unwrap().and_hms_nano_opt(16, 40, 5, 28129323).unwrap();
+        let offset_dt = Value::DatetimeTZ(
+            TimeZone::Fixed(FixedOffset::east_opt(5 * 3600 + 45 * 60).unwrap())
+                .from_local_datetime(&offset_naive_utc)
+                .unwrap(),
+        );
+
+        let examples: Vec<(&str, Value, &str)> = vec![
+            ("boolean", Value::Boolean(true), "true"),
+            ("boolean", Value::Boolean(false), "false"),
+            ("integer", Value::Integer(25), "25"),
+            ("double", Value::Double(54.321), "54.321"),
+            (
+                "decimal",
+                Value::Decimal(Decimal::from_str("1234567890.0001234567890").unwrap()),
+                "1234567890.0001234567890dec",
+            ),
+            (
+                "decimal",
+                Value::Decimal(Decimal::from_str("-1234567890.0001234567890").unwrap()),
+                "-1234567890.0001234567890dec",
+            ),
+            ("string", Value::String("John".to_string()), "\"John\""),
+            ("date", Value::Date(NaiveDate::from_ymd_opt(2024, 9, 20).unwrap()), "2024-09-20"),
+            (
+                "datetime",
+                Value::Datetime(NaiveDate::from_ymd_opt(1999, 2, 26).unwrap().and_hms_opt(12, 15, 5).unwrap()),
+                "1999-02-26T12:15:05",
+            ),
+            ("datetime-tz", belfast_dt, "2024-09-20T16:40:05 Europe/Belfast"),
+            ("datetime-tz", offset_dt, "2024-09-20T16:40:05.028129323+0545"),
+            (
+                "duration",
+                Value::Duration(Duration::from_str("P1Y10M7DT15H44M5.00394892S").unwrap()),
+                "P1Y10M7DT15H44M5.00394892S",
+            ),
+        ];
+
+        let tx = driver.transaction(database.name(), TransactionType::Read).await.unwrap();
+        for (value_type, native, typeql_literal) in examples {
+            let query = format!("given $native: {}; match let $parsed = {};", value_type, typeql_literal);
+            let mut given_rows = GivenRows::new(vec!["native".to_string()], 1);
+            given_rows.push_row(vec![GivenRowEntry::Value(native.clone())]).unwrap();
+            let answer = tx
+                .query_with_rows(&query, given_rows)
+                .await
+                .unwrap_or_else(|e| panic!("Query failed for {} '{}': {}", value_type, typeql_literal, e));
+            let rows: Vec<_> = answer.into_rows().try_collect().await.unwrap();
+            assert_eq!(rows.len(), 1, "Expected 1 row for {} '{}'", value_type, typeql_literal);
+            let given = rows[0].get("native").unwrap().unwrap().try_get_value().unwrap().clone();
+            let parsed = rows[0].get("parsed").unwrap().unwrap().try_get_value().unwrap().clone();
+            assert_eq!(native, given, "native != given for {} '{}'", value_type, typeql_literal);
+            assert_eq!(given, parsed, "given != parsed for {} '{}'", value_type, typeql_literal);
+        }
+        drop(tx);
 
         cleanup().await;
     });

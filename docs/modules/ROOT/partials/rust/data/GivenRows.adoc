@@ -1,0 +1,24 @@
+[#_struct_GivenRows]
+[.doc-api-reference-driver]
+=== GivenRows
+
+`struct`
+
+*Implements traits:*
+
+* `Clone`
+* `Debug`
+
+Rows of data to be used as input to a TypeQL query using a ``given`` stage.
+
+[caption=""]
+.Fields
+// tag::properties[]
+[cols=",,"]
+[options="header"]
+|===
+|Name |Type |Description
+a| `header` a| `Arc<GivenRowsHeader>` a| 
+|===
+// end::properties[]
+

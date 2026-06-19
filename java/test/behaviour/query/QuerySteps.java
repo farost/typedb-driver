@@ -19,6 +19,9 @@
 
 package com.typedb.driver.test.behaviour.query;
 
+import com.typedb.driver.TypeDB;
+import com.typedb.driver.api.concept.Concept;
+import com.typedb.driver.api.concept.GivenRows;
 import com.typedb.driver.api.QueryOptions;
 import com.typedb.driver.api.QueryType;
 import com.typedb.driver.api.Transaction;
@@ -29,7 +32,6 @@ import com.typedb.driver.api.answer.ConceptRowIterator;
 import com.typedb.driver.api.answer.JSON;
 import com.typedb.driver.api.answer.OkQueryAnswer;
 import com.typedb.driver.api.answer.QueryAnswer;
-import com.typedb.driver.api.concept.Concept;
 import com.typedb.driver.api.concept.instance.Attribute;
 import com.typedb.driver.api.concept.instance.Entity;
 import com.typedb.driver.api.concept.instance.Instance;
@@ -78,10 +80,24 @@ public class QuerySteps {
     private static List<ConceptRow> collectedRows;
     private static List<JSON> collectedDocuments;
     private static List<CompletableFuture<QueryAnswer>> queryAnswersParallel = null;
+    private static GivenRows givenRows = null;
+
+    private Promise<? extends QueryAnswer> query(Transaction transaction, String query, Optional<QueryOptions> options, GivenRows given) {
+        QueryOptions opts = options.orElseGet(QueryOptions::new);
+        if (given != null) return transaction.query(query, opts, given);
+        else if (options.isPresent()) return transaction.query(query, opts);
+        else return transaction.query(query);
+    }
 
     private Promise<? extends QueryAnswer> query(Transaction transaction, String query, Optional<QueryOptions> options) {
-        if (options.isPresent()) return transaction.query(query, options.get());
-        else return transaction.query(query);
+        return query(transaction, query, options, null);
+    }
+
+    private GivenRows takeGivenRows() {
+        assert givenRows != null : "Expected given rows to be set";
+        GivenRows rows = givenRows;
+        givenRows = null;
+        return rows;
     }
 
     private void clearAnswers() {
@@ -850,20 +866,44 @@ public class QuerySteps {
         }
     }
 
-    @Given("typeql write query{may_error}")
-    @Given("typeql read query{may_error}")
-    @Given("typeql schema query{may_error}")
-    public void typeql_query(Parameters.MayError mayError, String query) {
+    @Given("typeql write query{with_given}{may_error}")
+    @Given("typeql read query{with_given}{may_error}")
+    @Given("typeql schema query{with_given}{may_error}")
+    public void typeql_query(boolean withGiven, Parameters.MayError mayError, String query) {
         clearAnswers();
-        mayError.check(() -> query(tx(), query, queryOptions).resolve());
+        GivenRows given = withGiven ? takeGivenRows() : null;
+        mayError.check(() -> query(tx(), query, queryOptions, given).resolve());
     }
 
-    @Given("get answers of typeql write query{may_error}")
-    @Given("get answers of typeql read query{may_error}")
-    @Given("get answers of typeql schema query{may_error}")
-    public void get_answers_of_typeql_query(Parameters.MayError mayError, String query) {
+    @Given("set answers of typeql read query as given rows dictionary with variables: {variable_list}")
+    public void set_answers_as_given_rows_dict(List<String> varList, String query) {
+        List<ConceptRow> tableRows = tx().query(query).resolve().asConceptRows().stream().collect(Collectors.toList());
+        List<? extends Map<String, ? extends Concept>> asMap = tableRows.stream()
+                .map(row -> {
+                    Map<String, Concept> m = new java.util.HashMap<>();
+                    varList.forEach(var -> m.put(var, row.get(var).orElse(null)));
+                    return m;
+                })
+                .collect(Collectors.toList());
+        givenRows = TypeDB.Concept.givenRows(asMap);
+    }
+
+    @Given("set answers of typeql read query as given rows with order: {variable_list}")
+    public void set_answers_as_given_rows(List<String> varList, String query) {
+        List<ConceptRow> tableRows = tx().query(query).resolve().asConceptRows().stream().collect(Collectors.toList());
+        List<? extends List<? extends Concept>> rows = tableRows.stream()
+                .map(row -> varList.stream().<Concept>map(var -> row.get(var).orElse(null)).collect(Collectors.toList()))
+                .collect(Collectors.toList());
+        givenRows = TypeDB.Concept.givenRows(varList, rows);
+    }
+
+    @Given("get answers of typeql write query{with_given}{may_error}")
+    @Given("get answers of typeql read query{with_given}{may_error}")
+    @Given("get answers of typeql schema query{with_given}{may_error}")
+    public void get_answers_of_typeql_query(boolean withGiven, Parameters.MayError mayError, String query) {
         clearAnswers();
-        mayError.check(() -> queryAnswer = query(tx(), query, queryOptions).resolve());
+        GivenRows given = withGiven ? takeGivenRows() : null;
+        mayError.check(() -> queryAnswer = query(tx(), query, queryOptions, given).resolve());
     }
 
     @Given("concurrently get answers of typeql write query {integer} times")

@@ -38,6 +38,7 @@ use crate::{
         server::{Server, server_version::ServerVersion},
     },
     error::{ConnectionError, InternalError, ServerError},
+    given::{GivenRow, GivenRowEntry, GivenRows},
     info::UserInfo,
 };
 
@@ -228,10 +229,52 @@ impl IntoProto<transaction::Req> for TransactionRequest {
 impl IntoProto<typedb_protocol::query::Req> for QueryRequest {
     fn into_proto(self) -> typedb_protocol::query::Req {
         match self {
-            QueryRequest::Query { query, options } => {
-                typedb_protocol::query::Req { query, options: Some(options.into_proto()) }
-            }
+            QueryRequest::Query { query, options, rows } => typedb_protocol::query::Req {
+                query,
+                options: Some(options.into_proto()),
+                given: rows.map(|r| r.into_proto()),
+            },
         }
+    }
+}
+
+impl IntoProto<typedb_protocol::query::req::GivenRows> for GivenRows {
+    fn into_proto(self) -> typedb_protocol::query::req::GivenRows {
+        let variables = self.header.variables.clone();
+        let rows = self.rows.into_iter().map(|row| row.into_proto()).collect();
+        typedb_protocol::query::req::GivenRows { variables, rows }
+    }
+}
+
+impl IntoProto<typedb_protocol::query::req::GivenRow> for Vec<GivenRowEntry> {
+    fn into_proto(self) -> typedb_protocol::query::req::GivenRow {
+        let entries = self.into_iter().map(|entry| entry.into_proto()).collect();
+        typedb_protocol::query::req::GivenRow { entries }
+    }
+}
+
+impl IntoProto<typedb_protocol::query::req::GivenEntry> for GivenRowEntry {
+    fn into_proto(self) -> typedb_protocol::query::req::GivenEntry {
+        use typedb_protocol::{
+            Thing as ThingProto, query::req::given_entry::Entry as EntryProto, thing::Thing as ThingProtoInner,
+        };
+        let inner = match self {
+            GivenRowEntry::Empty => EntryProto::Empty(typedb_protocol::query::req::given_entry::EmptyEntry {}),
+            GivenRowEntry::Value(value) => EntryProto::Value(value.into_proto()),
+            GivenRowEntry::Entity(entity) => {
+                let thing = ThingProtoInner::Entity(entity.into_proto());
+                EntryProto::Thing(ThingProto { thing: Some(thing) })
+            }
+            GivenRowEntry::Relation(relation) => {
+                let thing = ThingProtoInner::Relation(relation.into_proto());
+                EntryProto::Thing(ThingProto { thing: Some(thing) })
+            }
+            GivenRowEntry::Attribute(attribute) => {
+                let thing = ThingProtoInner::Attribute(attribute.into_proto());
+                EntryProto::Thing(ThingProto { thing: Some(thing) })
+            }
+        };
+        typedb_protocol::query::req::GivenEntry { entry: Some(inner) }
     }
 }
 
