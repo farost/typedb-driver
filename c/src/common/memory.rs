@@ -96,7 +96,10 @@ pub(crate) fn free<T>(raw: *mut T) {
 
 pub(crate) fn string_view(str: *const c_char) -> &'static str {
     assert!(!str.is_null());
-    unsafe { CStr::from_ptr(str).to_str().unwrap() }
+    unsafe {
+        let cstr = CStr::from_ptr(str);
+        cstr.to_str().unwrap_or_else(|e| panic!("Could not parse {cstr:?}: {e}"))
+    }
 }
 
 /// Frees a native rust string.
