@@ -76,3 +76,28 @@ fn transaction_on_close_callback() {
         assert!(close_called.load(Ordering::SeqCst))
     })
 }
+
+// on_close (or a second close) after the transaction has already closed must not panic
+#[test]
+#[serial]
+fn transaction_on_close_after_close_does_not_panic() {
+    async_std::task::block_on(async {
+        cleanup().await;
+        let driver = TypeDBDriver::new(
+            Addresses::try_from_address_str(TypeDBDriver::DEFAULT_ADDRESS).unwrap(),
+            Credentials::new("admin", "password"),
+            DriverOptions::new(DriverTlsConfig::disabled()),
+        )
+        .await
+        .unwrap();
+
+        driver.databases().create("typedb").await.unwrap();
+        let database = driver.databases().get("typedb").await.unwrap();
+
+        let transaction = driver.transaction(database.name(), TransactionType::Read).await.unwrap();
+        transaction.close().await.unwrap();
+
+        transaction.on_close(Box::new(|_| {})).await.unwrap();
+        transaction.close().await.unwrap();
+    })
+}
