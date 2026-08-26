@@ -243,22 +243,35 @@ fn drop_after_export_and_import() {
     });
 }
 
-/// Counts the OS threads of the current process, where that can be done cheaply enough to observe a
-/// thread that is only briefly still alive. Anything slower (spawning `ps`, say) takes long enough
-/// for a leaked thread to finish on its own, which would make the assertion below meaningless.
-fn thread_count() -> Option<usize> {
-    std::fs::read_dir("/proc/self/task").ok().map(Iterator::count)
+/// Prefixes of the names the driver gives its threads. Matched as prefixes because Linux truncates
+/// thread names to 15 characters.
+const DRIVER_THREAD_NAMES: [&str; 2] = ["gRPC worker", "Callback handl"];
+
+/// The driver's own threads, or `None` where they cannot be listed. Counting every thread of the
+/// process would not do: the test runtime grows thread pools of its own, unrelated to the driver.
+fn driver_threads() -> Option<Vec<String>> {
+    let mut found = Vec::new();
+    for task in std::fs::read_dir("/proc/self/task").ok()?.flatten() {
+        let Ok(name) = std::fs::read_to_string(task.path().join("comm")) else { continue };
+        let name = name.trim().to_owned();
+        if DRIVER_THREAD_NAMES.iter().any(|prefix| name.starts_with(prefix)) {
+            found.push(name);
+        }
+    }
+    Some(found)
 }
 
-/// Dropping a driver must not leave its threads running: teardown that outlives the drop is exactly
-/// what races process exit, which is only observable as a crash under a sanitiser. Asserted here
-/// directly instead - on platforms where the measurement is sharp enough to mean anything.
+/// Dropping a driver must not leave its threads running: teardown that outlives the drop is what
+/// races process exit, which is otherwise only observable as a crash under a sanitiser.
 #[test]
 #[serial]
 fn threads_are_gone_once_drop_returns() {
     const DB: &str = "lifecycle_threads_are_gone_once_drop_returns";
-    if thread_count().is_none() {
-        eprintln!("SKIPPED: no /proc, cannot count threads precisely enough");
+    // A thread that has been joined can stay listed for an instant, until the kernel reaps it.
+    const REAPING_GRACE: Duration = Duration::from_millis(200);
+
+    if driver_threads().is_none() {
+        eprintln!("SKIPPED: no /proc, cannot observe the driver's threads");
         return;
     }
     with_watchdog("threads_are_gone_once_drop_returns", async {
@@ -266,18 +279,20 @@ fn threads_are_gone_once_drop_returns() {
         reset_database(&setup, DB).await;
         drop(setup);
 
-        let baseline = thread_count().unwrap();
         for _ in 0..5 {
             let driver = new_driver().await;
             let transaction = driver.transaction(DB, TransactionType::Read).await.unwrap();
             transaction.query("match $t sub $_;").await.unwrap();
             drop(transaction);
             drop(driver);
-            let after_drop = thread_count().unwrap();
-            assert!(
-                after_drop <= baseline,
-                "driver threads outlived drop: {after_drop} threads against a baseline of {baseline}"
-            );
+
+            let mut alive = driver_threads().unwrap();
+            let deadline = std::time::Instant::now() + REAPING_GRACE;
+            while !alive.is_empty() && std::time::Instant::now() < deadline {
+                thread::sleep(Duration::from_millis(10));
+                alive = driver_threads().unwrap();
+            }
+            assert!(alive.is_empty(), "driver threads outlived drop: {alive:?}");
         }
         drop_database(DB).await;
     });
