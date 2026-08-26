@@ -127,12 +127,6 @@ impl Drop for BackgroundRuntime {
         self.is_open.store(false);
         self.shutdown_sink.send(()).ok();
 
-        // Returning before the runtime has stopped lets its teardown race whatever the caller does next -
-        // most damagingly process exit, where it runs concurrently with libc and sanitiser cleanup and
-        // crashes at random. Waiting here is bounded by the worker's own shutdown timeout.
-        //
-        // The callback handler is stopped only afterwards: tasks being torn down may still dispatch close
-        // callbacks to it, and would deadlock if it were gone.
         if let Some(worker) = self.async_runtime_worker.take() {
             if let Err(err) = worker.join() {
                 error!("Error shutting down the gRPC worker thread: {:?}", err);
@@ -143,9 +137,6 @@ impl Drop for BackgroundRuntime {
             callback_handler_sink.send(CallbackMessage::Shutdown).ok();
         }
         if let Some(callback_handler) = self.callback_handler.take() {
-            // A close callback owning the driver releases the last reference from the handler thread
-            // itself, and joining a thread from within it aborts. It stops on the message sent above
-            // instead, once this callback returns.
             if callback_handler.thread().id() != thread::current().id()
                 && let Err(err) = callback_handler.join()
             {

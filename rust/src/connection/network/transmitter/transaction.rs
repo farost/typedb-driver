@@ -511,11 +511,9 @@ impl ResponseCollector {
         let on_close_callbacks = std::mem::take(&mut *self.on_close.write().unwrap());
         for callback in on_close_callbacks {
             let (response_sink, response) = oneshot_async();
-            // Best-effort: the handler is gone once the runtime has been shut down, in which case the send
-            // fails, the response sink is dropped with it, and the await below returns immediately.
             self.callback_handler_sink
                 .send(CallbackMessage::Invoke(Box::new(move || callback(None)), response_sink))
-                .ok();
+                .unwrap();
             response.await.ok();
         }
     }
@@ -533,7 +531,7 @@ impl ResponseCollector {
             let (response_sink, response) = oneshot_async();
             self.callback_handler_sink
                 .send(CallbackMessage::Invoke(Box::new(move || callback(Some(error))), response_sink))
-                .ok();
+                .unwrap();
             response.await.ok();
         }
     }

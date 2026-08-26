@@ -103,8 +103,8 @@
 	name = "test_values"
 
 [[test]]
-	path = "tests/integration/driver.rs"
-	name = "test_driver"
+	path = "tests/integration/lifecycle.rs"
+	name = "test_lifecycle"
 
 [[test]]
 	path = "tests/integration/example.rs"
