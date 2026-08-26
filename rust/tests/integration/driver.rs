@@ -22,13 +22,14 @@ use std::sync::{
     atomic::{AtomicBool, Ordering},
 };
 
-mod common;
-
+use common::{await_flag, delete_database_if_exists, new_driver};
 use serial_test::serial;
-use typedb_driver::{Addresses, Credentials, DriverOptions, DriverTlsConfig, TransactionType, TypeDBDriver};
+use typedb_driver::TransactionType;
+
+const DATABASE_NAME: &str = "typedb";
 
 async fn cleanup() {
-    common::delete_database_if_exists("typedb").await;
+    delete_database_if_exists(DATABASE_NAME).await;
 }
 
 #[test]
@@ -36,17 +37,11 @@ async fn cleanup() {
 fn transaction_on_close_callback() {
     async_std::task::block_on(async {
         cleanup().await;
-        let driver = TypeDBDriver::new(
-            Addresses::try_from_address_str(TypeDBDriver::DEFAULT_ADDRESS).unwrap(),
-            Credentials::new("admin", "password"),
-            DriverOptions::new(DriverTlsConfig::disabled()),
-        )
-        .await
-        .unwrap();
+        let driver = new_driver().await;
 
-        driver.databases().create("typedb").await.unwrap();
-        let database = driver.databases().get("typedb").await.unwrap();
-        assert_eq!(database.name(), "typedb");
+        driver.databases().create(DATABASE_NAME).await.unwrap();
+        let database = driver.databases().get(DATABASE_NAME).await.unwrap();
+        assert_eq!(database.name(), DATABASE_NAME);
 
         let close_called = Arc::new(AtomicBool::new(false));
         let transaction = driver.transaction(database.name(), TransactionType::Read).await.unwrap();
@@ -60,13 +55,9 @@ fn transaction_on_close_callback() {
 
         transaction.close().await.unwrap();
         drop(transaction);
+        await_flag(&close_called, "transaction close callback");
 
-        while !close_called.load(Ordering::Acquire) {
-            // Yield the current time slice to the OS scheduler.
-            // This prevents the loop from consuming 100% of a CPU core.
-            std::thread::yield_now();
-        }
-        assert!(close_called.load(Ordering::SeqCst));
+        drop(driver);
         cleanup().await;
     })
 }
@@ -77,16 +68,10 @@ fn transaction_on_close_callback() {
 fn transaction_on_close_after_close_does_not_panic() {
     async_std::task::block_on(async {
         cleanup().await;
-        let driver = TypeDBDriver::new(
-            Addresses::try_from_address_str(TypeDBDriver::DEFAULT_ADDRESS).unwrap(),
-            Credentials::new("admin", "password"),
-            DriverOptions::new(DriverTlsConfig::disabled()),
-        )
-        .await
-        .unwrap();
+        let driver = new_driver().await;
 
-        driver.databases().create("typedb").await.unwrap();
-        let database = driver.databases().get("typedb").await.unwrap();
+        driver.databases().create(DATABASE_NAME).await.unwrap();
+        let database = driver.databases().get(DATABASE_NAME).await.unwrap();
 
         let transaction = driver.transaction(database.name(), TransactionType::Read).await.unwrap();
         transaction.close().await.unwrap();

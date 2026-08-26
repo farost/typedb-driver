@@ -26,20 +26,11 @@ use std::{
     time::Duration,
 };
 
+use common::{await_flag, new_driver};
 use serial_test::serial;
 use typedb_driver::{Addresses, Credentials, DriverOptions, DriverTlsConfig, TransactionType, TypeDBDriver};
 
 const WATCHDOG: Duration = Duration::from_secs(60);
-
-async fn new_driver() -> TypeDBDriver {
-    TypeDBDriver::new(
-        Addresses::try_from_address_str(TypeDBDriver::DEFAULT_ADDRESS).unwrap(),
-        Credentials::new("admin", "password"),
-        DriverOptions::new(DriverTlsConfig::disabled()),
-    )
-    .await
-    .unwrap()
-}
 
 /// Each test owns its own database: some of them deliberately leave a transaction open, which would
 /// otherwise stop a later test from deleting a shared one.
@@ -166,17 +157,6 @@ fn drop_after_failed_connection() {
         .await;
         assert!(result.is_err());
     });
-}
-
-/// Waits for `flag`, so that a callback which never runs fails the test instead of hanging it.
-fn await_flag(flag: &AtomicBool, what: &str) {
-    for _ in 0..100 {
-        if flag.load(Ordering::SeqCst) {
-            return;
-        }
-        thread::sleep(Duration::from_millis(50));
-    }
-    panic!("{what} did not happen within 5s");
 }
 
 /// Close callbacks are dispatched to a thread that shutdown has to stop in the right order: too early

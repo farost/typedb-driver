@@ -35,16 +35,7 @@ use typedb_driver::{
 const DATABASE_NAME: &str = "typedb";
 
 async fn cleanup() {
-    let driver = TypeDBDriver::new(
-        Addresses::try_from_address_str(TypeDBDriver::DEFAULT_ADDRESS).unwrap(),
-        Credentials::new("admin", "password"),
-        DriverOptions::new(DriverTlsConfig::disabled()),
-    )
-    .await
-    .unwrap();
-    if driver.databases().contains(DATABASE_NAME).await.unwrap() {
-        driver.databases().get(DATABASE_NAME).await.unwrap().delete().await.unwrap();
-    }
+    common::delete_database_if_exists(DATABASE_NAME).await;
 }
 
 async fn setup() -> TypeDBDriver {

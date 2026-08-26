@@ -32,6 +32,9 @@
 	[dev-dependencies.steps]
 		workspace = true
 
+	[dev-dependencies.common]
+		workspace = true
+
 	[dev-dependencies.serial_test]
 		workspace = true
 
@@ -105,6 +108,10 @@
 [[test]]
 	path = "tests/integration/lifecycle.rs"
 	name = "test_lifecycle"
+
+[[test]]
+	path = "tests/integration/driver.rs"
+	name = "test_driver"
 
 [[test]]
 	path = "tests/integration/example.rs"

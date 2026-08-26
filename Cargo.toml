@@ -1,7 +1,7 @@
 
 [workspace]
 	resolver = "2"
-	members = ["rust", "rust/tests/behaviour/config", "rust/tests/behaviour/steps", "c"]
+	members = ["rust", "rust/tests/behaviour/config", "rust/tests/behaviour/steps", "rust/tests/integration/common", "c"]
 
 	[workspace.dependencies]
 
@@ -128,6 +128,11 @@
 
 		[workspace.dependencies.config]
 			path = "rust/tests/behaviour/config"
+			features = []
+			default-features = false
+
+		[workspace.dependencies.common]
+			path = "rust/tests/integration/common"
 			features = []
 			default-features = false
 

@@ -18,7 +18,6 @@
  */
 
 mod cluster;
-mod common;
 mod driver;
 mod example;
 mod lifecycle;

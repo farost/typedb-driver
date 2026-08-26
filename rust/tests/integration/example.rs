@@ -38,20 +38,7 @@ use typedb_driver::{
 // EXAMPLE END MARKER
 
 async fn cleanup() {
-    let driver = TypeDBDriver::new(
-        Addresses::try_from_address_str(TypeDBDriver::DEFAULT_ADDRESS).unwrap(),
-        Credentials::new("admin", "password"),
-        DriverOptions::new(DriverTlsConfig::disabled()),
-    )
-    .await
-    .unwrap();
-    if driver.databases().contains("typedb").await.unwrap() {
-        println!("Confirmed DB contains, going to get...");
-        let db = driver.databases().get("typedb").await.unwrap();
-        println!("Got DB");
-        db.delete().await.unwrap();
-        println!("Deleted db");
-    }
+    common::delete_database_if_exists("typedb").await;
 }
 
 #[test]

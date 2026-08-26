@@ -1,4 +1,3 @@
-#!/bin/bash
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -16,26 +15,26 @@
 # specific language governing permissions and limitations
 # under the License.
 
-languages=("rust" "java" "python" "csharp")
+package(default_visibility = ["//visibility:public"])
 
-base_targets=(
-    "//{language}:example"
-    "//{language}:readme_example"
+load("@rules_rust//rust:defs.bzl", "rust_library")
+load("@typedb_dependencies//tool/checkstyle:rules.bzl", "checkstyle_test")
+
+rust_library(
+    name = "common",
+    srcs = ["lib.rs"],
+    crate_root = "lib.rs",
+    deps = [
+        "//rust:typedb_driver",
+    ],
 )
 
-for lang in "${languages[@]}"; do
-    echo "Updating README for $lang"
-
-    for target in "${base_targets[@]}"; do
-        substituted_target="${target//\{language\}/$lang}"
-        echo "Running: bazel run $substituted_target"
-        bazel run "$substituted_target"
-
-        if [ $? -ne 0 ]; then
-            echo "Error running: bazel run $substituted_target"
-            exit 1
-        fi
-    done
-done
-
-echo "All README files updated successfully."
+checkstyle_test(
+    name = "checkstyle",
+    include = glob(["*"]),
+    exclude = glob([
+        "Cargo.*",
+    ], allow_empty = True),
+    license_type = "apache-header",
+    size = "small",
+)

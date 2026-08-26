@@ -25,6 +25,7 @@ rust_test(
     srcs = ["example.rs"],
     deps = [
         "//rust:typedb_driver",
+        "//rust/tests/integration/common",
         "@crates//:async-std",
         "@crates//:chrono",
         "@crates//:futures",
@@ -40,10 +41,10 @@ rust_test(
 
 rust_test(
     name = "test_driver",
-    srcs = ["driver.rs", "common.rs"],
-    crate_root = "driver.rs",
+    srcs = ["driver.rs"],
     deps = [
         "//rust:typedb_driver",
+        "//rust/tests/integration/common",
         "@crates//:async-std",
         "@crates//:chrono",
         "@crates//:futures",
@@ -62,6 +63,7 @@ rust_test(
     srcs = ["values.rs"],
     deps = [
         "//rust:typedb_driver",
+        "//rust/tests/integration/common",
         "@crates//:async-std",
         "@crates//:chrono",
         "@crates//:chrono-tz",
@@ -82,6 +84,7 @@ rust_test(
     srcs = ["lifecycle.rs"],
     deps = [
         "//rust:typedb_driver",
+        "//rust/tests/integration/common",
         "@crates//:async-std",
         "@crates//:serial_test",
         "@crates//:tokio",
