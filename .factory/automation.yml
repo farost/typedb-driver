@@ -181,11 +181,11 @@ build:
         fi
         
         uname -r
-        cat /proc/sys/vm/mmap_rnd_bits
+        cat /proc/sys/vm/mmap_rnd_bits || true
         
         
         tool/test/start-core-server.sh &&
-          setarch "$(uname -m)" -R bazel test --config=ci //c/tests/integration:test-driver --test_output=streamed --runs_per_test=20 &&
+          setarch "$(uname -m)" -R bazel test --config=ci //c/tests/integration:test-driver --test_output=streamed --runs_per_test=20 --test_env=ASAN_OPTIONS=verbosity=1 &&
           export TEST_SUCCESS=0 || export TEST_SUCCESS=1
         tool/test/stop-core-server.sh
         exit $TEST_SUCCESS
