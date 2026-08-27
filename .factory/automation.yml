@@ -181,7 +181,7 @@ build:
         fi
         
         tool/test/start-core-server.sh &&
-          bazel test --config=ci //c/tests/integration:test-driver --test_output=errors &&
+          bazel test --config=ci //c/tests/integration:test-driver --test_output=streamed --runs_per_test=20 &&
           export TEST_SUCCESS=0 || export TEST_SUCCESS=1
         tool/test/stop-core-server.sh
         exit $TEST_SUCCESS

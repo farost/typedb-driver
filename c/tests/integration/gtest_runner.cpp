@@ -83,6 +83,7 @@ TEST(TestExample, TestExample) {
 }
 
 int main(int argc, char **argv) {
+    fprintf(stderr, "test-driver: entered main\n");
     // Unbuffered, so that a crash during teardown cannot swallow the record of how far the suite got.
     setvbuf(stdout, nullptr, _IONBF, 0);
 
