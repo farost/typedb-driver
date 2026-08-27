@@ -180,8 +180,12 @@ build:
             export CARGO_BAZEL_GENERATOR_SHA256="$CARGO_BAZEL_GENERATOR_SHA256_LINUX_X86_64"
         fi
         
+        uname -r
+        cat /proc/sys/vm/mmap_rnd_bits
+        
+        
         tool/test/start-core-server.sh &&
-          bazel test --config=ci //c/tests/integration:test-driver --test_output=streamed --runs_per_test=20 &&
+          setarch "$(uname -m)" -R bazel test --config=ci //c/tests/integration:test-driver --test_output=streamed --runs_per_test=20 &&
           export TEST_SUCCESS=0 || export TEST_SUCCESS=1
         tool/test/stop-core-server.sh
         exit $TEST_SUCCESS
