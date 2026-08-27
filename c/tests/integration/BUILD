@@ -31,13 +31,7 @@ cc_library(
         "//c:typedb_driver_clib",
     ],
     copts = ["-fsanitize=address"], # Remove this if you're running leaks
-    # Link the sanitiser runtime statically on Linux so it initialises from the binary itself
-    # instead of as a shared-library constructor, before the loader has placed anything else.
-    # (GCC spelling; macOS/clang only ships the runtime as a dylib, so it keeps the default.)
-    linkopts = ["-fsanitize=address"] + select({  # Remove this if you're running leaks
-        "@typedb_bazel_distribution//platform:is_linux": ["-static-libasan"],
-        "//conditions:default": [],
-    }),
+    linkopts = ["-fsanitize=address"], # Remove this if you're running leaks
     linkstatic = True,
 )
 
