@@ -27,7 +27,7 @@ bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "rules_cc", version = "0.0.17")
 bazel_dep(name = "rules_java", version = "8.6.2")
 bazel_dep(name = "rules_jvm_external", version = "6.6")
-bazel_dep(name = "rules_python", version = "2.0.1")
+bazel_dep(name = "rules_python", version = "2.3.2")
 bazel_dep(name = "rules_kotlin", version = "2.0.0", repo_name = "io_bazel_rules_kotlin")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_proto", version = "7.1.0")
@@ -52,14 +52,14 @@ bazel_dep(name = "typedb_bazel_distribution", version = "0.0.0")
 git_override(
     module_name = "typedb_bazel_distribution",
     remote = "https://github.com/typedb/bazel-distribution",
-    commit = "dd811cf28715bbce8374e5e0f9defaf772e7dd36",
+    commit = "87a2092926b36a5c82cada9d21e1c3a6d6e32859",
 )
 
 bazel_dep(name = "typedb_dependencies", version = "0.0.0")
 git_override(
     module_name = "typedb_dependencies",
     remote = "https://github.com/typedb/dependencies",
-    commit = "3ef0b92e0285100e8a6f1909749a700bb5df4ad2",
+    commit = "bf924ef788fd605224383a2ea7f59599862c6bab",
 )
 
 bazel_dep(name = "typedb_protocol", version = "0.0.0")
@@ -101,6 +101,9 @@ python.toolchain(python_version = "3.12", ignore_root_user_error = True)
 python.toolchain(python_version = "3.13", ignore_root_user_error = True)
 python.toolchain(python_version = "3.14", ignore_root_user_error = True)
 use_repo(python, "python_3_9", "python_3_10", "python_3_11", "python_3_12", "python_3_13", "python_3_14")
+
+rules_python_config = use_extension("@rules_python//python/extensions:config.bzl", "config")
+rules_python_config.explicit_init_py(default = True)
 
 # Pip dependencies for driver development
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
