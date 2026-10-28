@@ -258,14 +258,14 @@ native_artifact_files.artifact(
     name = "typedb_artifact",
     group_name = "typedb-all-{platform}",
     artifact_name = "typedb-all-{platform}-{version}.{ext}",
-    commit = "499dedd67eb4ee55bec45d217fb2bcf5942961ff",
+    commit = "ddc372fcb3b6f3a4444f290fc0e8f5d6365504fb",
 )
 # IMPORTANT: must be CLUSTERED typedb-cluster (with multi-node support)!
 native_artifact_files.artifact(
     name = "typedb_cluster_artifact",
     group_name = "typedb-cluster-all-{platform}",
     artifact_name = "typedb-cluster-all-{platform}-{version}.{ext}",
-    commit = "17f1f32f3149e4c0df59efef35de113731ccd067",
+    commit = "47bad9475d07456b87bafabe548aaa91c33b9ad5",
     private = True,
 )
 
